@@ -30,13 +30,8 @@ export async function POST(req: Request) {
   }
 
   if (!process.env.BLOB_READ_WRITE_TOKEN) {
-    const visibleKeys = Object.keys(process.env)
-      .filter((k) => k.includes("BLOB") || k.includes("ADMIN"))
-      .join(", ");
     return Response.json(
-      {
-        error: `BLOB_READ_WRITE_TOKEN sozlanmagan (server env). Ko'rinadigan o'zgaruvchilar: [${visibleKeys || "hech biri"}]`,
-      },
+      { error: "BLOB_READ_WRITE_TOKEN sozlanmagan (server env)." },
       { status: 500 }
     );
   }
