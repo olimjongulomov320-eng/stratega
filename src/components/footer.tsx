@@ -1,5 +1,18 @@
 import Link from "next/link";
 import type { HeaderCategory } from "@/components/header";
+import {
+  TelegramIcon,
+  InstagramIcon,
+  YouTubeIcon,
+  FacebookIcon,
+} from "@/components/social-icons";
+
+const FOOTER_SOCIALS = [
+  { name: "Telegram", href: "https://t.me/stratega_uz", Icon: TelegramIcon },
+  { name: "Instagram", href: "https://instagram.com/stratega.uz", Icon: InstagramIcon },
+  { name: "YouTube", href: "https://youtube.com/@stratega_uz", Icon: YouTubeIcon },
+  { name: "Facebook", href: "https://facebook.com/stratega.uz", Icon: FacebookIcon },
+];
 
 export function Footer({ categories }: { categories: HeaderCategory[] }) {
   return (
@@ -18,6 +31,20 @@ export function Footer({ categories }: { categories: HeaderCategory[] }) {
             Qurilish va sanoat texnikasi bo&apos;yicha B2B ta&apos;minot
             platformasi. NDS, hujjatlar va shaxsiy menejer bilan.
           </p>
+          <div className="mt-4 flex gap-2">
+            {FOOTER_SOCIALS.map((social) => (
+              <a
+                key={social.name}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={social.name}
+                className="group flex h-9 w-9 items-center justify-center rounded-full bg-slate-200/70 text-slate-500 transition duration-300 hover:-translate-y-0.5 hover:bg-indigo-600 hover:text-white"
+              >
+                <social.Icon className="h-4 w-4" />
+              </a>
+            ))}
+          </div>
         </div>
 
         <div>

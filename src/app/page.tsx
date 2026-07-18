@@ -8,12 +8,19 @@ import { WhyUsSection } from "@/components/why-us-section";
 import { BrandStrip } from "@/components/brand-strip";
 import { IndustriesGrid } from "@/components/industries-grid";
 import { TechShowcase } from "@/components/tech-showcase";
+import { OrderFlowShowcase } from "@/components/order-flow-showcase";
+import {
+  TelegramIcon,
+  InstagramIcon,
+  YouTubeIcon,
+  FacebookIcon,
+} from "@/components/social-icons";
 
 const SOCIALS = [
-  { name: "Telegram", handle: "@stratega_uz", icon: "✈️" },
-  { name: "Instagram", handle: "@stratega.uz", icon: "📷" },
-  { name: "YouTube", handle: "@stratega_uz", icon: "▶️" },
-  { name: "Facebook", handle: "stratega.uz", icon: "👍" },
+  { name: "Telegram", handle: "@stratega_uz", Icon: TelegramIcon, href: "https://t.me/stratega_uz" },
+  { name: "Instagram", handle: "@stratega.uz", Icon: InstagramIcon, href: "https://instagram.com/stratega.uz" },
+  { name: "YouTube", handle: "@stratega_uz", Icon: YouTubeIcon, href: "https://youtube.com/@stratega_uz" },
+  { name: "Facebook", handle: "stratega.uz", Icon: FacebookIcon, href: "https://facebook.com/stratega.uz" },
 ];
 
 export default async function Home() {
@@ -103,16 +110,21 @@ export default async function Home() {
       <div className="bg-indigo-600">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-px sm:grid-cols-4">
           {SOCIALS.map((social) => (
-            <div
+            <a
               key={social.name}
-              className="flex items-center gap-2 px-4 py-3 text-white sm:px-6"
+              href={social.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group flex items-center gap-3 px-4 py-3 text-white transition hover:bg-white/10 sm:px-6"
             >
-              <span className="text-lg">{social.icon}</span>
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 transition duration-300 group-hover:-translate-y-0.5 group-hover:bg-white/20 group-hover:scale-110">
+                <social.Icon className="h-4.5 w-4.5" />
+              </span>
               <div>
                 <p className="text-xs font-semibold">{social.name}</p>
                 <p className="text-xs text-indigo-100">{social.handle}</p>
               </div>
-            </div>
+            </a>
           ))}
         </div>
       </div>
@@ -160,6 +172,8 @@ export default async function Home() {
       <IndustriesGrid />
 
       <TechShowcase />
+
+      <OrderFlowShowcase />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <RecentlyViewedSection />

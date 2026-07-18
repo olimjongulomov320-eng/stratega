@@ -65,9 +65,27 @@ body {
   animation: modal-in 0.18s ease-out both;
 }
 
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.brand-marquee {
+  animation: marquee 22s linear infinite;
+}
+
+.brand-marquee:hover {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up,
-  .animate-modal-in {
+  .animate-modal-in,
+  .brand-marquee {
     animation: none;
   }
 }

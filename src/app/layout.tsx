@@ -6,6 +6,7 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { getCategories } from "@/lib/categories";
 import { getCurrentUser } from "@/lib/auth";
+import { ChatWidget } from "@/components/chat-widget";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -45,6 +46,7 @@ export default async function RootLayout({
           <Header categories={headerCategories} user={headerUser} />
           <main className="flex-1">{children}</main>
           <Footer categories={headerCategories} />
+          <ChatWidget />
         </Providers>
       </body>
     </html>
