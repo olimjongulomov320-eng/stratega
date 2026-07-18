@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useCart } from "@/lib/cart-context";
+import { useRfq } from "@/lib/rfq-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import { useCompare } from "@/lib/compare-context";
 import { useQuickView } from "@/lib/quick-view-context";
@@ -23,7 +23,7 @@ export type ProductCardData = {
 };
 
 export function ProductCard({ product }: { product: ProductCardData }) {
-  const { addItem } = useCart();
+  const { addItem } = useRfq();
   const { isWishlisted, toggle: toggleWishlist } = useWishlist();
   const { isComparing, toggle: toggleCompare, maxReached } = useCompare();
   const { open: openQuickView } = useQuickView();
@@ -141,7 +141,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             disabled={outOfStock}
             className="flex-1 rounded-full bg-indigo-600 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
           >
-            {outOfStock ? "Tugagan" : added ? "Qo'shildi ✓" : "Savatga qo'shish"}
+            {outOfStock ? "Tugagan" : added ? "Qo'shildi ✓" : "Korzinaga qo'shish"}
           </button>
           <button
             onClick={handleCompareToggle}

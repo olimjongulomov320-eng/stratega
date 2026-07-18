@@ -7,7 +7,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
 }
 
 model Category {
@@ -15,6 +15,7 @@ model Category {
   slug      String    @unique
   name      String
   icon      String? // emoji yoki icon nomi
+  imageUrl  String? // "Nima uchun komplektlaymiz" bloki uchun katta rasm
   sortOrder Int       @default(0)
   products  Product[]
 }
@@ -37,36 +38,66 @@ model Product {
   categoryId    String
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
-  orderItems    OrderItem[]
+  rfqItems      RfqItem[]
 }
 
-model Order {
-  id            String      @id @default(cuid())
-  customerName  String
-  customerPhone String
-  address       String
+model User {
+  id          String       @id @default(cuid())
+  phone       String       @unique
+  companyName String?
+  contactName String?
+  createdAt   DateTime     @default(now())
+  requests    RfqRequest[]
+  sessions    Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  phone     String
+  code      String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+}
+
+model RfqRequest {
+  id            String     @id @default(cuid())
+  companyName   String
+  contactName   String
+  phone         String
+  requestType   String // masalan: "Ob'ekt komplektatsiyasi", "Aniq mahsulot"
   comment       String?
-  status        OrderStatus @default(NEW)
-  totalPrice    Int
-  items         OrderItem[]
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  status        RfqStatus  @default(NEW)
+  items         RfqItem[]
+  user          User?      @relation(fields: [userId], references: [id])
+  userId        String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
 }
 
-model OrderItem {
-  id        String  @id @default(cuid())
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId   String
-  product   Product @relation(fields: [productId], references: [id])
-  productId String
-  quantity  Int
-  price     Int // buyurtma vaqtidagi narx
+model RfqItem {
+  id           String     @id @default(cuid())
+  request      RfqRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  requestId    String
+  product      Product    @relation(fields: [productId], references: [id])
+  productId    String
+  quantity     Int
+  priceAtQuote Int // so'rov vaqtidagi narx
 }
 
-enum OrderStatus {
+enum RfqStatus {
   NEW
+  IN_REVIEW
+  QUOTED
   CONFIRMED
-  SHIPPED
-  DELIVERED
   CANCELLED
 }

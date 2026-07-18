@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatSum } from "@/lib/format";
-import { AddToCartForm } from "@/components/add-to-cart-form";
+import { RfqForm } from "@/components/rfq-form";
 import { StarRating } from "@/components/star-rating";
 import { ProductCard } from "@/components/product-card";
 import { getDemoReviews } from "@/lib/demo-reviews";
@@ -108,7 +108,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
               : "Hozircha mavjud emas"}
           </span>
 
-          <AddToCartForm
+          <RfqForm
             product={{
               id: product.id,
               slug: product.slug,

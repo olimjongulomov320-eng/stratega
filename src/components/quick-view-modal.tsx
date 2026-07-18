@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useQuickView } from "@/lib/quick-view-context";
-import { useCart } from "@/lib/cart-context";
+import { useRfq } from "@/lib/rfq-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import { formatSum } from "@/lib/format";
 import { StarRating } from "@/components/star-rating";
@@ -25,7 +25,7 @@ type QuickViewProduct = {
 
 export function QuickViewModal() {
   const { openProductSlug, close } = useQuickView();
-  const { addItem } = useCart();
+  const { addItem } = useRfq();
   const { isWishlisted, toggle: toggleWishlist } = useWishlist();
   const [product, setProduct] = useState<QuickViewProduct | null>(null);
   const [loading, setLoading] = useState(false);
@@ -190,7 +190,7 @@ export function QuickViewModal() {
                     ? "Tugagan"
                     : added
                       ? "Qo'shildi ✓"
-                      : "Savatga qo'shish"}
+                      : "Korzinaga qo'shish"}
                 </button>
                 <Link
                   href={`/product/${product.slug}`}

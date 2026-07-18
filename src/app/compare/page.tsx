@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useCompare } from "@/lib/compare-context";
-import { useCart } from "@/lib/cart-context";
+import { useRfq } from "@/lib/rfq-context";
 import { formatSum } from "@/lib/format";
 import { StarRating } from "@/components/star-rating";
 
@@ -24,7 +24,7 @@ type CompareProduct = {
 
 export default function ComparePage() {
   const { items, remove, clear } = useCompare();
-  const { addItem } = useCart();
+  const { addItem } = useRfq();
   const [products, setProducts] = useState<CompareProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -141,7 +141,7 @@ export default function ComparePage() {
                       disabled={p.stock <= 0}
                       className="mt-2 w-full max-w-[160px] rounded-full bg-indigo-600 py-1.5 text-xs font-semibold text-white hover:bg-indigo-700 disabled:bg-slate-200"
                     >
-                      Savatga qo&apos;shish
+                      Korzinaga qo&apos;shish
                     </button>
                   </th>
                 ))}

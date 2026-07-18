@@ -7,20 +7,20 @@ export const metadata: Metadata = {
 
 const FAQS = [
   {
-    q: "Buyurtmani qanday berish mumkin?",
-    a: "Kerakli mahsulotni tanlang, \"Savatga qo'shish\" tugmasini bosing, so'ng savatdan \"Buyurtma berish\"ni bosib, ism, telefon raqami va manzilingizni kiriting. Operatorimiz tez orada siz bilan bog'lanadi.",
+    q: "Ariza qanday beriladi?",
+    a: "Kerakli mahsulotlarni tanlang, \"Korzinaga qo'shish\" tugmasini bosing, so'ng korzinadan \"Kommertsiya taklifini olish\"ni bosib, kompaniya nomi, kontakt shaxs va telefon raqamini kiriting. Menejerimiz 30 daqiqa ichida siz bilan bog'lanadi.",
   },
   {
-    q: "Buyurtmamning holatini qanday bilaman?",
-    a: "Buyurtma berilgach, operatorimiz telefon orqali siz bilan bog'lanib, yetkazib berish muddati va holatini aniqlashtiradi.",
+    q: "Arizamning holatini qanday bilaman?",
+    a: "Ariza yuborilgach, menejerimiz telefon orqali bog'lanib, aniq narx va yetkazib berish shartlarini taqdim etadi.",
   },
   {
-    q: "Naqd pulsiz to'lash mumkinmi?",
-    a: "Hozircha faqat naqd to'lov qabul qilinadi. Onlayn to'lov tizimlari (Payme, Click) tez orada ishga tushadi.",
+    q: "To'lov qanday amalga oshiriladi?",
+    a: "To'lov usuli har bir bitim bo'yicha alohida kelishiladi — naqd, bank o'tkazmasi yoki doimiy mijozlar uchun 30 kungacha to'lov muddati bilan.",
   },
   {
     q: "Mahsulotni qaytarish mumkinmi?",
-    a: "Ha, 10 kun ichida, mahsulot asl holatida bo'lsa. Batafsil ma'lumot uchun \"Qaytarish shartlari\" bo'limiga qarang.",
+    a: "Ha, kafolat shartlariga muvofiq. Batafsil ma'lumot uchun \"Qaytarish shartlari\" bo'limiga qarang.",
   },
   {
     q: "Yetkazib berish qancha vaqt oladi?",

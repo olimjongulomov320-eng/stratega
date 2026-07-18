@@ -15,8 +15,8 @@ export function Footer({ categories }: { categories: HeaderCategory[] }) {
             </span>
           </div>
           <p className="mt-3 text-sm text-slate-500">
-            Kerakli mahsulotni topish, solishtirish va buyurtma qilish uchun
-            qulay onlayn savdo maydonchasi.
+            Qurilish va sanoat texnikasi bo&apos;yicha B2B ta&apos;minot
+            platformasi. NDS, hujjatlar va shaxsiy menejer bilan.
           </p>
         </div>
 

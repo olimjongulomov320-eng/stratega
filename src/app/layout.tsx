@@ -5,6 +5,7 @@ import { Providers } from "@/lib/providers";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { getCategories } from "@/lib/categories";
+import { getCurrentUser } from "@/lib/auth";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -22,7 +23,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const categories = await getCategories();
+  const [categories, currentUser] = await Promise.all([
+    getCategories(),
+    getCurrentUser(),
+  ]);
   const headerCategories = categories.map((c) => ({
     id: c.id,
     slug: c.slug,
@@ -30,12 +34,15 @@ export default async function RootLayout({
     icon: c.icon,
     productCount: c._count.products,
   }));
+  const headerUser = currentUser
+    ? { phone: currentUser.phone, companyName: currentUser.companyName }
+    : null;
 
   return (
     <html lang="uz" className={`${inter.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-white text-slate-800">
         <Providers>
-          <Header categories={headerCategories} />
+          <Header categories={headerCategories} user={headerUser} />
           <main className="flex-1">{children}</main>
           <Footer categories={headerCategories} />
         </Providers>

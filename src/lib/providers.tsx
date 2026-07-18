@@ -1,6 +1,6 @@
 "use client";
 
-import { CartProvider } from "@/lib/cart-context";
+import { RfqProvider } from "@/lib/rfq-context";
 import { WishlistProvider } from "@/lib/wishlist-context";
 import { CompareProvider } from "@/lib/compare-context";
 import { RecentlyViewedProvider } from "@/lib/recently-viewed-context";
@@ -10,7 +10,7 @@ import { QuickViewModal } from "@/components/quick-view-modal";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <CartProvider>
+    <RfqProvider>
       <WishlistProvider>
         <CompareProvider>
           <RecentlyViewedProvider>
@@ -22,6 +22,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
           </RecentlyViewedProvider>
         </CompareProvider>
       </WishlistProvider>
-    </CartProvider>
+    </RfqProvider>
   );
 }
