@@ -111,7 +111,7 @@ export function Footer({ categories }: { categories: HeaderCategory[] }) {
           </ul>
         </div>
       </div>
-      <div className="border-t border-slate-200 py-4 text-center text-xs text-slate-400">
+      <div className="border-t border-slate-200 px-4 py-4 text-center text-xs text-slate-400">
         © {new Date().getFullYear()} Stratega. Barcha huquqlar himoyalangan.
       </div>
     </footer>

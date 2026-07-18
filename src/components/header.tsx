@@ -33,7 +33,7 @@ export function Header({
   return (
     <header className="sticky top-0 z-40">
       {/* Top utility bar */}
-      <div className="bg-slate-950 text-slate-300">
+      <div className="hidden bg-slate-950 text-slate-300 sm:block">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-2 text-xs sm:px-6">
           <span className="flex items-center gap-1.5 rounded bg-indigo-600 px-2 py-0.5 font-bold text-white">
             B2B
@@ -145,7 +145,7 @@ export function Header({
 
           <Link
             href="/korzina"
-            className="relative flex shrink-0 items-center gap-2 rounded-full bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
+            className="relative hidden shrink-0 items-center gap-2 rounded-full bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 sm:flex"
           >
             <svg
               viewBox="0 0 24 24"
@@ -165,6 +165,16 @@ export function Header({
               </span>
             )}
           </Link>
+
+          <a
+            href="tel:+998785555535"
+            aria-label="Qo'ng'iroq qilish"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white transition hover:bg-indigo-700 sm:hidden"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4.5 w-4.5">
+              <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6 19.8 19.8 0 0 1-3.1-8.7A2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.6 2.7a2 2 0 0 1-.4 2.1L8 9.9a16 16 0 0 0 6 6l1.4-1.4a2 2 0 0 1 2.1-.4c.9.3 1.8.5 2.7.6a2 2 0 0 1 1.8 2.2z" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </a>
         </div>
 
         {/* Mobile search */}

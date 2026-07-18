@@ -74,10 +74,10 @@ export function TechShowcase() {
         </div>
 
         <div className="flex flex-col justify-center gap-6 rounded-2xl bg-white p-6 shadow-sm">
-          <div className="flex items-center justify-between">
+          <div className="-mx-6 flex items-center gap-0 overflow-x-auto px-6 sm:mx-0 sm:justify-between sm:px-0">
             {STEPS.map((step, i) => (
-              <div key={step.label} className="flex items-center">
-                <div className="flex flex-col items-center gap-1.5">
+              <div key={step.label} className="flex shrink-0 items-center">
+                <div className="flex w-16 flex-col items-center gap-1.5">
                   <span
                     className={`flex h-12 w-12 items-center justify-center rounded-xl text-xl transition ${
                       withPump
