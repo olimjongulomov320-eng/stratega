@@ -7,6 +7,7 @@ import { Footer } from "@/components/footer";
 import { getCategories } from "@/lib/categories";
 import { getCurrentUser } from "@/lib/auth";
 import { ChatWidget } from "@/components/chat-widget";
+import { MobileTabBar } from "@/components/mobile-tab-bar";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -41,12 +42,13 @@ export default async function RootLayout({
 
   return (
     <html lang="uz" className={`${inter.variable} h-full antialiased`}>
-      <body className="flex min-h-full flex-col bg-white text-slate-800">
+      <body className="flex min-h-full flex-col bg-white pb-16 text-slate-800 sm:pb-0">
         <Providers>
           <Header categories={headerCategories} user={headerUser} />
           <main className="flex-1">{children}</main>
           <Footer categories={headerCategories} />
           <ChatWidget />
+          <MobileTabBar user={headerUser} />
         </Providers>
       </body>
     </html>

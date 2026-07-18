@@ -57,7 +57,7 @@ export function ChatWidget() {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? "Chatni yopish" : "Yordamchi bilan chat"}
-        className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition hover:scale-105 hover:bg-indigo-500 active:scale-95"
+        className="fixed bottom-20 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition hover:scale-105 hover:bg-indigo-500 active:scale-95 sm:bottom-5 sm:right-5"
       >
         {open ? (
           <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
@@ -79,7 +79,7 @@ export function ChatWidget() {
       </button>
 
       <div
-        className={`fixed bottom-24 right-5 z-50 flex w-[calc(100vw-2.5rem)] max-w-sm origin-bottom-right flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 ${
+        className={`fixed bottom-[9.5rem] right-4 z-50 flex w-[calc(100vw-2rem)] max-w-sm origin-bottom-right flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 sm:bottom-24 sm:right-5 ${
           open
             ? "scale-100 opacity-100"
             : "pointer-events-none scale-95 opacity-0"
