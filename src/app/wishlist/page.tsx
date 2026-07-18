@@ -56,13 +56,13 @@ export default function WishlistPage() {
         Sevimli mahsulotlar
       </h1>
       {loading ? (
-        <div className="product-grid grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="product-grid grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="aspect-[3/4] animate-pulse rounded-xl bg-slate-100" />
           ))}
         </div>
       ) : (
-        <div className="product-grid grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <div className="product-grid grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
           {products.map((product) => (
             <ProductCard key={product.id} product={product} />
           ))}

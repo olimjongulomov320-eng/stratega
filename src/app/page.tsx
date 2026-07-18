@@ -145,7 +145,7 @@ export default async function Home() {
         {popularProducts.length === 0 ? (
           <p className="text-slate-500">Hozircha mahsulotlar mavjud emas.</p>
         ) : (
-          <div className="product-grid grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+          <div className="product-grid grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
             {popularProducts.map((product) => (
               <ProductCard
                 key={product.id}

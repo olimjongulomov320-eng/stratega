@@ -161,7 +161,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
           <h2 className="mb-5 text-xl font-bold text-slate-800">
             O&apos;xshash mahsulotlar
           </h2>
-          <div className="product-grid grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="product-grid grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
             {relatedProducts.map((p) => (
               <ProductCard
                 key={p.id}

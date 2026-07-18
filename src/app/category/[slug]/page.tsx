@@ -79,7 +79,7 @@ export default async function CategoryPage(
               Ushbu filtrlarga mos mahsulot topilmadi.
             </p>
           ) : (
-            <div className="product-grid mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="product-grid mt-6 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
               {products.map((product) => (
                 <ProductCard
                   key={product.id}

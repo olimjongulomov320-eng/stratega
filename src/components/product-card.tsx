@@ -69,7 +69,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
               -{discountPercent}%
             </span>
           )}
-          <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-slate-50 p-6">
+          <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-slate-50 p-8">
             <div className="pointer-events-none absolute inset-0 scale-90 rounded-full bg-indigo-400/0 blur-2xl transition-all duration-500 group-hover:scale-110 group-hover:bg-indigo-400/20" />
             {product.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -127,20 +127,20 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-1.5 p-4">
+      <div className="flex flex-1 flex-col gap-2 p-5">
         <div className="flex items-baseline gap-2">
-          <span className="text-xl font-black text-slate-900">
+          <span className="text-2xl font-black text-slate-900">
             {formatSum(product.price)}
           </span>
           {product.oldPrice && (
-            <span className="text-xs text-slate-400 line-through">
+            <span className="text-sm text-slate-400 line-through">
               {formatSum(product.oldPrice)}
             </span>
           )}
         </div>
 
         <Link href={`/product/${product.slug}`}>
-          <h3 className="line-clamp-2 min-h-[2.5rem] text-sm text-slate-600 hover:text-indigo-600">
+          <h3 className="line-clamp-2 min-h-[3rem] text-base text-slate-600 hover:text-indigo-600">
             {product.name}
           </h3>
         </Link>
@@ -148,7 +148,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         <StarRating rating={product.rating} reviewCount={product.reviewCount} />
 
         <div className="mt-0.5 flex items-center gap-1.5 text-sm font-medium text-emerald-600">
-          <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2}>
+          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth={2}>
             <path d="M3 7h11v10H3zM14 10h4l3 3v4h-7z" strokeLinejoin="round" />
             <circle cx="7.5" cy="17.5" r="1.5" />
             <circle cx="17.5" cy="17.5" r="1.5" />
@@ -157,7 +157,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         </div>
 
         {product.soldCount > 0 && (
-          <span className="text-xs text-slate-400">
+          <span className="text-sm text-slate-400">
             {product.soldCount}+ sotilgan
           </span>
         )}
@@ -165,7 +165,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         <button
           onClick={handleAdd}
           disabled={outOfStock}
-          className="mt-2 w-full rounded-full bg-indigo-600 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
+          className="mt-3 w-full rounded-full bg-indigo-600 py-3 text-base font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
         >
           {outOfStock ? "Tugagan" : added ? "Qo'shildi ✓" : "Korzinaga qo'shish"}
         </button>
