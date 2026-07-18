@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRfq } from "@/lib/rfq-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import { SearchBox } from "@/components/search-box";
+import { LogoMark } from "@/components/logo-mark";
 
 export type HeaderCategory = {
   id: string;
@@ -51,8 +52,8 @@ export function Header({
               Yordam
             </Link>
             <span className="hidden text-slate-600 sm:inline">|</span>
-            <a href="tel:+998785555535" className="font-semibold text-white">
-              +998 78 555-55-35
+            <a href="tel:+998993011170" className="font-semibold text-white">
+              +998 99 301 11 70
             </a>
           </div>
         </div>
@@ -62,11 +63,9 @@ export function Header({
       <div className="border-b border-slate-100 bg-white shadow-sm">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6">
           <Link href="/" className="flex shrink-0 items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-lg font-black text-white">
-              S
-            </span>
+            <LogoMark className="h-9 w-9" />
             <span className="text-xl font-black tracking-tight text-slate-900">
-              Strateg<span className="text-indigo-600">a</span>
+              STRATEG<span className="text-indigo-600">A</span>
             </span>
           </Link>
 
@@ -167,7 +166,7 @@ export function Header({
           </Link>
 
           <a
-            href="tel:+998785555535"
+            href="tel:+998993011170"
             aria-label="Qo'ng'iroq qilish"
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white transition hover:bg-indigo-700 sm:hidden"
           >

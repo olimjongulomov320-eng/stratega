@@ -1,12 +1,12 @@
 const INDUSTRIES = [
-  { name: "Qurilish", image: "/products/betonomeshalka-500l.jpg" },
-  { name: "Sanoat va ishlab chiqarish", image: "/products/svarochny-apparat-invertor.jpg" },
-  { name: "Kommunal xizmatlar", image: "/products/moyka-vysokogo-davleniya-karcher.jpg" },
-  { name: "Qishloq xo'jaligi", image: "/products/motoblok-benzinovy.jpg" },
-  { name: "Gidravlik tizimlar", image: "/products/gidrostanciya-mobilnaya.jpg" },
-  { name: "Yo'l qurilishi", image: "/products/vibroplita-hcd90.jpg" },
-  { name: "Klining kompaniyalari", image: "/products/pylesos-promyshlenny-vodopyl.jpg" },
-  { name: "Bog' va landshaft", image: "/products/gazonokosilka-benzin-samohodnaya.jpg" },
+  { name: "Ombor va logistika", image: "/products/shtabeler-elektr-avtomat-35m.jpg" },
+  { name: "Ishlab chiqarish", image: "/products/shtabeler-elektr-avtomat-45m.jpg" },
+  { name: "Savdo va distribyutsiya", image: "/products/telejka-gidravlik-standart-120sm.jpg" },
+  { name: "Qadoqlash sanoati", image: "/products/telejka-gidravlik-rulon-180sm.jpg" },
+  { name: "Chakana savdo tarmoqlari", image: "/products/telejka-gidravlik-tarozili.jpg" },
+  { name: "Import-eksport terminallari", image: "/products/shtabeler-elektr-poluavtomat-3m.jpg" },
+  { name: "Qurilish materiallari ombori", image: "/products/shtabeler-gidravlik-qolda-16m.jpg" },
+  { name: "Sovutgichlar va omborxonalar", image: "/products/shtabeler-elektr-poluavtomat-16m.jpg" },
 ];
 
 export function IndustriesGrid() {

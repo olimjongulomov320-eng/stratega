@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { HeaderCategory } from "@/components/header";
+import { LogoMark } from "@/components/logo-mark";
 import {
   TelegramIcon,
   InstagramIcon,
@@ -20,16 +21,14 @@ export function Footer({ categories }: { categories: HeaderCategory[] }) {
       <div className="mx-auto grid max-w-7xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-base font-black text-white">
-              S
-            </span>
+            <LogoMark className="h-8 w-8" />
             <span className="text-lg font-black text-slate-900">
-              Strateg<span className="text-indigo-600">a</span>
+              STRATEG<span className="text-indigo-600">A</span>
             </span>
           </div>
           <p className="mt-3 text-sm text-slate-500">
-            Qurilish va sanoat texnikasi bo&apos;yicha B2B ta&apos;minot
-            platformasi. NDS, hujjatlar va shaxsiy menejer bilan.
+            Elektr shtabelerlar va gidravlik telejkalar ishlab chiqaruvchisi
+            va yetkazib beruvchisi. NDS, hujjatlar va kafolat bilan.
           </p>
           <div className="mt-4 flex gap-2">
             {FOOTER_SOCIALS.map((social) => (
@@ -100,7 +99,7 @@ export function Footer({ categories }: { categories: HeaderCategory[] }) {
             Aloqa
           </h4>
           <ul className="mt-3 space-y-2 text-sm text-slate-600">
-            <li>Tel: +998 90 123 45 67</li>
+            <li>Tel: +998 99 301 11 70</li>
             <li>Manzil: Toshkent sh., O&apos;zbekiston</li>
             <li>Ish vaqti: 09:00 – 21:00</li>
             <li>

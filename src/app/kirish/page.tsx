@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { sendOtp, verifyOtp } from "./actions";
+import { LogoMark } from "@/components/logo-mark";
 
 export default function KirishPage() {
   const router = useRouter();
@@ -49,11 +50,9 @@ export default function KirishPage() {
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-md flex-col justify-center px-4 py-16 sm:px-6">
       <div className="flex items-center gap-2 self-center">
-        <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-600 text-lg font-black text-white">
-          S
-        </span>
+        <LogoMark className="h-9 w-9" />
         <span className="text-xl font-black tracking-tight text-slate-900">
-          Strateg<span className="text-indigo-600">a</span>
+          STRATEG<span className="text-indigo-600">A</span>
         </span>
       </div>
 

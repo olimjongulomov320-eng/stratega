@@ -8,399 +8,134 @@ const adapter = new PrismaPg({
 const prisma = new PrismaClient({ adapter });
 
 const categories = [
-  { slug: "qurilish-texnikasi", name: "Qurilish texnikasi", icon: "🏗️", sortOrder: 1 },
-  { slug: "gidravlik-uskunalar", name: "Gidravlik uskunalar", icon: "🔧", sortOrder: 2 },
-  { slug: "klining-uskunalari", name: "Klining uskunalari", icon: "🧹", sortOrder: 3 },
-  { slug: "bog-texnikasi", name: "Bog' texnikasi", icon: "🌿", sortOrder: 4 },
+  {
+    slug: "elektr-shtabelerlar",
+    name: "Elektr shtabelerlar",
+    icon: "🏗️",
+    sortOrder: 1,
+  },
+  {
+    slug: "gidravlik-telejkalar",
+    name: "Gidravlik telejkalar",
+    icon: "🛠️",
+    sortOrder: 2,
+  },
 ];
 
 const products = [
-  // Qurilish texnikasi
+  // Elektr shtabelerlar
   {
-    slug: "betonomeshalka-200l",
-    name: "Betonomeshalka 200 litr, 220V",
+    slug: "shtabeler-elektr-avtomat-35m",
+    name: "Elektr shtabeler (avtomat), 2T / 3.5m",
     description:
-      "Kichik va o'rta hajmdagi qurilish ishlari uchun betonomeshalka. Hajmi 200 litr, elektr dvigatel bilan ishlaydi, ishonchli aralashtirish tizimi.",
-    price: 4200000,
-    categorySlug: "qurilish-texnikasi",
-    rating: 4.5,
-    reviewCount: 34,
-    soldCount: 58,
-    isFeatured: true,
-    stock: 12,
-  },
-  {
-    slug: "betonomeshalka-500l",
-    name: "Betonomeshalka 500 litr, dizel",
-    description:
-      "Katta hajmdagi qurilish obyektlari uchun professional betonomeshalka. Dizel dvigatel, mustahkam ramka, yuqori unumdorlik.",
-    price: 12500000,
-    oldPrice: 14000000,
-    categorySlug: "qurilish-texnikasi",
-    rating: 4.6,
-    reviewCount: 19,
-    soldCount: 27,
-    stock: 5,
-  },
-  {
-    slug: "vibroplita-hcd90",
-    name: "Vibroplita HCD90, 90 kg",
-    description:
-      "Yo'l va maydonchalarni zichlash uchun benzinli vibroplita. Og'irligi 90 kg, zichlash kuchi yuqori, boshqarish qulay.",
-    price: 8900000,
-    categorySlug: "qurilish-texnikasi",
-    rating: 4.4,
-    reviewCount: 22,
-    soldCount: 31,
-    stock: 8,
-  },
-  {
-    slug: "generator-diesel-5kvt",
-    name: "Dizel generator 5 kVt",
-    description:
-      "Qurilish maydonchalari uchun avtonom quvvat manbai. Uzluksiz ishlash rejimi, past yoqilg'i sarfi, tashqi muhitga chidamli korpus.",
-    price: 9800000,
-    categorySlug: "qurilish-texnikasi",
-    rating: 4.7,
-    reviewCount: 41,
-    soldCount: 63,
-    isFeatured: true,
-    stock: 15,
-  },
-  {
-    slug: "perforator-bosch-gbh",
-    name: "Perforator Bosch GBH 2-26",
-    description:
-      "Beton va g'ishtni teshish uchun professional perforator. 3 rejim (urish, burg'ulash, patronsiz urish), SDS-plus patron.",
-    price: 1850000,
-    categorySlug: "qurilish-texnikasi",
+      "To'liq avtomatik boshqaruvli elektr shtabeler. Yuk ko'tarish qobiliyati 2 tonna, ko'tarish balandligi 3.5 metr. Mustahkam va ishonchli konstruksiya, omborlar va logistika markazlari uchun ideal.",
+    price: 37500000,
+    categorySlug: "elektr-shtabelerlar",
     rating: 4.8,
-    reviewCount: 87,
-    soldCount: 210,
-    stock: 34,
-  },
-  {
-    slug: "ugloshlifmashina-bolgarka-230",
-    name: "Burchak silliqlagich (bolgarka) 230mm",
-    description:
-      "Metall va tosh materiallarni kesish, silliqlash uchun quvvatli burchak silliqlagich. Disk diametri 230mm, himoya qopqog'i bilan.",
-    price: 890000,
-    categorySlug: "qurilish-texnikasi",
-    rating: 4.5,
-    reviewCount: 56,
-    soldCount: 145,
-    stock: 40,
-  },
-  {
-    slug: "stroitelnye-lesa-komplekt",
-    name: "Qurilish tirgovuchlari (lesa) to'plami",
-    description:
-      "Fasad va ichki ishlar uchun yig'iladigan metall tirgovuchlar to'plami. Mustahkam, tez yig'iladi, yuqori yuk ko'tarish qobiliyati.",
-    price: 6500000,
-    categorySlug: "qurilish-texnikasi",
-    rating: 4.3,
-    reviewCount: 15,
-    soldCount: 22,
-    stock: 6,
-  },
-  {
-    slug: "svarochny-apparat-invertor",
-    name: "Payvandlash apparati (invertor), 250A",
-    description:
-      "Kompakt va quvvatli invertor payvandlash apparati. Qurilish va ta'mirlash ishlarida metall konstruksiyalarni payvandlash uchun.",
-    price: 2100000,
-    oldPrice: 2450000,
-    categorySlug: "qurilish-texnikasi",
-    rating: 4.6,
-    reviewCount: 48,
-    soldCount: 98,
-    stock: 20,
-  },
-  {
-    slug: "kompressor-vozdushny-100l",
-    name: "Havo kompressori, 100 litr",
-    description:
-      "Pnevmatik asboblar bilan ishlash uchun havo kompressori. Sig'imi 100 litr, yuqori bosim, uzluksiz ish rejimi.",
-    price: 3600000,
-    categorySlug: "qurilish-texnikasi",
-    rating: 4.4,
-    reviewCount: 29,
-    soldCount: 44,
-    stock: 10,
-  },
-
-  // Gidravlik uskunalar
-  {
-    slug: "gidravlichesky-domkrat-20t",
-    name: "Gidravlik domkrat 20 tonna",
-    description:
-      "Og'ir yuk texnikasi va sanoat uskunalarini ko'tarish uchun gidravlik domkrat. Yuk ko'tarish qobiliyati 20 tonna, mustahkam korpus.",
-    price: 1450000,
-    categorySlug: "gidravlik-uskunalar",
-    rating: 4.6,
-    reviewCount: 33,
-    soldCount: 52,
-    stock: 18,
-  },
-  {
-    slug: "gidronasos-shesterenny",
-    name: "Gidronasos (tishli), NSh-32",
-    description:
-      "Traktor va maxsus texnika uchun tishli gidronasos. Yuqori ishonchlilik, barqaror bosim, uzoq xizmat muddati.",
-    price: 2300000,
-    categorySlug: "gidravlik-uskunalar",
-    rating: 4.5,
-    reviewCount: 26,
-    soldCount: 38,
-    isFeatured: true,
-    stock: 14,
-  },
-  {
-    slug: "gidroraspredelitel-4sekc",
-    name: "Gidrotaqsimlagich, 4 seksiyali",
-    description:
-      "Gidravlik tizimlarda suyuqlik oqimini boshqarish uchun 4 seksiyali taqsimlagich. Ekskavator va yuk mashinalarida qo'llaniladi.",
-    price: 3200000,
-    categorySlug: "gidravlik-uskunalar",
-    rating: 4.4,
-    reviewCount: 18,
-    soldCount: 25,
-    stock: 9,
-  },
-  {
-    slug: "gidrocilindr-teleskop",
-    name: "Gidrosilindr (teleskopik), 4 bosqichli",
-    description:
-      "Samosval va maxsus texnika uchun teleskopik gidrosilindr. 4 bosqichli, yuqori bosimga chidamli, uzun xizmat muddati.",
-    price: 5400000,
-    categorySlug: "gidravlik-uskunalar",
-    rating: 4.5,
-    reviewCount: 21,
-    soldCount: 29,
-    stock: 7,
-  },
-  {
-    slug: "gidravlichesky-press-30t",
-    name: "Gidravlik pres, 30 tonna",
-    description:
-      "Ustaxona va ishlab chiqarish uchun gidravlik pres. Bosim kuchi 30 tonna, metall qismlarni to'g'irlash va shakllantirish uchun.",
-    price: 7800000,
-    oldPrice: 8900000,
-    categorySlug: "gidravlik-uskunalar",
-    rating: 4.7,
-    reviewCount: 24,
-    soldCount: 33,
-    stock: 6,
-  },
-  {
-    slug: "rukav-vysokogo-davleniya",
-    name: "Yuqori bosimli gidravlik shlang, 10m",
-    description:
-      "Gidravlik tizimlar uchun mustahkam yuqori bosimli shlang. Uzunligi 10 metr, metall armaturali, yuqori bosimga chidamli.",
-    price: 680000,
-    categorySlug: "gidravlik-uskunalar",
-    rating: 4.3,
-    reviewCount: 42,
-    soldCount: 76,
-    stock: 25,
-  },
-  {
-    slug: "gidrostanciya-mobilnaya",
-    name: "Mobil gidrostansiya, 380V",
-    description:
-      "Ko'chma gidravlik quvvat stansiyasi. Turli gidravlik asboblarni ishga tushirish uchun, ishonchli va samarali.",
-    price: 15800000,
-    categorySlug: "gidravlik-uskunalar",
-    rating: 4.6,
     reviewCount: 12,
-    soldCount: 17,
+    soldCount: 9,
+    isFeatured: true,
+    stock: 6,
+  },
+  {
+    slug: "shtabeler-elektr-avtomat-45m",
+    name: "Elektr shtabeler (avtomat, o'z yurar), 2T / 4.5m",
+    description:
+      "Samoxod (o'z yurar) elektr shtabeler, kuchaytirilgan va ishonchli konstruksiya. Yuk ko'tarish qobiliyati 2 tonna, ko'tarish balandligi 4.5 metr — baland stellajli omborlar uchun.",
+    price: 44800000,
+    categorySlug: "elektr-shtabelerlar",
+    rating: 4.9,
+    reviewCount: 7,
+    soldCount: 5,
+    isFeatured: true,
     stock: 3,
   },
-
-  // Klining uskunalari
   {
-    slug: "moyka-vysokogo-davleniya-karcher",
-    name: "Yuqori bosimli yuvish moslamasi (Karcher tipi)",
+    slug: "shtabeler-elektr-poluavtomat-3m",
+    name: "Elektr shtabeler (pol avtomat), 2T / 3m",
     description:
-      "Avtomobil, fasad va maydonchalarni tozalash uchun yuqori bosimli yuvish moslamasi. Kuchli bosim, qulay boshqaruv.",
-    price: 2450000,
-    categorySlug: "klining-uskunalari",
-    rating: 4.7,
-    reviewCount: 68,
-    soldCount: 134,
-    isFeatured: true,
-    stock: 22,
-  },
-  {
-    slug: "parogenerator-promyshlenny",
-    name: "Sanoat bug' generatori",
-    description:
-      "Chuqur tozalash uchun professional bug' generatori. Kimyoviy vositasiz gigienik tozalash, restoran va mehmonxonalar uchun ideal.",
-    price: 3900000,
-    categorySlug: "klining-uskunalari",
-    rating: 4.5,
-    reviewCount: 27,
-    soldCount: 39,
-    stock: 11,
-  },
-  {
-    slug: "pylesos-promyshlenny-vodopyl",
-    name: "Sanoat changyutgichi (quruq/ho'l)",
-    description:
-      "Ofis, ombor va ishlab chiqarish maydonlarini tozalash uchun kuchli sanoat changyutgichi. Ham quruq, ham ho'l tozalash rejimi.",
-    price: 1980000,
-    categorySlug: "klining-uskunalari",
+      "Pol avtomatik boshqaruvli elektr shtabeler. Yuk ko'tarish qobiliyati 2 tonna, ko'tarish balandligi 3 metr. Mustahkam va ishonchli konstruksiya, qulay narxda samarali yechim.",
+    price: 19710000,
+    categorySlug: "elektr-shtabelerlar",
     rating: 4.6,
-    reviewCount: 45,
-    soldCount: 87,
-    stock: 19,
-  },
-  {
-    slug: "polotermash-odnodiskovaya",
-    name: "Pol yuvish-siyllatish mashinasi (bir diskli)",
-    description:
-      "Katta maydonli pollarni yuvish va silliqlash uchun professional mashina. Ofis binolari, savdo markazlari uchun mos.",
-    price: 4600000,
-    categorySlug: "klining-uskunalari",
-    rating: 4.4,
-    reviewCount: 16,
-    soldCount: 23,
+    reviewCount: 15,
+    soldCount: 11,
     stock: 8,
   },
   {
-    slug: "kartrigi-filtry-dlya-pylesosa",
-    name: "Sanoat changyutgichi uchun filtr to'plami",
+    slug: "shtabeler-elektr-poluavtomat-16m",
+    name: "Elektr shtabeler (pol avtomat), 2T / 1.6m",
     description:
-      "Sanoat changyutgichlari uchun almashtiriladigan HEPA filtr to'plami. Yuqori changni tutish samaradorligi.",
-    price: 280000,
-    categorySlug: "klining-uskunalari",
-    rating: 4.3,
-    reviewCount: 38,
-    soldCount: 112,
-    stock: 60,
-  },
-  {
-    slug: "moyushiy-pylesos-ekstraktor",
-    name: "Yuvish-ekstraktor changyutgichi",
-    description:
-      "Gilam va yumshoq mebelni chuqur tozalash uchun yuvish-ekstraktor turi changyutgich. Suv purkash va so'rish funksiyasi birlashgan.",
-    price: 5200000,
-    oldPrice: 5900000,
-    categorySlug: "klining-uskunalari",
+      "Kompakt pol avtomatik elektr shtabeler. Yuk ko'tarish qobiliyati 2 tonna, ko'tarish balandligi 1.6 metr. Tor joylarda va kichik omborlarda ishlash uchun qulay.",
+    price: 16900000,
+    categorySlug: "elektr-shtabelerlar",
     rating: 4.5,
-    reviewCount: 21,
-    soldCount: 28,
+    reviewCount: 9,
+    soldCount: 8,
     stock: 7,
   },
 
-  // Bog' texnikasi
+  // Gidravlik telejkalar
   {
-    slug: "gazonokosilka-benzin-samohodnaya",
-    name: "Benzinli o'z yurar gazonokosilka",
+    slug: "shtabeler-gidravlik-qolda-16m",
+    name: "Qo'l gidravlik shtabeler, 2T / 1.60m",
     description:
-      "Katta maydonli gazonlarni parvarish qilish uchun o'z yurar gazonokosilka. Kesish kengligi keng, quvvatli dvigatel.",
-    price: 4800000,
-    categorySlug: "bog-texnikasi",
-    rating: 4.6,
-    reviewCount: 39,
-    soldCount: 61,
+      "Qo'lda boshqariladigan gidravlik shtabeler. Yuk ko'tarish qobiliyati 2 tonna, ko'tarish balandligi 1.60 metr. Sifatli gidravlika, oson harakatlanish, elektr manbasiz ishlaydi.",
+    price: 9220000,
+    categorySlug: "gidravlik-telejkalar",
+    rating: 4.7,
+    reviewCount: 18,
+    soldCount: 14,
     isFeatured: true,
-    stock: 16,
+    stock: 10,
   },
   {
-    slug: "trimmer-benzinovy-sadovy",
-    name: "Benzinli bog' trimmeri (o'roq)",
+    slug: "telejka-gidravlik-rulon-180sm",
+    name: "Gidravlik telejka rulon uchun, 3T / 180sm",
     description:
-      "O't va butazorlarni kesish uchun qulay va yengil benzinli trimmer. Qiyin joylarda ham samarali ishlaydi.",
-    price: 1650000,
-    categorySlug: "bog-texnikasi",
-    rating: 4.5,
-    reviewCount: 54,
-    soldCount: 103,
-    stock: 28,
-  },
-  {
-    slug: "motoblok-benzinovy",
-    name: "Benzinli motoblok",
-    description:
-      "Yer haydash, urug' ekish va boshqa dala ishlari uchun universal motoblok. Turli qo'shimcha jihozlar bilan mos.",
-    price: 9200000,
-    categorySlug: "bog-texnikasi",
-    rating: 4.4,
-    reviewCount: 23,
-    soldCount: 34,
-    stock: 9,
-  },
-  {
-    slug: "kustorez-akkumulyatorny",
-    name: "Akkumulyatorli buta kesgich",
-    description:
-      "Bog' va shiplarni tekis kesish uchun simsiz, akkumulyatorli buta kesgich. Yengil, shovqinsiz, ishlatish qulay.",
-    price: 1250000,
-    categorySlug: "bog-texnikasi",
-    rating: 4.5,
-    reviewCount: 31,
-    soldCount: 48,
-    stock: 20,
-  },
-  {
-    slug: "motopompa-dlya-poliva",
-    name: "Sug'orish uchun motopompa",
-    description:
-      "Bog' va dalalarni sug'orish uchun benzinli motopompa. Yuqori unumdorlik, uzoq quvurlarga suv uzata oladi.",
-    price: 2850000,
-    categorySlug: "bog-texnikasi",
+      "Rulon materiallarni tashish uchun maxsus konstruksiyali gidravlik telejka. Yuk ko'tarish qobiliyati 3 tonna, vilka uzunligi 180 sm. Qo'l gidravlik boshqaruv.",
+    price: 8320000,
+    categorySlug: "gidravlik-telejkalar",
     rating: 4.6,
-    reviewCount: 28,
-    soldCount: 42,
+    reviewCount: 11,
+    soldCount: 9,
     stock: 12,
   },
   {
-    slug: "cepnaya-pila-benzin",
-    name: "Benzinli zanjirli arra",
+    slug: "telejka-gidravlik-tarozili",
+    name: "Gidravlik telejka elektron tarozi bilan, 3T",
     description:
-      "Daraxtlarni kesish va yog'och tayyorlash uchun quvvatli zanjirli arra. Xavfsizlik tormozi, qulay tutqich.",
-    price: 2100000,
-    oldPrice: 2400000,
-    categorySlug: "bog-texnikasi",
+      "Elektron tarozi bilan jihozlangan gidravlik telejka. Yuk ko'tarish qobiliyati 3 tonna, yuklarni tashish jarayonida vaznini aniq o'lchash imkoniyati.",
+    price: 5760000,
+    oldPrice: 6400000,
+    categorySlug: "gidravlik-telejkalar",
     rating: 4.7,
-    reviewCount: 47,
-    soldCount: 79,
-    stock: 17,
-  },
-  {
-    slug: "opryskivatel-sadovy-16l",
-    name: "Bog' purkagichi, 16 litr",
-    description:
-      "O'simliklarni himoya qilish vositalari bilan ishlov berish uchun orqaga osiladigan purkagich. Sig'imi 16 litr, qulay nasos.",
-    price: 340000,
-    categorySlug: "bog-texnikasi",
-    rating: 4.3,
-    reviewCount: 62,
-    soldCount: 158,
-    stock: 45,
-  },
-  {
-    slug: "snegouborshik-benzinovy",
-    name: "Benzinli qor tozalagich",
-    description:
-      "Hovli va yo'lkalardagi qorni tez va samarali tozalash uchun benzinli qor tozalagich. Qishki mavsum uchun zarur uskuna.",
-    price: 8600000,
-    categorySlug: "bog-texnikasi",
-    rating: 4.4,
     reviewCount: 14,
-    soldCount: 19,
-    stock: 5,
+    soldCount: 16,
+    isFeatured: true,
+    stock: 9,
+  },
+  {
+    slug: "telejka-gidravlik-standart-120sm",
+    name: "Gidravlik telejka (rohlya), 3T / 120sm",
+    description:
+      "Standart qo'l gidravlik telejka (rohlya). Yuk ko'tarish qobiliyati 3 tonna, vilka uzunligi 120 sm. Mustahkam va ishonchli konstruksiya, ombor va do'konlar uchun.",
+    price: 1920000,
+    categorySlug: "gidravlik-telejkalar",
+    rating: 4.5,
+    reviewCount: 23,
+    soldCount: 27,
+    stock: 20,
   },
 ];
 
 async function main() {
+  await prisma.rfqItem.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.category.deleteMany();
+
   for (const category of categories) {
-    await prisma.category.upsert({
-      where: { slug: category.slug },
-      update: category,
-      create: category,
-    });
+    await prisma.category.create({ data: category });
   }
 
   const categoryMap = new Map(
@@ -411,14 +146,8 @@ async function main() {
     const categoryId = categoryMap.get(categorySlug);
     if (!categoryId) throw new Error(`Unknown category: ${categorySlug}`);
 
-    await prisma.product.upsert({
-      where: { slug: product.slug },
-      update: {
-        ...product,
-        categoryId,
-        imageUrl: `/products/${product.slug}.jpg`,
-      },
-      create: {
+    await prisma.product.create({
+      data: {
         ...product,
         categoryId,
         imageUrl: `/products/${product.slug}.jpg`,

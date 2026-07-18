@@ -49,7 +49,7 @@ export default async function Home() {
           className="absolute inset-0 opacity-20"
           style={{
             backgroundImage:
-              "linear-gradient(rgba(99,102,241,0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(99,102,241,0.4) 1px, transparent 1px)",
+              "linear-gradient(rgba(220,38,38,0.35) 1px, transparent 1px), linear-gradient(90deg, rgba(220,38,38,0.35) 1px, transparent 1px)",
             backgroundSize: "48px 48px",
           }}
         />
@@ -59,13 +59,13 @@ export default async function Home() {
               ● B2B ta&apos;minot platformasi
             </span>
             <h1 className="mt-5 text-4xl font-black leading-tight tracking-tight text-white sm:text-5xl">
-              Qurilish va sanoat texnikasi{" "}
-              <span className="text-indigo-400">biznes va loyihalar</span>{" "}
+              Elektr shtabelerlar va gidravlik telejkalar{" "}
+              <span className="text-indigo-400">ombor va biznesingiz</span>{" "}
               uchun
             </h1>
             <p className="mt-4 max-w-xl text-lg text-slate-300">
-              Ob&apos;ektlarni komplektlaymiz. NDS, hujjatlar to&apos;liq
-              paketi va spetsifikatsiya bo&apos;yicha yetkazib berish bilan
+              Omborlarni jihozlaymiz. NDS, hujjatlar to&apos;liq paketi,
+              kafolat va spetsifikatsiya bo&apos;yicha yetkazib berish bilan
               ishlaymiz.
             </p>
 
@@ -86,12 +86,12 @@ export default async function Home() {
 
             <div className="mt-10 flex flex-wrap gap-8">
               <div>
-                <p className="text-3xl font-black text-white">200+</p>
-                <p className="text-sm text-slate-400">mijoz-kompaniyalar</p>
+                <p className="text-3xl font-black text-white">2000+</p>
+                <p className="text-sm text-slate-400">sotilgan texnika</p>
               </div>
               <div>
-                <p className="text-3xl font-black text-white">30+</p>
-                <p className="text-sm text-slate-400">uskuna turi</p>
+                <p className="text-3xl font-black text-white">12 oy</p>
+                <p className="text-sm text-slate-400">kafolat</p>
               </div>
               <div>
                 <p className="text-3xl font-black text-white">NDS</p>

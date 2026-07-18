@@ -2,10 +2,8 @@ import Link from "next/link";
 import type { HeaderCategory } from "@/components/header";
 
 const CATEGORY_COVER: Record<string, string> = {
-  "qurilish-texnikasi": "/products/betonomeshalka-200l.jpg",
-  "gidravlik-uskunalar": "/products/gidravlichesky-press-30t.jpg",
-  "klining-uskunalari": "/products/moyka-vysokogo-davleniya-karcher.jpg",
-  "bog-texnikasi": "/products/gazonokosilka-benzin-samohodnaya.jpg",
+  "elektr-shtabelerlar": "/products/shtabeler-elektr-avtomat-35m.jpg",
+  "gidravlik-telejkalar": "/products/shtabeler-gidravlik-qolda-16m.jpg",
 };
 
 const TRUST_BADGES = [
@@ -37,11 +35,10 @@ export function WhyUsSection({
         Nima uchun bizdan komplektlaysiz
       </h2>
       <p className="mt-1 text-slate-500">
-        Qurilish, ishlab chiqarish va ekspluatatsiya uchun professional
-        assortiment
+        Ombor va logistika uchun professional yuk ko&apos;tarish texnikasi
       </p>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {categories.map((cat) => (
           <Link
             key={cat.id}
@@ -51,7 +48,7 @@ export function WhyUsSection({
             <div className="aspect-[4/3] overflow-hidden">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={CATEGORY_COVER[cat.slug] ?? "/products/perforator-bosch-gbh.jpg"}
+                src={CATEGORY_COVER[cat.slug] ?? "/products/shtabeler-elektr-avtomat-35m.jpg"}
                 alt={cat.name}
                 className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
               />

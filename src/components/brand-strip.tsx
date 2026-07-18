@@ -1,52 +1,42 @@
-type Brand = {
-  name: string;
-  font: string;
-  color: string;
-  tracking?: string;
-  italic?: boolean;
+type Badge = {
+  icon: string;
+  title: string;
+  subtitle: string;
 };
 
-const BRANDS: Brand[] = [
-  { name: "BOSCH", font: "font-black", color: "#e2001a", tracking: "tracking-tight" },
-  { name: "Makita", font: "font-black italic", color: "#0089cf", italic: true },
-  { name: "Kärcher", font: "font-black", color: "#ffb200" },
-  { name: "HONDA", font: "font-black", color: "#cc0000", tracking: "tracking-wide" },
-  { name: "DEWALT", font: "font-black", color: "#febd17", tracking: "tracking-tight" },
-  { name: "HUSQVARNA", font: "font-bold", color: "#273a90", tracking: "tracking-wide" },
-  { name: "STIHL", font: "font-black", color: "#ff6600", tracking: "tracking-tight" },
-  { name: "HITACHI", font: "font-black", color: "#e60027", tracking: "tracking-wide" },
+const BADGES: Badge[] = [
+  { icon: "✅", title: "CE sertifikati", subtitle: "Xalqaro xavfsizlik standarti" },
+  { icon: "🛡️", title: "12 oy kafolat", subtitle: "Barcha shtabelerlarga" },
+  { icon: "🔧", title: "Original ehtiyot qismlar", subtitle: "Doimiy mavjud" },
+  { icon: "📍", title: "Toshkentda servis markazi", subtitle: "Tez texnik xizmat" },
+  { icon: "🚚", title: "O'zbekiston bo'ylab yetkazib berish", subtitle: "Barcha viloyatlarga" },
+  { icon: "💯", title: "2000+ dona sotilgan", subtitle: "Ishonchli tajriba" },
 ];
 
-function BrandLogo({ brand }: { brand: Brand }) {
+function BadgeCard({ badge }: { badge: Badge }) {
   return (
-    <div
-      className={`flex h-16 w-40 shrink-0 items-center justify-center rounded-xl bg-white px-6 shadow-sm ring-1 ring-slate-100 transition duration-300 hover:-translate-y-1 hover:shadow-md ${brand.tracking ?? ""}`}
-    >
-      <span
-        className={`${brand.font} text-lg`}
-        style={{
-          color: brand.color,
-          fontStyle: brand.italic ? "italic" : "normal",
-        }}
-      >
-        {brand.name}
-      </span>
+    <div className="flex h-24 w-64 shrink-0 items-center gap-3 rounded-xl bg-white px-5 shadow-sm ring-1 ring-slate-100 transition duration-300 hover:-translate-y-1 hover:shadow-md">
+      <span className="text-2xl">{badge.icon}</span>
+      <div>
+        <p className="text-sm font-bold text-slate-800">{badge.title}</p>
+        <p className="text-xs text-slate-500">{badge.subtitle}</p>
+      </div>
     </div>
   );
 }
 
 export function BrandStrip() {
-  const loop = [...BRANDS, ...BRANDS];
+  const loop = [...BADGES, ...BADGES];
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
-      <p className="mb-3 text-sm text-slate-500">Ishonchli brendlar</p>
+      <p className="mb-3 text-sm text-slate-500">Sifat va kafolat</p>
       <div className="relative overflow-hidden rounded-2xl bg-slate-50 py-6">
         <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-16 bg-gradient-to-r from-slate-50 to-transparent" />
         <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-16 bg-gradient-to-l from-slate-50 to-transparent" />
         <div className="brand-marquee flex w-max gap-4 px-4">
-          {loop.map((brand, i) => (
-            <BrandLogo key={`${brand.name}-${i}`} brand={brand} />
+          {loop.map((badge, i) => (
+            <BadgeCard key={`${badge.title}-${i}`} badge={badge} />
           ))}
         </div>
       </div>

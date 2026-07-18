@@ -15,9 +15,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Stratega — qurilish va sanoat texnikasi",
+  title: "Stratega — elektr shtabelerlar va gidravlik telejkalar",
   description:
-    "Stratega — qurilish texnikasi, gidravlik uskunalar, klining va bog' texnikasini qulay narxlarda onlayn buyurtma qiling.",
+    "Stratega — elektr shtabelerlar va gidravlik telejkalarni (rohlyalarni) kafolat bilan qulay narxlarda onlayn buyurtma qiling.",
 };
 
 export default async function RootLayout({

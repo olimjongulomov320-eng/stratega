@@ -18,8 +18,8 @@ export default function ContactsPage() {
           <ul className="flex flex-col gap-2.5 text-slate-600">
             <li>
               <span className="text-slate-400">Telefon: </span>
-              <a href="tel:+998901234567" className="text-indigo-600 hover:underline">
-                +998 90 123 45 67
+              <a href="tel:+998993011170" className="text-indigo-600 hover:underline">
+                +998 99 301 11 70
               </a>
             </li>
             <li>

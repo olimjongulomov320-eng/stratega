@@ -27,7 +27,7 @@ export function OrderFlowShowcase() {
           className="pointer-events-none absolute inset-0 opacity-10"
           style={{
             backgroundImage:
-              "radial-gradient(circle at 20% 20%, #6366f1 0, transparent 45%), radial-gradient(circle at 80% 80%, #6366f1 0, transparent 45%)",
+              "radial-gradient(circle at 20% 20%, #dc2626 0, transparent 45%), radial-gradient(circle at 80% 80%, #dc2626 0, transparent 45%)",
           }}
         />
         <div className="relative">
