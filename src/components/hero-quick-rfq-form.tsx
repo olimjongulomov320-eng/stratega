@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { submitQuickRfq } from "@/app/rfq-hero-actions";
+import { submitQuickRfq } from "@/app/(site)/rfq-hero-actions";
 
 export function HeroQuickRfqForm() {
   const [companyName, setCompanyName] = useState("");

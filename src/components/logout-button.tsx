@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
-import { logout } from "@/app/kirish/actions";
+import { logout } from "@/app/(site)/kirish/actions";
 
 export function LogoutButton() {
   const router = useRouter();
