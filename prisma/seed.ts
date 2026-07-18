@@ -150,7 +150,7 @@ async function main() {
       data: {
         ...product,
         categoryId,
-        imageUrl: `/products/${product.slug}.jpg`,
+        imageUrl: `/products/${product.slug}.png`,
       },
     });
   }

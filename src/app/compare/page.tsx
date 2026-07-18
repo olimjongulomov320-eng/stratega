@@ -107,7 +107,7 @@ export default function ComparePage() {
                 <th className="w-32" />
                 {products.map((p) => (
                   <th key={p.id} className="p-3 text-left align-top">
-                    <div className="relative flex aspect-square w-full max-w-[160px] items-center justify-center rounded-xl bg-slate-50">
+                    <div className="relative flex aspect-square w-full max-w-[160px] items-center justify-center rounded-xl bg-slate-50 p-4">
                       <button
                         onClick={() => remove(p.id)}
                         aria-label="Olib tashlash"
@@ -117,7 +117,7 @@ export default function ComparePage() {
                       </button>
                       {p.imageUrl ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={p.imageUrl} alt={p.name} className="h-full w-full rounded-xl object-cover" />
+                        <img src={p.imageUrl} alt={p.name} className="h-full w-full object-contain" />
                       ) : (
                         <span className="text-3xl">📦</span>
                       )}

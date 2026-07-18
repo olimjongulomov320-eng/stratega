@@ -86,13 +86,13 @@ export default function KorzinaPage() {
       <ul className="mt-6 divide-y divide-slate-100 rounded-2xl border border-slate-200">
         {items.map((item) => (
           <li key={item.productId} className="flex items-center gap-4 p-4">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-50">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-50 p-1.5">
               {item.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={item.imageUrl}
                   alt={item.name}
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain"
                 />
               ) : (
                 <span className="text-2xl">📦</span>

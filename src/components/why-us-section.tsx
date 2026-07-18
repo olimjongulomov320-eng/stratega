@@ -2,8 +2,8 @@ import Link from "next/link";
 import type { HeaderCategory } from "@/components/header";
 
 const CATEGORY_COVER: Record<string, string> = {
-  "elektr-shtabelerlar": "/products/shtabeler-elektr-avtomat-35m.jpg",
-  "gidravlik-telejkalar": "/products/shtabeler-gidravlik-qolda-16m.jpg",
+  "elektr-shtabelerlar": "/products/shtabeler-elektr-avtomat-35m.png",
+  "gidravlik-telejkalar": "/products/shtabeler-gidravlik-qolda-16m.png",
 };
 
 const TRUST_BADGES = [
@@ -45,12 +45,12 @@ export function WhyUsSection({
             href={`/category/${cat.slug}`}
             className="group overflow-hidden rounded-xl border border-slate-200 bg-slate-50 transition hover:border-indigo-300 hover:shadow-md"
           >
-            <div className="aspect-[4/3] overflow-hidden">
+            <div className="aspect-[4/3] overflow-hidden bg-slate-100">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src={CATEGORY_COVER[cat.slug] ?? "/products/shtabeler-elektr-avtomat-35m.jpg"}
+                src={CATEGORY_COVER[cat.slug] ?? "/products/shtabeler-elektr-avtomat-35m.png"}
                 alt={cat.name}
-                className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                className="h-full w-full object-contain p-6 transition duration-300 group-hover:scale-105"
               />
             </div>
             <div className="p-4">

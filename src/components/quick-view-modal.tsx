@@ -94,13 +94,13 @@ export function QuickViewModal() {
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2">
-            <div className="flex aspect-square items-center justify-center rounded-xl bg-slate-50">
+            <div className="flex aspect-square items-center justify-center rounded-xl bg-slate-50 p-6">
               {product.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={product.imageUrl}
                   alt={product.name}
-                  className="h-full w-full rounded-xl object-cover"
+                  className="h-full w-full object-contain"
                 />
               ) : (
                 <span className="text-5xl">📦</span>

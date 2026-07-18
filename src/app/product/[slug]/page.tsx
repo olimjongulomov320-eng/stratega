@@ -53,7 +53,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
       </nav>
 
       <div className="grid gap-10 md:grid-cols-2">
-        <div className="relative flex aspect-square items-center justify-center rounded-2xl bg-slate-50">
+        <div className="relative flex aspect-square items-center justify-center rounded-2xl bg-slate-50 p-10">
           {discountPercent !== null && (
             <span className="absolute left-4 top-4 rounded-md bg-rose-500 px-2.5 py-1 text-sm font-bold text-white">
               -{discountPercent}%
@@ -64,7 +64,7 @@ export default async function ProductPage(props: PageProps<"/product/[slug]">) {
             <img
               src={product.imageUrl}
               alt={product.name}
-              className="h-full w-full rounded-2xl object-cover"
+              className="h-full w-full object-contain"
             />
           ) : (
             <span className="text-6xl">📦</span>

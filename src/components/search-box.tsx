@@ -148,10 +148,10 @@ export function SearchBox({ mobile = false }: { mobile?: boolean }) {
                           activeIndex === idx ? "bg-indigo-50" : "hover:bg-slate-50"
                         }`}
                       >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-50">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-50 p-0.5">
                           {p.imageUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={p.imageUrl} alt={p.name} className="h-full w-full rounded-lg object-cover" />
+                            <img src={p.imageUrl} alt={p.name} className="h-full w-full object-contain" />
                           ) : (
                             <span className="text-lg">📦</span>
                           )}
