@@ -2,6 +2,8 @@ import Link from "next/link";
 import { LogoMark } from "@/components/logo-mark";
 import { AdminLogoutButton } from "./logout-button";
 
+export const dynamic = "force-dynamic";
+
 const NAV_ITEMS = [
   { href: "/admin", label: "Bosh sahifa" },
   { href: "/admin/products", label: "Mahsulotlar" },
