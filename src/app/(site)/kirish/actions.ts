@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { generateOtpCode, normalizePhone, createSession, clearSession } from "@/lib/auth";
+import { sendSms, isSmsConfigured } from "@/lib/sms";
 
 const OTP_TTL_MINUTES = 5;
 
@@ -22,9 +23,20 @@ export async function sendOtp(rawPhone: string): Promise<SendOtpResult> {
     data: { phone, code, expiresAt },
   });
 
-  // NOTE: haqiqiy SMS integratsiyasi (masalan Eskiz.uz) hali ulanmagan.
-  // Demo maqsadida kod javobda qaytariladi — production uchun SMS yuborish kerak.
-  return { ok: true, devCode: code };
+  if (!isSmsConfigured()) {
+    // Demo rejimi: SMS ulanmagan, kod javobda qaytariladi.
+    return { ok: true, devCode: code };
+  }
+
+  const smsResult = await sendSms(
+    phone,
+    `Stratega tasdiqlash kodi: ${code}`
+  );
+  if (!smsResult.ok) {
+    return { ok: false, error: smsResult.error };
+  }
+
+  return { ok: true };
 }
 
 export type VerifyOtpResult =
