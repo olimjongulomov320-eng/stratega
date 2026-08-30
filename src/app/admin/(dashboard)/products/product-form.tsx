@@ -10,12 +10,14 @@ type ProductFormProps = {
   categories: CategoryOption[];
   productId?: string;
   initialValues?: Partial<ProductInput>;
+  isMoySkladSynced?: boolean;
 };
 
 export function ProductForm({
   categories,
   productId,
   initialValues,
+  isMoySkladSynced = false,
 }: ProductFormProps) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -117,17 +119,35 @@ export function ProductForm({
     }
   }
 
+  const syncedFieldClass = isMoySkladSynced
+    ? "w-full rounded-lg border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-500 outline-none cursor-not-allowed"
+    : "w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-indigo-400";
+
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      {isMoySkladSynced && (
+        <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-700">
+          Bu mahsulot MoySklad bilan sinxronlangan. Nomi, narxi, ombordagi
+          soni va rasmi u yerdan avtomatik yangilanadi. Bu yerda faqat
+          tavsif, kategoriya va ko&apos;rinishni tahrirlashingiz mumkin.
+        </div>
+      )}
+
       <div className="grid gap-5 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-slate-700">
             Mahsulot nomi
+            {isMoySkladSynced && (
+              <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600">
+                MoySklad&apos;dan
+              </span>
+            )}
           </label>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-indigo-400"
+            disabled={isMoySkladSynced}
+            className={syncedFieldClass}
           />
         </div>
 
@@ -144,14 +164,20 @@ export function ProductForm({
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-slate-700">
             Narx (so&apos;m)
+            {isMoySkladSynced && (
+              <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600">
+                MoySklad&apos;dan
+              </span>
+            )}
           </label>
           <input
             type="number"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-indigo-400"
+            disabled={isMoySkladSynced}
+            className={syncedFieldClass}
           />
         </div>
 
@@ -185,20 +211,31 @@ export function ProductForm({
         </div>
 
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-slate-700">
             Ombordagi soni
+            {isMoySkladSynced && (
+              <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600">
+                MoySklad&apos;dan
+              </span>
+            )}
           </label>
           <input
             type="number"
             value={stock}
             onChange={(e) => setStock(e.target.value)}
-            className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-indigo-400"
+            disabled={isMoySkladSynced}
+            className={syncedFieldClass}
           />
         </div>
 
         <div className="sm:col-span-2">
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+          <label className="mb-1.5 flex items-center gap-2 text-sm font-medium text-slate-700">
             Mahsulot rasmi
+            {isMoySkladSynced && (
+              <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600">
+                MoySklad&apos;dan
+              </span>
+            )}
           </label>
           <div className="flex items-center gap-4">
             <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50">
@@ -213,19 +250,21 @@ export function ProductForm({
                 <span className="text-3xl">📦</span>
               )}
             </div>
-            <div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                disabled={uploading}
-                className="text-sm text-slate-600 file:mr-3 file:rounded-full file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-600 hover:file:bg-indigo-100"
-              />
-              {uploading && (
-                <p className="mt-1 text-xs text-slate-400">Yuklanmoqda...</p>
-              )}
-            </div>
+            {!isMoySkladSynced && (
+              <div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  disabled={uploading}
+                  className="text-sm text-slate-600 file:mr-3 file:rounded-full file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-indigo-600 hover:file:bg-indigo-100"
+                />
+                {uploading && (
+                  <p className="mt-1 text-xs text-slate-400">Yuklanmoqda...</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

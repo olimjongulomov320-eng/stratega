@@ -39,6 +39,25 @@ model Product {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   rfqItems      RfqItem[]
+
+  // MoySklad integratsiyasi
+  moySkladId        String?   @unique // MoySklad'dagi tovar id (UUID)
+  moySkladCode      String? // artikul, faqat admin uchun
+  moySkladUpdatedAt DateTime? // MoySklad'dagi `updated` maydoni — o'zgarmagan bo'lsa qayta yozmaslik uchun
+  lastSyncedAt      DateTime?
+}
+
+model IntegrationSettings {
+  id              String    @id @default(cuid())
+  provider        String    @unique // "moysklad"
+  apiToken        String?
+  priceTypeName   String? // MoySklad'dagi narx turi nomi ("Цена продажи" kabi)
+  isEnabled       Boolean   @default(false)
+  lastSyncAt      DateTime?
+  lastSyncStatus  String? // "SUCCESS" | "ERROR" | "RUNNING"
+  lastSyncError   String?
+  lastSyncSummary Json?
+  updatedAt       DateTime  @updatedAt
 }
 
 model User {

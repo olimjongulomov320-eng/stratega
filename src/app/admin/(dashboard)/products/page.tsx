@@ -61,15 +61,22 @@ export default async function AdminProductsPage() {
                 </td>
                 <td className="px-4 py-3 text-slate-600">{product.stock}</td>
                 <td className="px-4 py-3">
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                      product.isActive
-                        ? "bg-emerald-50 text-emerald-700"
-                        : "bg-slate-100 text-slate-500"
-                    }`}
-                  >
-                    {product.isActive ? "Faol" : "Nofaol"}
-                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                        product.isActive
+                          ? "bg-emerald-50 text-emerald-700"
+                          : "bg-slate-100 text-slate-500"
+                      }`}
+                    >
+                      {product.isActive ? "Faol" : "Nofaol"}
+                    </span>
+                    {product.moySkladId && !product.isActive && (
+                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                        Yangi — tekshiring
+                      </span>
+                    )}
+                  </div>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-2">

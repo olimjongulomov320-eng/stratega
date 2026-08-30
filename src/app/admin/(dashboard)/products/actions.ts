@@ -81,16 +81,27 @@ export async function updateProduct(
   if (!input.categoryId) return { ok: false, error: "Kategoriyani tanlang." };
   if (input.price <= 0) return { ok: false, error: "Narx noto'g'ri." };
 
+  const existing = await prisma.product.findUnique({
+    where: { id: productId },
+    select: { moySkladId: true, name: true, price: true, stock: true, imageUrl: true },
+  });
+  if (!existing) return { ok: false, error: "Mahsulot topilmadi." };
+
+  const isMoySkladSynced = existing.moySkladId !== null;
+
   await prisma.product.update({
     where: { id: productId },
     data: {
-      name,
+      // MoySklad bilan sinxronlangan mahsulotlarda nomi, narxi, ombordagi
+      // soni va rasmi faqat sinxronizatsiya orqali yangilanadi — disabled
+      // formani chetlab o'tishga urinishlardan himoya.
+      name: isMoySkladSynced ? existing.name : name,
       description: input.description.trim(),
-      price: input.price,
+      price: isMoySkladSynced ? existing.price : input.price,
       oldPrice: input.oldPrice,
-      imageUrl: input.imageUrl,
+      imageUrl: isMoySkladSynced ? existing.imageUrl : input.imageUrl,
       categoryId: input.categoryId,
-      stock: input.stock,
+      stock: isMoySkladSynced ? existing.stock : input.stock,
       isActive: input.isActive,
       isFeatured: input.isFeatured,
     },

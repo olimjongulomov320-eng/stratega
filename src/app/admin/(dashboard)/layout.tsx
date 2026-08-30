@@ -9,6 +9,7 @@ const NAV_ITEMS = [
   { href: "/admin/products", label: "Mahsulotlar" },
   { href: "/admin/categories", label: "Kategoriyalar" },
   { href: "/admin/requests", label: "Arizalar" },
+  { href: "/admin/settings/moysklad", label: "MoySklad" },
 ];
 
 export default function AdminLayout({
