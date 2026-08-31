@@ -82,6 +82,12 @@ export default async function AdminProductsPage() {
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-2">
                     <Link
+                      href={`/admin/products/${product.id}/overview`}
+                      className="rounded-lg px-3 py-1.5 text-sm font-medium text-slate-600 hover:bg-slate-100"
+                    >
+                      Ko&apos;rish
+                    </Link>
+                    <Link
                       href={`/admin/products/${product.id}`}
                       className="rounded-lg px-3 py-1.5 text-sm font-medium text-indigo-600 hover:bg-indigo-50"
                     >

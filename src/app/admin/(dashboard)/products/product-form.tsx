@@ -44,6 +44,16 @@ export function ProductForm({
   const [imageUrl, setImageUrl] = useState<string | null>(
     initialValues?.imageUrl ?? null
   );
+  const [sku, setSku] = useState(initialValues?.sku ?? "");
+  const [barcode, setBarcode] = useState(initialValues?.barcode ?? "");
+  const [costPrice, setCostPrice] = useState(
+    initialValues?.costPrice ? String(initialValues.costPrice) : ""
+  );
+  const [minimumStock, setMinimumStock] = useState(
+    initialValues?.minimumStock !== undefined
+      ? String(initialValues.minimumStock)
+      : "0"
+  );
 
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -103,6 +113,10 @@ export function ProductForm({
       stock: stockNum,
       isActive,
       isFeatured,
+      sku: sku.trim() || null,
+      barcode: barcode.trim() || null,
+      costPrice: costPrice.trim() ? Number(costPrice) : null,
+      minimumStock: Number(minimumStock) || 0,
     };
 
     setSubmitting(true);
@@ -166,6 +180,58 @@ export function ProductForm({
             onChange={(e) => setOldPrice(e.target.value)}
             className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-indigo-400"
           />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Tannarx (so&apos;m, ixtiyoriy)
+          </label>
+          <input
+            type="number"
+            value={costPrice}
+            onChange={(e) => setCostPrice(e.target.value)}
+            className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-indigo-400"
+          />
+          <p className="mt-1 text-xs text-slate-400">
+            Marja va foyda hisob-kitobi uchun.
+          </p>
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            SKU / artikul (ixtiyoriy)
+          </label>
+          <input
+            value={sku}
+            onChange={(e) => setSku(e.target.value)}
+            className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-indigo-400"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Shtrix-kod (ixtiyoriy)
+          </label>
+          <input
+            value={barcode}
+            onChange={(e) => setBarcode(e.target.value)}
+            className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-indigo-400"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Minimal qoldiq
+          </label>
+          <input
+            type="number"
+            value={minimumStock}
+            onChange={(e) => setMinimumStock(e.target.value)}
+            className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-indigo-400"
+          />
+          <p className="mt-1 text-xs text-slate-400">
+            Shundan past tushsa, &quot;kam qoldi&quot; deb belgilanadi.
+          </p>
         </div>
 
         <div>

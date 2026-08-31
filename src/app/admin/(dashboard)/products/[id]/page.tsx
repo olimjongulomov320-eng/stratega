@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ProductForm } from "../product-form";
 
@@ -19,9 +20,17 @@ export default async function EditProductPage(
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">
-        Mahsulotni tahrirlash
-      </h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-slate-900">
+          Mahsulotni tahrirlash
+        </h1>
+        <Link
+          href={`/admin/products/${product.id}/overview`}
+          className="text-sm font-medium text-indigo-600 hover:underline"
+        >
+          To&apos;liq ma&apos;lumot →
+        </Link>
+      </div>
       <div className="mt-6 max-w-2xl rounded-xl border border-slate-200 bg-white p-6">
         <ProductForm
           categories={categories}
@@ -36,6 +45,10 @@ export default async function EditProductPage(
             stock: product.stock,
             isActive: product.isActive,
             isFeatured: product.isFeatured,
+            sku: product.sku,
+            barcode: product.barcode,
+            costPrice: product.costPrice,
+            minimumStock: product.minimumStock,
           }}
         />
       </div>

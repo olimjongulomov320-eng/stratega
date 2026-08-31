@@ -27,6 +27,10 @@ export type ProductInput = {
   stock: number;
   isActive: boolean;
   isFeatured: boolean;
+  sku: string | null;
+  barcode: string | null;
+  costPrice: number | null;
+  minimumStock: number;
 };
 
 async function requireAdmin() {
@@ -64,6 +68,10 @@ export async function createProduct(
         stock: input.stock,
         isActive: input.isActive,
         isFeatured: input.isFeatured,
+        sku: input.sku,
+        barcode: input.barcode,
+        costPrice: input.costPrice,
+        minimumStock: input.minimumStock,
       },
     });
 
@@ -110,6 +118,10 @@ export async function updateProduct(
         categoryId: input.categoryId,
         isActive: input.isActive,
         isFeatured: input.isFeatured,
+        sku: input.sku,
+        barcode: input.barcode,
+        costPrice: input.costPrice,
+        minimumStock: input.minimumStock,
         // stock bu yerda o'zgartirilmaydi — quyidagi recordStockChange
         // Product.stock ustidan yagona yozuvchi hisoblanadi
       },
