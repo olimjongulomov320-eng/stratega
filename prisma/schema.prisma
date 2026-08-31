@@ -10,6 +10,10 @@ datasource db {
   provider = "postgresql"
 }
 
+// ============================================================
+// CATALOG
+// ============================================================
+
 model Category {
   id        String    @id @default(cuid())
   slug      String    @unique
@@ -20,27 +24,63 @@ model Category {
   products  Product[]
 }
 
+enum Unit {
+  PIECE // dona
+  SET // to'plam
+  KG
+  METER
+  LITER
+  PALLET
+  BOX
+}
+
 model Product {
-  id            String      @id @default(cuid())
-  slug          String      @unique
-  name          String
-  description   String
-  price         Int // narxi, so'mda
-  oldPrice      Int? // chegirmagacha bo'lgan narx (agar bo'lsa)
-  imageUrl      String?
-  stock         Int         @default(0)
-  isActive      Boolean     @default(true)
-  isFeatured    Boolean     @default(false)
-  rating        Float       @default(0)
-  reviewCount   Int         @default(0)
-  soldCount     Int         @default(0)
-  category      Category    @relation(fields: [categoryId], references: [id])
-  categoryId    String
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  rfqItems      RfqItem[]
-  stockMoves    StockMove[]
-  priceHistory  PriceHistory[]
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  description String
+  price       Int // narxi, so'mda (chakana — RETAIL narx ro'yxati bilan sinxron)
+  oldPrice    Int? // chegirmagacha bo'lgan narx (agar bo'lsa)
+  imageUrl    String?
+  isActive    Boolean @default(true)
+  isFeatured  Boolean @default(false)
+  rating      Float   @default(0)
+  reviewCount Int     @default(0)
+  soldCount   Int     @default(0)
+
+  // ERP maydonlari
+  sku             String? @unique // ombor artikuli
+  barcode         String? @unique
+  unit            Unit    @default(PIECE)
+  costPrice       Int? // tannarx, so'mda — margin hisob-kitobi uchun
+  minimumStock    Int     @default(0) // shundan past bo'lsa — "kam qoldi"
+  reorderPoint    Int? // shu darajaga tushganda qayta buyurtma tavsiya etiladi
+  reorderQuantity Int? // tavsiya etiladigan buyurtma miqdori
+  weightKg        Float?
+
+  // Eskirgan (backward-compat) — yagona ombor yig'indisi, Stock jadvalidan
+  // avtomatik sinxronlanadi. Yangi kodda Stock modelidan foydalaning.
+  stock Int @default(0)
+
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  rfqItems         RfqItem[]
+  stockMoves       StockMove[]
+  priceHistory     PriceHistory[]
+  stocks           Stock[]
+  stockDocItems    StockDocumentItem[]
+  supplierProducts SupplierProduct[]
+  priceListItems   PriceListItem[]
+  quotationItems   QuotationItem[]
+  orderItems       OrderItem[]
+  shipmentItems    ShipmentItem[]
+
+  @@index([categoryId])
+  @@index([sku])
+  @@index([barcode])
 }
 
 // Narx o'zgarishlari tarixi — mahsulot narxi qachon va qanday o'zgargani.
@@ -50,34 +90,361 @@ model PriceHistory {
   productId String
   oldPrice  Int
   newPrice  Int
+  changedBy String? // Employee.id yoki "system"
+  reason    String?
   createdAt DateTime @default(now())
 
   @@index([productId])
 }
 
-// Har bir ombordagi son o'zgarishi shu yerda qayd etiladi:
-// qo'lda kiritilgan tuzatish, CSV orqali ommaviy yangilash yoki
-// tasdiqlangan arizadan avtomatik yozib olish.
-model StockMove {
-  id         String        @id @default(cuid())
-  product    Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
-  productId  String
-  change     Int // musbat — kirim, manfiy — chiqim
-  stockAfter Int // o'zgarishdan keyingi ombordagi son
-  reason     StockMoveReason
-  note       String?
-  requestId  String? // ORDER sababli o'zgarishlarni RfqRequest bilan bog'lash uchun
-  createdAt  DateTime      @default(now())
+// ============================================================
+// WAREHOUSES & STOCK
+// ============================================================
 
+model Warehouse {
+  id          String   @id @default(cuid())
+  name        String
+  code        String   @unique
+  address     String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  stocks        Stock[]
+  stockMoves    StockMove[]
+  documents     StockDocument[] @relation("SourceWarehouse")
+  destDocuments StockDocument[] @relation("DestWarehouse")
+  orders        Order[]
+  shipments     Shipment[]
+}
+
+// Har bir mahsulot-ombor juftligi uchun qoldiq holati.
+// Bu — inventarizatsiyaning yagona haqiqat manbai (source of truth).
+model Stock {
+  id          String    @id @default(cuid())
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  warehouseId String
+  quantity    Int       @default(0) // jismoniy qoldiq
+  reserved    Int       @default(0) // band qilingan (tasdiqlangan, lekin jo'natilmagan buyurtmalar)
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([productId, warehouseId])
+  @@index([warehouseId])
   @@index([productId])
-  @@index([requestId])
 }
 
 enum StockMoveReason {
   MANUAL // admin panelida qo'lda tuzatish
   IMPORT // CSV orqali ommaviy yangilash
-  ORDER // tasdiqlangan arizadan avtomatik yozib olish
+  ORDER // tasdiqlangan arizadan avtomatik yozib olish (eskirgan RfqRequest oqimi)
+  RECEIPT // kirim hujjati
+  ISSUE // chiqim hujjati
+  RETURN // qaytarish
+  TRANSFER_IN // omborlar orasida ko'chirish — kirim tomoni
+  TRANSFER_OUT // omborlar orasida ko'chirish — chiqim tomoni
+  WRITE_OFF // hisobdan chiqarish
+  INVENTORY_ADJUSTMENT // inventarizatsiya natijasidagi tuzatish
 }
+
+// O'zgarmas (immutable) ombor jurnali — har bir qoldiq o'zgarishi shu yerda
+// qayd etiladi. Hech qachon to'g'ridan-to'g'ri Stock.quantity yozilmaydi —
+// faqat shu jurnal orqali (recordStockChange()).
+model StockMove {
+  id            String          @id @default(cuid())
+  product       Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId     String
+  warehouse     Warehouse?      @relation(fields: [warehouseId], references: [id])
+  warehouseId   String?
+  change        Int // musbat — kirim, manfiy — chiqim
+  stockAfter    Int // o'zgarishdan keyingi shu ombordagi qoldiq
+  reason        StockMoveReason
+  referenceType String? // "StockDocument" | "RfqRequest" | "Order" | ...
+  referenceId   String? // tegishli hujjat/buyurtma id'si
+  note          String?
+  requestId     String? // ORDER sababli o'zgarishlarni RfqRequest bilan bog'lash uchun (eskirgan yo'l)
+  createdBy     String? // Employee.id yoki "system"
+  createdAt     DateTime        @default(now())
+
+  @@index([productId])
+  @@index([warehouseId])
+  @@index([requestId])
+  @@index([referenceType, referenceId])
+  @@index([createdAt])
+}
+
+// ============================================================
+// STOCK DOCUMENTS (kirim, chiqim, ko'chirish, hisobdan chiqarish, inventarizatsiya)
+// ============================================================
+
+enum StockDocumentType {
+  RECEIPT
+  ISSUE
+  TRANSFER
+  WRITE_OFF
+  INVENTORY
+  RETURN
+}
+
+enum StockDocumentStatus {
+  DRAFT
+  POSTED
+  CANCELLED
+}
+
+model StockDocument {
+  id     String              @id @default(cuid())
+  number String              @unique
+  type   StockDocumentType
+  status StockDocumentStatus @default(DRAFT)
+
+  warehouse       Warehouse  @relation("SourceWarehouse", fields: [warehouseId], references: [id])
+  warehouseId     String
+  destWarehouse   Warehouse? @relation("DestWarehouse", fields: [destWarehouseId], references: [id])
+  destWarehouseId String?
+
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+  supplierId String?
+
+  responsible   Employee? @relation(fields: [responsibleId], references: [id])
+  responsibleId String?
+
+  note      String?
+  items     StockDocumentItem[]
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+  postedAt  DateTime?
+
+  @@index([type])
+  @@index([status])
+  @@index([warehouseId])
+  @@index([createdAt])
+}
+
+model StockDocumentItem {
+  id         String        @id @default(cuid())
+  document   StockDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String
+  product    Product       @relation(fields: [productId], references: [id])
+  productId  String
+  quantity   Int
+  price      Int? // narx (kirimda — tannarx, chiqimda — sotuv narxi)
+
+  @@index([documentId])
+  @@index([productId])
+}
+
+// ============================================================
+// SUPPLIERS
+// ============================================================
+
+model Supplier {
+  id          String   @id @default(cuid())
+  name        String
+  legalName   String?
+  phone       String?
+  email       String?
+  contactName String?
+  address     String?
+  taxId       String? // INN
+  notes       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  products  SupplierProduct[]
+  documents StockDocument[]
+}
+
+model SupplierProduct {
+  id                   String   @id @default(cuid())
+  supplier             Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  supplierId           String
+  product              Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId            String
+  supplierSku          String?
+  costPrice            Int?
+  leadTimeDays         Int? // yetkazib berish muddati (kunlarda)
+  minimumOrderQuantity Int?
+
+  @@unique([supplierId, productId])
+  @@index([productId])
+}
+
+// ============================================================
+// CUSTOMERS (B2B mijozlar — autentifikatsiya User'idan alohida)
+// ============================================================
+
+model Customer {
+  id          String   @id @default(cuid())
+  companyName String
+  contactName String?
+  phone       String?
+  email       String?
+  address     String?
+  taxId       String?
+  notes       String?
+  creditLimit Int?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  priceList   PriceList? @relation(fields: [priceListId], references: [id])
+  priceListId String?
+
+  quotations Quotation[]
+  orders     Order[]
+  payments   Payment[]
+
+  @@index([priceListId])
+}
+
+// ============================================================
+// PRICE LISTS (B2B narx ro'yxatlari)
+// ============================================================
+
+enum PriceListKind {
+  RETAIL
+  WHOLESALE
+  DEALER
+  VIP
+  CUSTOM
+}
+
+model PriceList {
+  id        String        @id @default(cuid())
+  name      String
+  kind      PriceListKind @default(CUSTOM)
+  isDefault Boolean       @default(false)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  items     PriceListItem[]
+  customers Customer[]
+}
+
+model PriceListItem {
+  id          String    @id @default(cuid())
+  priceList   PriceList @relation(fields: [priceListId], references: [id], onDelete: Cascade)
+  priceListId String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   String
+  price       Int
+
+  @@unique([priceListId, productId])
+  @@index([productId])
+}
+
+// ============================================================
+// EMPLOYEES / ROLES / PERMISSIONS (adminlar — mijozlardan alohida)
+// ============================================================
+
+enum EmployeeRole {
+  OWNER
+  ADMIN
+  MANAGER
+  WAREHOUSE
+  ACCOUNTANT
+  VIEWER
+}
+
+model Employee {
+  id           String       @id @default(cuid())
+  name         String
+  email        String?      @unique
+  phone        String?
+  passwordHash String
+  role         EmployeeRole @default(VIEWER)
+  isActive     Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  sessions       EmployeeSession[]
+  stockDocuments StockDocument[]
+  auditLogs      AuditLog[]
+  resolvedAlerts Alert[]
+
+  @@index([role])
+}
+
+model EmployeeSession {
+  id         String   @id @default(cuid())
+  token      String   @unique
+  employee   Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  employeeId String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([employeeId])
+}
+
+// ============================================================
+// AUDIT LOG
+// ============================================================
+
+model AuditLog {
+  id         String    @id @default(cuid())
+  actor      Employee? @relation(fields: [actorId], references: [id])
+  actorId    String?
+  actorLabel String? // Employee o'chirilgan bo'lsa ham nom saqlanib qolishi uchun, yoki "admin" (eski umumiy login)
+  action     String // masalan: "product.update", "stock.adjust", "order.status_change"
+  entity     String // masalan: "Product", "StockDocument"
+  entityId   String
+  oldData    Json?
+  newData    Json?
+  createdAt  DateTime  @default(now())
+
+  @@index([entity, entityId])
+  @@index([actorId])
+  @@index([createdAt])
+}
+
+// ============================================================
+// ALERTS
+// ============================================================
+
+enum AlertType {
+  LOW_STOCK
+  OUT_OF_STOCK
+  OVERSTOCK
+  ORDER_DELAY
+  PAYMENT_OVERDUE
+  PRICE_CHANGE
+  UNUSUAL_SALES
+  INVENTORY_ANOMALY
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+model Alert {
+  id           String        @id @default(cuid())
+  type         AlertType
+  severity     AlertSeverity @default(INFO)
+  title        String
+  description  String?
+  entity       String? // masalan: "Product"
+  entityId     String?
+  createdAt    DateTime      @default(now())
+  readAt       DateTime?
+  resolvedAt   DateTime?
+  resolvedBy   Employee?     @relation(fields: [resolvedById], references: [id])
+  resolvedById String?
+
+  @@index([type])
+  @@index([severity])
+  @@index([resolvedAt])
+  @@index([createdAt])
+}
+
+// ============================================================
+// CUSTOMER-FACING AUTH (mavjud — o'zgarishsiz)
+// ============================================================
 
 model User {
   id          String       @id @default(cuid())
@@ -99,27 +466,35 @@ model Session {
 }
 
 model OtpCode {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   phone     String
   code      String
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
+
+  @@index([phone])
 }
 
+// ============================================================
+// RFQ (mavjud oqim — o'zgarishsiz, saqlanib qolgan)
+// ============================================================
+
 model RfqRequest {
-  id            String     @id @default(cuid())
-  companyName   String
-  contactName   String
-  phone         String
-  requestType   String // masalan: "Ob'ekt komplektatsiyasi", "Aniq mahsulot"
-  comment       String?
-  status        RfqStatus  @default(NEW)
-  items         RfqItem[]
-  user          User?      @relation(fields: [userId], references: [id])
-  userId        String?
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id          String    @id @default(cuid())
+  companyName String
+  contactName String
+  phone       String
+  requestType String // masalan: "Ob'ekt komplektatsiyasi", "Aniq mahsulot"
+  comment     String?
+  status      RfqStatus @default(NEW)
+  items       RfqItem[]
+  user        User?     @relation(fields: [userId], references: [id])
+  userId      String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  quotation Quotation?
 }
 
 model RfqItem {
@@ -138,4 +513,157 @@ enum RfqStatus {
   QUOTED
   CONFIRMED
   CANCELLED
+}
+
+// ============================================================
+// QUOTATION → ORDER → SHIPMENT → PAYMENT
+// ============================================================
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+model Quotation {
+  id           String          @id @default(cuid())
+  number       String          @unique
+  rfqRequest   RfqRequest?     @relation(fields: [rfqRequestId], references: [id])
+  rfqRequestId String?         @unique
+  customer     Customer?       @relation(fields: [customerId], references: [id])
+  customerId   String?
+  status       QuotationStatus @default(DRAFT)
+  validUntil   DateTime?
+  note         String?
+  items        QuotationItem[]
+  order        Order?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([customerId])
+  @@index([status])
+}
+
+model QuotationItem {
+  id          String    @id @default(cuid())
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  quotationId String
+  product     Product   @relation(fields: [productId], references: [id])
+  productId   String
+  quantity    Int
+  price       Int
+
+  @@index([quotationId])
+}
+
+enum OrderStatus {
+  DRAFT
+  CONFIRMED
+  PROCESSING
+  READY_TO_SHIP
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+model Order {
+  id          String      @id @default(cuid())
+  number      String      @unique
+  customer    Customer?   @relation(fields: [customerId], references: [id])
+  customerId  String?
+  quotation   Quotation?  @relation(fields: [quotationId], references: [id])
+  quotationId String?     @unique
+  warehouse   Warehouse?  @relation(fields: [warehouseId], references: [id])
+  warehouseId String?
+  status      OrderStatus @default(DRAFT)
+  note        String?
+  items       OrderItem[]
+  shipments   Shipment[]
+  payments    Payment[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([customerId])
+  @@index([status])
+  @@index([warehouseId])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  price     Int // sotuv narxi
+  costPrice Int? // buyurtma vaqtidagi tannarx — foyda hisob-kitobi uchun
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+enum ShipmentStatus {
+  DRAFT
+  READY
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model Shipment {
+  id          String         @id @default(cuid())
+  number      String         @unique
+  order       Order          @relation(fields: [orderId], references: [id])
+  orderId     String
+  warehouse   Warehouse?     @relation(fields: [warehouseId], references: [id])
+  warehouseId String?
+  status      ShipmentStatus @default(DRAFT)
+  note        String?
+  items       ShipmentItem[]
+  shippedAt   DateTime?
+  deliveredAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([orderId])
+  @@index([status])
+}
+
+model ShipmentItem {
+  id         String   @id @default(cuid())
+  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  shipmentId String
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  String
+  quantity   Int
+
+  @@index([shipmentId])
+}
+
+enum PaymentStatus {
+  PENDING
+  PARTIAL
+  PAID
+  REFUNDED
+}
+
+model Payment {
+  id         String        @id @default(cuid())
+  order      Order         @relation(fields: [orderId], references: [id])
+  orderId    String
+  customer   Customer?     @relation(fields: [customerId], references: [id])
+  customerId String?
+  amount     Int
+  status     PaymentStatus @default(PENDING)
+  method     String? // "naqd", "bank o'tkazmasi", ...
+  note       String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@index([orderId])
+  @@index([customerId])
+  @@index([status])
 }

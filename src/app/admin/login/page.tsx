@@ -7,6 +7,7 @@ import { adminLogin } from "./actions";
 
 export default function AdminLoginPage() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -15,7 +16,7 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
-    const result = await adminLogin(password);
+    const result = await adminLogin(password, email.trim() || undefined);
     setSubmitting(false);
 
     if (!result.ok) {
@@ -40,6 +41,19 @@ export default function AdminLoginPage() {
         </p>
 
         <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              Email (xodim uchun, ixtiyoriy)
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="xodim@stratega.uz"
+              className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-indigo-400"
+            />
+          </div>
+
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">
               Parol

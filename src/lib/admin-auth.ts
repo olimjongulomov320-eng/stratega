@@ -66,7 +66,15 @@ export function isValidAdminToken(token: string | undefined): boolean {
 
 export async function isAdminAuthenticated(): Promise<boolean> {
   const cookieStore = await cookies();
-  return isValidAdminToken(cookieStore.get(ADMIN_COOKIE)?.value);
+  if (isValidAdminToken(cookieStore.get(ADMIN_COOKIE)?.value)) {
+    return true;
+  }
+
+  // Yangi Employee (xodim) tizimi orqali kirilgan bo'lsa ham ruxsat beriladi —
+  // ikkala kirish usuli parallel ishlaydi.
+  const { getCurrentEmployee } = await import("@/lib/employee-auth");
+  const employee = await getCurrentEmployee();
+  return employee !== null;
 }
 
 export async function clearAdminSession() {
