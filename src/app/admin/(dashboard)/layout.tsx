@@ -1,16 +1,9 @@
 import Link from "next/link";
 import { LogoMark } from "@/components/logo-mark";
 import { AdminLogoutButton } from "./logout-button";
+import { AdminSidebar } from "./admin-sidebar";
 
 export const dynamic = "force-dynamic";
-
-const NAV_ITEMS = [
-  { href: "/admin", label: "Bosh sahifa" },
-  { href: "/admin/products", label: "Mahsulotlar" },
-  { href: "/admin/stock", label: "Sklad" },
-  { href: "/admin/categories", label: "Kategoriyalar" },
-  { href: "/admin/requests", label: "Arizalar" },
-];
 
 export default function AdminLayout({
   children,
@@ -18,42 +11,40 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="sticky top-0 z-10 bg-slate-950">
-        <div className="mx-auto flex max-w-6xl items-center gap-6 px-4 py-3">
-          <Link href="/admin" className="flex items-center gap-2">
-            <LogoMark className="h-7 w-7" />
-            <span className="text-sm font-black tracking-tight text-white">
-              STRATEG<span className="text-indigo-400">A</span>{" "}
-              <span className="font-normal text-slate-400">admin</span>
+    <div className="flex min-h-screen bg-slate-50">
+      <aside className="hidden w-60 shrink-0 flex-col border-r border-slate-200 bg-slate-950 lg:flex">
+        <Link href="/admin" className="flex items-center gap-2 px-5 py-4">
+          <LogoMark className="h-7 w-7" />
+          <span className="text-sm font-black tracking-tight text-white">
+            STRATEG<span className="text-indigo-400">A</span>
+          </span>
+        </Link>
+        <AdminSidebar />
+      </aside>
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 lg:px-8">
+          <div className="flex items-center gap-2 lg:hidden">
+            <LogoMark className="h-6 w-6" />
+            <span className="text-sm font-black tracking-tight text-slate-900">
+              STRATEGA
             </span>
-          </Link>
+          </div>
+          <div className="hidden lg:block" />
+          <div className="flex items-center gap-4">
+            <Link
+              href="/"
+              target="_blank"
+              className="hidden text-sm text-slate-500 hover:text-slate-900 sm:inline"
+            >
+              Saytni ko&apos;rish ↗
+            </Link>
+            <AdminLogoutButton />
+          </div>
+        </header>
 
-          <nav className="flex flex-1 items-center gap-1">
-            {NAV_ITEMS.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/10 hover:text-white"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          <Link
-            href="/"
-            target="_blank"
-            className="hidden text-sm text-slate-400 hover:text-white sm:inline"
-          >
-            Saytni ko&apos;rish ↗
-          </Link>
-
-          <AdminLogoutButton />
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-4 py-8">{children}</main>
+        <main className="flex-1 px-4 py-6 lg:px-8 lg:py-8">{children}</main>
+      </div>
     </div>
   );
 }
