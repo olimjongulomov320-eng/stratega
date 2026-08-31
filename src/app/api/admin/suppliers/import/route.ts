@@ -1,5 +1,5 @@
-import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { applySuppliersImport } from "@/lib/suppliers-import";
+import { requireAdminPermission } from "@/lib/require-permission";
 import { revalidatePath } from "next/cache";
 
 export const runtime = "nodejs";
@@ -7,7 +7,9 @@ export const runtime = "nodejs";
 const MAX_SIZE = 2 * 1024 * 1024;
 
 export async function POST(req: Request) {
-  if (!(await isAdminAuthenticated())) {
+  try {
+    await requireAdminPermission("suppliers.write");
+  } catch {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

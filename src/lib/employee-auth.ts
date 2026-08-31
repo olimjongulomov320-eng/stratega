@@ -92,3 +92,16 @@ export async function requirePermission(
   }
   return employee;
 }
+
+// Eski umumiy parol orqali kirilganda Employee yozuvi yo'q — bu holatda
+// to'liq (OWNER darajasidagi) ruxsat deb hisoblanadi, chunki umumiy
+// parolni faqat kompaniya egasi biladi. Yangi Employee tizimida esa
+// haqiqiy rol tekshiriladi. Bu ikkala kirish usulini bir xil
+// requirePermissionOrAdmin() chaqiruvi orqali ishlatish imkonini beradi.
+export async function requirePermissionOrAdmin(
+  permission: Permission,
+  isSharedAdminSession: boolean
+): Promise<void> {
+  if (isSharedAdminSession) return; // umumiy parol — to'liq ruxsat
+  await requirePermission(permission);
+}

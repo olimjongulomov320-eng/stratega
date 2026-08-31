@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { writeAuditLog } from "@/lib/audit";
+import { requireAdminPermission } from "@/lib/require-permission";
 
 export type CustomerFormResult = { ok: true } | { ok: false; error: string };
 
@@ -21,12 +21,6 @@ export type CustomerInput = {
   isActive: boolean;
 };
 
-async function requireAdmin() {
-  if (!(await isAdminAuthenticated())) {
-    throw new Error("Unauthorized");
-  }
-}
-
 function toNullable(value: string): string | null {
   const trimmed = value.trim();
   return trimmed === "" ? null : trimmed;
@@ -35,7 +29,7 @@ function toNullable(value: string): string | null {
 export async function createCustomer(
   input: CustomerInput
 ): Promise<CustomerFormResult> {
-  await requireAdmin();
+  await requireAdminPermission("customers.write");
 
   const companyName = input.companyName.trim();
   if (!companyName) return { ok: false, error: "Kompaniya nomini kiriting." };
@@ -70,7 +64,7 @@ export async function updateCustomer(
   customerId: string,
   input: CustomerInput
 ): Promise<CustomerFormResult> {
-  await requireAdmin();
+  await requireAdminPermission("customers.write");
 
   const companyName = input.companyName.trim();
   if (!companyName) return { ok: false, error: "Kompaniya nomini kiriting." };
@@ -105,7 +99,7 @@ export async function updateCustomer(
 export async function deleteCustomer(
   customerId: string
 ): Promise<CustomerFormResult> {
-  await requireAdmin();
+  await requireAdminPermission("customers.write");
 
   const orderCount = await prisma.order.count({ where: { customerId } });
   if (orderCount > 0) {

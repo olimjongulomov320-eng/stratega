@@ -3,9 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { hashPassword } from "@/lib/employee-auth";
 import { writeAuditLog } from "@/lib/audit";
+import { requireAdminPermission } from "@/lib/require-permission";
 import type { EmployeeRole } from "@/generated/prisma/client";
 
 export type EmployeeFormResult = { ok: true } | { ok: false; error: string };
@@ -19,16 +19,10 @@ export type EmployeeInput = {
   password?: string; // faqat yaratishda yoki parolni almashtirishda
 };
 
-async function requireAdmin() {
-  if (!(await isAdminAuthenticated())) {
-    throw new Error("Unauthorized");
-  }
-}
-
 export async function createEmployee(
   input: EmployeeInput
 ): Promise<EmployeeFormResult> {
-  await requireAdmin();
+  await requireAdminPermission("users.manage");
 
   const name = input.name.trim();
   const email = input.email.trim();
@@ -71,7 +65,7 @@ export async function updateEmployee(
   employeeId: string,
   input: EmployeeInput
 ): Promise<EmployeeFormResult> {
-  await requireAdmin();
+  await requireAdminPermission("users.manage");
 
   const name = input.name.trim();
   if (!name) return { ok: false, error: "Ismni kiriting." };

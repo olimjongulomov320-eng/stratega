@@ -2,13 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
-
-async function requireAdmin() {
-  if (!(await isAdminAuthenticated())) {
-    throw new Error("Unauthorized");
-  }
-}
+import { requireAdminPermission } from "@/lib/require-permission";
 
 export type BulkActionResult =
   | { ok: true; count: number }
@@ -18,7 +12,7 @@ export async function bulkSetActive(
   productIds: string[],
   isActive: boolean
 ): Promise<BulkActionResult> {
-  await requireAdmin();
+  await requireAdminPermission("products.write");
 
   if (productIds.length === 0) {
     return { ok: false, error: "Hech narsa tanlanmagan." };

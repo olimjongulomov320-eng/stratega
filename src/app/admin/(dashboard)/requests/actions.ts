@@ -2,19 +2,17 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getCurrentEmployee } from "@/lib/employee-auth";
 import { recordStockChange } from "@/lib/stock";
 import { convertRfqToOrder } from "@/lib/rfq-to-order";
+import { requireAdminPermission } from "@/lib/require-permission";
 import type { RfqStatus } from "@/generated/prisma/client";
 
 export async function updateRequestStatus(
   requestId: string,
   status: RfqStatus
 ) {
-  if (!(await isAdminAuthenticated())) {
-    throw new Error("Unauthorized");
-  }
+  await requireAdminPermission("orders.write");
 
   await prisma.$transaction(async (tx) => {
     // Qatorni bloklaymiz — parallel so'rovlar (masalan, ikki marta
@@ -86,9 +84,7 @@ export type ConvertToOrderResult =
 export async function convertRequestToOrder(
   requestId: string
 ): Promise<ConvertToOrderResult> {
-  if (!(await isAdminAuthenticated())) {
-    throw new Error("Unauthorized");
-  }
+  await requireAdminPermission("orders.write");
   const employee = await getCurrentEmployee();
 
   try {

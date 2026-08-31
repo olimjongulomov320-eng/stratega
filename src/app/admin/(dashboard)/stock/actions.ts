@@ -2,14 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { recordStockChange } from "@/lib/stock";
-
-async function requireAdmin() {
-  if (!(await isAdminAuthenticated())) {
-    throw new Error("Unauthorized");
-  }
-}
+import { requireAdminPermission } from "@/lib/require-permission";
 
 export type AdjustStockResult =
   | { ok: true; stockAfter: number }
@@ -19,7 +13,7 @@ export async function adjustStock(
   productId: string,
   newStock: number
 ): Promise<AdjustStockResult> {
-  await requireAdmin();
+  await requireAdminPermission("stock.write");
 
   if (!Number.isInteger(newStock) || newStock < 0) {
     return { ok: false, error: "Noto'g'ri qiymat." };

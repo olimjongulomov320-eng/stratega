@@ -82,4 +82,11 @@ export async function clearAdminSession() {
   cookieStore.delete(ADMIN_COOKIE);
 }
 
+// Joriy sessiya aynan eski umumiy parol orqali (Employee emas) kirilganmi
+// — ruxsat tekshiruvida "to'liq huquq" holatini aniqlash uchun.
+export async function isSharedAdminSession(): Promise<boolean> {
+  const cookieStore = await cookies();
+  return isValidAdminToken(cookieStore.get(ADMIN_COOKIE)?.value);
+}
+
 export { ADMIN_COOKIE };

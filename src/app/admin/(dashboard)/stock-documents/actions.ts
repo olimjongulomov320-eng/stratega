@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getCurrentEmployee } from "@/lib/employee-auth";
+import { requireAdminPermission } from "@/lib/require-permission";
 import {
   createStockDocument,
   postStockDocument,
@@ -13,10 +13,7 @@ import {
 
 export type DocActionResult = { ok: true } | { ok: false; error: string };
 
-async function requireAdmin(): Promise<string | null> {
-  if (!(await isAdminAuthenticated())) {
-    throw new Error("Unauthorized");
-  }
+async function getActorId(): Promise<string | null> {
   const employee = await getCurrentEmployee();
   return employee?.id ?? null;
 }
@@ -24,7 +21,8 @@ async function requireAdmin(): Promise<string | null> {
 export async function createDocument(
   input: CreateStockDocumentInput
 ): Promise<DocActionResult> {
-  const actorId = await requireAdmin();
+  await requireAdminPermission("stock.write");
+  const actorId = await getActorId();
 
   let documentId: string;
   try {
@@ -40,7 +38,8 @@ export async function createDocument(
 }
 
 export async function postDocument(documentId: string): Promise<DocActionResult> {
-  const actorId = await requireAdmin();
+  await requireAdminPermission("stock.write");
+  const actorId = await getActorId();
 
   try {
     await postStockDocument(documentId, actorId);
@@ -60,7 +59,8 @@ export async function postDocument(documentId: string): Promise<DocActionResult>
 export async function cancelDocument(
   documentId: string
 ): Promise<DocActionResult> {
-  const actorId = await requireAdmin();
+  await requireAdminPermission("stock.write");
+  const actorId = await getActorId();
 
   try {
     await cancelStockDocument(documentId, actorId);

@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { writeAuditLog } from "@/lib/audit";
+import { requireAdminPermission } from "@/lib/require-permission";
 
 export type WarehouseFormResult = { ok: true } | { ok: false; error: string };
 
@@ -16,16 +16,10 @@ export type WarehouseInput = {
   isActive: boolean;
 };
 
-async function requireAdmin() {
-  if (!(await isAdminAuthenticated())) {
-    throw new Error("Unauthorized");
-  }
-}
-
 export async function createWarehouse(
   input: WarehouseInput
 ): Promise<WarehouseFormResult> {
-  await requireAdmin();
+  await requireAdminPermission("stock.write");
 
   const name = input.name.trim();
   const code = input.code.trim().toUpperCase();
@@ -62,7 +56,7 @@ export async function updateWarehouse(
   warehouseId: string,
   input: WarehouseInput
 ): Promise<WarehouseFormResult> {
-  await requireAdmin();
+  await requireAdminPermission("stock.write");
 
   const name = input.name.trim();
   if (!name) return { ok: false, error: "Ombor nomini kiriting." };

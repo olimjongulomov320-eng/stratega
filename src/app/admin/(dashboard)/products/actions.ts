@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { recordStockChange } from "@/lib/stock";
+import { requireAdminPermission } from "@/lib/require-permission";
 
 export type ProductFormResult = { ok: true } | { ok: false; error: string };
 
@@ -33,16 +33,10 @@ export type ProductInput = {
   minimumStock: number;
 };
 
-async function requireAdmin() {
-  if (!(await isAdminAuthenticated())) {
-    throw new Error("Unauthorized");
-  }
-}
-
 export async function createProduct(
   input: ProductInput
 ): Promise<ProductFormResult> {
-  await requireAdmin();
+  await requireAdminPermission("products.write");
 
   const name = input.name.trim();
   if (!name) return { ok: false, error: "Mahsulot nomini kiriting." };
@@ -94,7 +88,7 @@ export async function updateProduct(
   productId: string,
   input: ProductInput
 ): Promise<ProductFormResult> {
-  await requireAdmin();
+  await requireAdminPermission("products.write");
 
   const name = input.name.trim();
   if (!name) return { ok: false, error: "Mahsulot nomini kiriting." };
@@ -153,7 +147,7 @@ export async function updateProduct(
 }
 
 export async function deleteProduct(productId: string): Promise<ProductFormResult> {
-  await requireAdmin();
+  await requireAdminPermission("products.write");
 
   await prisma.rfqItem.deleteMany({ where: { productId } });
   await prisma.product.delete({ where: { id: productId } });

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { requireAdminPermission } from "@/lib/require-permission";
 
 export type CategoryFormResult = { ok: true } | { ok: false; error: string };
 
@@ -23,16 +23,10 @@ function slugify(name: string): string {
     .replace(/-+/g, "-");
 }
 
-async function requireAdmin() {
-  if (!(await isAdminAuthenticated())) {
-    throw new Error("Unauthorized");
-  }
-}
-
 export async function createCategory(
   input: CategoryInput
 ): Promise<CategoryFormResult> {
-  await requireAdmin();
+  await requireAdminPermission("products.write");
 
   const name = input.name.trim();
   if (!name) return { ok: false, error: "Kategoriya nomini kiriting." };
@@ -62,7 +56,7 @@ export async function updateCategory(
   categoryId: string,
   input: CategoryInput
 ): Promise<CategoryFormResult> {
-  await requireAdmin();
+  await requireAdminPermission("products.write");
 
   const name = input.name.trim();
   if (!name) return { ok: false, error: "Kategoriya nomini kiriting." };
@@ -85,7 +79,7 @@ export async function updateCategory(
 export async function deleteCategory(
   categoryId: string
 ): Promise<CategoryFormResult> {
-  await requireAdmin();
+  await requireAdminPermission("products.write");
 
   const productCount = await prisma.product.count({
     where: { categoryId },

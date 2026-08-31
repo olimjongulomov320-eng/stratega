@@ -2,8 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getCurrentEmployee } from "@/lib/employee-auth";
+import { requireAdminPermission } from "@/lib/require-permission";
 import {
   createOrder,
   updateOrderStatus,
@@ -13,10 +13,7 @@ import type { OrderStatus } from "@/generated/prisma/client";
 
 export type OrderActionResult = { ok: true } | { ok: false; error: string };
 
-async function requireAdmin(): Promise<string | null> {
-  if (!(await isAdminAuthenticated())) {
-    throw new Error("Unauthorized");
-  }
+async function getActorId(): Promise<string | null> {
   const employee = await getCurrentEmployee();
   return employee?.id ?? null;
 }
@@ -24,7 +21,8 @@ async function requireAdmin(): Promise<string | null> {
 export async function createOrderAction(
   input: CreateOrderInput
 ): Promise<OrderActionResult> {
-  const actorId = await requireAdmin();
+  await requireAdminPermission("orders.write");
+  const actorId = await getActorId();
 
   let orderId: string;
   try {
@@ -43,7 +41,8 @@ export async function setOrderStatus(
   orderId: string,
   status: OrderStatus
 ): Promise<OrderActionResult> {
-  const actorId = await requireAdmin();
+  await requireAdminPermission("orders.write");
+  const actorId = await getActorId();
 
   try {
     await updateOrderStatus(orderId, status, actorId);

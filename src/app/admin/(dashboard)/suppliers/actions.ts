@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { writeAuditLog } from "@/lib/audit";
+import { requireAdminPermission } from "@/lib/require-permission";
 
 export type SupplierFormResult = { ok: true } | { ok: false; error: string };
 
@@ -20,12 +20,6 @@ export type SupplierInput = {
   isActive: boolean;
 };
 
-async function requireAdmin() {
-  if (!(await isAdminAuthenticated())) {
-    throw new Error("Unauthorized");
-  }
-}
-
 function toNullable(value: string): string | null {
   const trimmed = value.trim();
   return trimmed === "" ? null : trimmed;
@@ -34,7 +28,7 @@ function toNullable(value: string): string | null {
 export async function createSupplier(
   input: SupplierInput
 ): Promise<SupplierFormResult> {
-  await requireAdmin();
+  await requireAdminPermission("suppliers.write");
 
   const name = input.name.trim();
   if (!name) return { ok: false, error: "Yetkazib beruvchi nomini kiriting." };
@@ -68,7 +62,7 @@ export async function updateSupplier(
   supplierId: string,
   input: SupplierInput
 ): Promise<SupplierFormResult> {
-  await requireAdmin();
+  await requireAdminPermission("suppliers.write");
 
   const name = input.name.trim();
   if (!name) return { ok: false, error: "Yetkazib beruvchi nomini kiriting." };
@@ -102,7 +96,7 @@ export async function updateSupplier(
 export async function deleteSupplier(
   supplierId: string
 ): Promise<SupplierFormResult> {
-  await requireAdmin();
+  await requireAdminPermission("suppliers.write");
 
   const docCount = await prisma.stockDocument.count({
     where: { supplierId },
