@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { DeleteSupplierButton } from "./delete-button";
+import { SupplierImportForm } from "./import-form";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,10 @@ export default async function SuppliersPage() {
         >
           + Yangi yetkazib beruvchi
         </Link>
+      </div>
+
+      <div className="mt-6">
+        <SupplierImportForm />
       </div>
 
       <div className="mt-6 overflow-x-auto rounded-xl border border-slate-200 bg-white">

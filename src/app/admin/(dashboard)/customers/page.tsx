@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { formatSum } from "@/lib/format";
 import { DeleteCustomerButton } from "./delete-button";
+import { CsvExportButton } from "@/components/csv-export-button";
 
 export const dynamic = "force-dynamic";
 
@@ -27,12 +28,25 @@ export default async function CustomersPage() {
             foydalanuvchilardan alohida).
           </p>
         </div>
-        <Link
-          href="/admin/customers/new"
-          className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
-        >
-          + Yangi mijoz
-        </Link>
+        <div className="flex items-center gap-2">
+          <CsvExportButton
+            filename="mijozlar"
+            header={["Kompaniya", "Aloqa shaxsi", "Telefon", "Kredit limiti", "Holat"]}
+            rows={customers.map((c) => [
+              c.companyName,
+              c.contactName ?? "",
+              c.phone ?? "",
+              c.creditLimit ? String(c.creditLimit) : "",
+              c.isActive ? "Faol" : "Nofaol",
+            ])}
+          />
+          <Link
+            href="/admin/customers/new"
+            className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
+          >
+            + Yangi mijoz
+          </Link>
+        </div>
       </div>
 
       <div className="mt-6 overflow-x-auto rounded-xl border border-slate-200 bg-white">

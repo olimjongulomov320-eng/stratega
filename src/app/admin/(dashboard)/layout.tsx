@@ -2,6 +2,7 @@ import Link from "next/link";
 import { LogoMark } from "@/components/logo-mark";
 import { AdminLogoutButton } from "./logout-button";
 import { AdminSidebar } from "./admin-sidebar";
+import { GlobalSearch } from "./global-search";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +31,7 @@ export default function AdminLayout({
               STRATEGA
             </span>
           </div>
-          <div className="hidden lg:block" />
+          <GlobalSearch />
           <div className="flex items-center gap-4">
             <Link
               href="/"

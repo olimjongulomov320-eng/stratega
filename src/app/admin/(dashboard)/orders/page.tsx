@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { formatSum } from "@/lib/format";
+import { CsvExportButton } from "@/components/csv-export-button";
 
 export const dynamic = "force-dynamic";
 
@@ -50,12 +51,26 @@ export default async function OrdersPage() {
             Mijozlar bilan bo&apos;lgan barcha buyurtmalar.
           </p>
         </div>
-        <Link
-          href="/admin/orders/new"
-          className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
-        >
-          + Yangi buyurtma
-        </Link>
+        <div className="flex items-center gap-2">
+          <CsvExportButton
+            filename="buyurtmalar"
+            header={["Raqam", "Mijoz", "Ombor", "Summa", "Holat", "Sana"]}
+            rows={orders.map((o) => [
+              o.number,
+              o.customer?.companyName ?? "",
+              o.warehouse?.name ?? "",
+              String(o.items.reduce((s, i) => s + i.price * i.quantity, 0)),
+              STATUS_LABELS[o.status],
+              new Date(o.createdAt).toLocaleString("uz-UZ"),
+            ])}
+          />
+          <Link
+            href="/admin/orders/new"
+            className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
+          >
+            + Yangi buyurtma
+          </Link>
+        </div>
       </div>
 
       <div className="mt-6 overflow-x-auto rounded-xl border border-slate-200 bg-white">
