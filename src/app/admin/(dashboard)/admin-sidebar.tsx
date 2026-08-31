@@ -34,6 +34,10 @@ const NAV_GROUPS: NavGroup[] = [
     items: [{ href: "/admin/suppliers", label: "Yetkazib beruvchilar" }],
   },
   {
+    title: "Tahlil",
+    items: [{ href: "/admin/analytics", label: "Tahlil" }],
+  },
+  {
     title: "Tizim",
     items: [
       { href: "/admin/employees", label: "Xodimlar" },
