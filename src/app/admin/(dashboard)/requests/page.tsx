@@ -1,10 +1,14 @@
 import { prisma } from "@/lib/prisma";
 import { formatSum } from "@/lib/format";
 import { StatusSelect } from "./status-select";
+import { ConvertToOrderButton } from "./convert-to-order-button";
 
 export default async function AdminRequestsPage() {
   const requests = await prisma.rfqRequest.findMany({
-    include: { items: { include: { product: true } } },
+    include: {
+      items: { include: { product: true } },
+      quotation: { include: { order: { select: { id: true, number: true } } } },
+    },
     orderBy: { createdAt: "desc" },
   });
 
@@ -39,7 +43,20 @@ export default async function AdminRequestsPage() {
                     {request.requestType}
                   </p>
                 </div>
-                <StatusSelect requestId={request.id} status={request.status} />
+                <div className="flex items-center gap-2">
+                  <StatusSelect requestId={request.id} status={request.status} />
+                  {request.status === "CONFIRMED" &&
+                    (request.quotation?.order ? (
+                      <a
+                        href={`/admin/orders/${request.quotation.order.id}`}
+                        className="rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-semibold text-emerald-700"
+                      >
+                        {request.quotation.order.number}
+                      </a>
+                    ) : (
+                      <ConvertToOrderButton requestId={request.id} />
+                    ))}
+                </div>
               </div>
 
               {request.comment && (

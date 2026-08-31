@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { getCurrentEmployee } from "@/lib/employee-auth";
 import { recordStockChange } from "@/lib/stock";
+import { convertRfqToOrder } from "@/lib/rfq-to-order";
 import type { RfqStatus } from "@/generated/prisma/client";
 
 export async function updateRequestStatus(
@@ -75,4 +77,27 @@ export async function updateRequestStatus(
 
   revalidatePath("/admin/requests");
   revalidatePath("/admin/products");
+}
+
+export type ConvertToOrderResult =
+  | { ok: true; orderId: string }
+  | { ok: false; error: string };
+
+export async function convertRequestToOrder(
+  requestId: string
+): Promise<ConvertToOrderResult> {
+  if (!(await isAdminAuthenticated())) {
+    throw new Error("Unauthorized");
+  }
+  const employee = await getCurrentEmployee();
+
+  try {
+    const order = await convertRfqToOrder(requestId, employee?.id ?? null);
+    revalidatePath("/admin/requests");
+    revalidatePath("/admin/orders");
+    return { ok: true, orderId: order.id };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: message };
+  }
 }

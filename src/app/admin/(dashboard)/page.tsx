@@ -1,8 +1,15 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatSum } from "@/lib/format";
+import { getActiveAlerts } from "@/lib/alerts";
 
 export const dynamic = "force-dynamic";
+
+const ALERT_SEVERITY_ICON: Record<string, string> = {
+  CRITICAL: "🔴",
+  WARNING: "🟠",
+  INFO: "🟡",
+};
 
 export default async function AdminDashboardPage() {
   const [
@@ -13,6 +20,7 @@ export default async function AdminDashboardPage() {
     pendingOrderCount,
     products,
     recentOrders,
+    alerts,
   ] = await Promise.all([
     prisma.product.count(),
     prisma.customer.count({ where: { isActive: true } }),
@@ -26,10 +34,10 @@ export default async function AdminDashboardPage() {
       where: { status: { not: "CANCELLED" } },
       include: { items: { select: { quantity: true, price: true } } },
     }),
+    getActiveAlerts(6),
   ]);
 
   const inventoryValue = products.reduce((s, p) => s + p.stock * p.price, 0);
-  const outOfStockCount = products.filter((p) => p.stock <= 0).length;
   const lowStockCount = products.filter(
     (p) => p.stock > 0 && p.stock <= 5
   ).length;
@@ -74,12 +82,29 @@ export default async function AdminDashboardPage() {
         ))}
       </div>
 
-      {outOfStockCount > 0 && (
-        <div className="mt-6 rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
-          🔴 {outOfStockCount} ta mahsulot tugagan —{" "}
-          <Link href="/admin/stock" className="font-semibold underline">
-            Skladni ko&apos;rish
-          </Link>
+      {alerts.length > 0 && (
+        <div className="mt-6 rounded-xl border border-slate-200 bg-white p-5">
+          <h2 className="text-lg font-semibold text-slate-900">
+            Diqqat talab qiladigan holatlar
+          </h2>
+          <div className="mt-3 flex flex-col divide-y divide-slate-100">
+            {alerts.map((alert) => (
+              <div
+                key={alert.id}
+                className="flex items-start gap-2 py-2.5 text-sm"
+              >
+                <span>{ALERT_SEVERITY_ICON[alert.severity] ?? "⚪"}</span>
+                <div>
+                  <p className="font-medium text-slate-800">{alert.title}</p>
+                  {alert.description && (
+                    <p className="text-xs text-slate-500">
+                      {alert.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
