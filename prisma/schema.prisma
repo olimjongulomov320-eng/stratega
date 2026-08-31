@@ -39,25 +39,44 @@ model Product {
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
   rfqItems      RfqItem[]
-
-  // MoySklad integratsiyasi
-  moySkladId        String?   @unique // MoySklad'dagi tovar id (UUID)
-  moySkladCode      String? // artikul, faqat admin uchun
-  moySkladUpdatedAt DateTime? // MoySklad'dagi `updated` maydoni — o'zgarmagan bo'lsa qayta yozmaslik uchun
-  lastSyncedAt      DateTime?
+  stockMoves    StockMove[]
+  priceHistory  PriceHistory[]
 }
 
-model IntegrationSettings {
-  id              String    @id @default(cuid())
-  provider        String    @unique // "moysklad"
-  apiToken        String?
-  priceTypeName   String? // MoySklad'dagi narx turi nomi ("Цена продажи" kabi)
-  isEnabled       Boolean   @default(false)
-  lastSyncAt      DateTime?
-  lastSyncStatus  String? // "SUCCESS" | "ERROR" | "RUNNING"
-  lastSyncError   String?
-  lastSyncSummary Json?
-  updatedAt       DateTime  @updatedAt
+// Narx o'zgarishlari tarixi — mahsulot narxi qachon va qanday o'zgargani.
+model PriceHistory {
+  id        String   @id @default(cuid())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  oldPrice  Int
+  newPrice  Int
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+}
+
+// Har bir ombordagi son o'zgarishi shu yerda qayd etiladi:
+// qo'lda kiritilgan tuzatish, CSV orqali ommaviy yangilash yoki
+// tasdiqlangan arizadan avtomatik yozib olish.
+model StockMove {
+  id         String        @id @default(cuid())
+  product    Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  String
+  change     Int // musbat — kirim, manfiy — chiqim
+  stockAfter Int // o'zgarishdan keyingi ombordagi son
+  reason     StockMoveReason
+  note       String?
+  requestId  String? // ORDER sababli o'zgarishlarni RfqRequest bilan bog'lash uchun
+  createdAt  DateTime      @default(now())
+
+  @@index([productId])
+  @@index([requestId])
+}
+
+enum StockMoveReason {
+  MANUAL // admin panelida qo'lda tuzatish
+  IMPORT // CSV orqali ommaviy yangilash
+  ORDER // tasdiqlangan arizadan avtomatik yozib olish
 }
 
 model User {

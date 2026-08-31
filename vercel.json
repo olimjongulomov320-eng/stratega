@@ -1,5 +1,0 @@
-{
-  "crons": [
-    { "path": "/api/cron/moysklad-sync", "schedule": "0 2 * * *" }
-  ]
-}

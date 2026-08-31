@@ -13,12 +13,20 @@ export default async function AdminProductsPage() {
     <div>
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-slate-900">Mahsulotlar</h1>
-        <Link
-          href="/admin/products/new"
-          className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
-        >
-          + Yangi mahsulot
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/products/import"
+            className="rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-600 transition hover:bg-slate-50"
+          >
+            CSV import
+          </Link>
+          <Link
+            href="/admin/products/new"
+            className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
+          >
+            + Yangi mahsulot
+          </Link>
+        </div>
       </div>
 
       <div className="mt-6 overflow-x-auto rounded-xl border border-slate-200 bg-white">
@@ -61,22 +69,15 @@ export default async function AdminProductsPage() {
                 </td>
                 <td className="px-4 py-3 text-slate-600">{product.stock}</td>
                 <td className="px-4 py-3">
-                  <div className="flex flex-wrap gap-1.5">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                        product.isActive
-                          ? "bg-emerald-50 text-emerald-700"
-                          : "bg-slate-100 text-slate-500"
-                      }`}
-                    >
-                      {product.isActive ? "Faol" : "Nofaol"}
-                    </span>
-                    {product.moySkladId && !product.isActive && (
-                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
-                        Yangi — tekshiring
-                      </span>
-                    )}
-                  </div>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                      product.isActive
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-slate-100 text-slate-500"
+                    }`}
+                  >
+                    {product.isActive ? "Faol" : "Nofaol"}
+                  </span>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center justify-end gap-2">

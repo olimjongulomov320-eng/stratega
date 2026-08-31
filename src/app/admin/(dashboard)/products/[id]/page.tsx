@@ -26,7 +26,6 @@ export default async function EditProductPage(
         <ProductForm
           categories={categories}
           productId={product.id}
-          isMoySkladSynced={product.moySkladId !== null}
           initialValues={{
             name: product.name,
             description: product.description,

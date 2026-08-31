@@ -63,6 +63,36 @@ body {
 .product-grid > *:nth-child(6) { animation-delay: 150ms; }
 .product-grid > *:nth-child(n + 7) { animation-delay: 170ms; }
 
+.stock-table-rows > * {
+  animation: fade-in-up 0.25s ease-out both;
+}
+
+.stock-table-rows > *:nth-child(1) { animation-delay: 0ms; }
+.stock-table-rows > *:nth-child(2) { animation-delay: 20ms; }
+.stock-table-rows > *:nth-child(3) { animation-delay: 40ms; }
+.stock-table-rows > *:nth-child(4) { animation-delay: 60ms; }
+.stock-table-rows > *:nth-child(5) { animation-delay: 80ms; }
+.stock-table-rows > *:nth-child(6) { animation-delay: 100ms; }
+.stock-table-rows > *:nth-child(7) { animation-delay: 120ms; }
+.stock-table-rows > *:nth-child(8) { animation-delay: 140ms; }
+.stock-table-rows > *:nth-child(n + 9) { animation-delay: 150ms; }
+
+@keyframes save-pulse {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-save-pulse {
+  animation: save-pulse 0.3s ease-out both;
+}
+
 @keyframes modal-in {
   from {
     opacity: 0;
@@ -98,7 +128,9 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .animate-fade-in-up,
   .animate-modal-in,
-  .brand-marquee {
+  .brand-marquee,
+  .stock-table-rows > *,
+  .animate-save-pulse {
     animation: none;
   }
 }

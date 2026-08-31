@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { recordStockChange } from "@/lib/stock";
 
 export type ProductFormResult = { ok: true } | { ok: false; error: string };
 
@@ -50,19 +51,30 @@ export async function createProduct(
     slug = `${slug}-${Date.now().toString(36)}`;
   }
 
-  await prisma.product.create({
-    data: {
-      slug,
-      name,
-      description: input.description.trim(),
-      price: input.price,
-      oldPrice: input.oldPrice,
-      imageUrl: input.imageUrl,
-      categoryId: input.categoryId,
-      stock: input.stock,
-      isActive: input.isActive,
-      isFeatured: input.isFeatured,
-    },
+  await prisma.$transaction(async (tx) => {
+    const created = await tx.product.create({
+      data: {
+        slug,
+        name,
+        description: input.description.trim(),
+        price: input.price,
+        oldPrice: input.oldPrice,
+        imageUrl: input.imageUrl,
+        categoryId: input.categoryId,
+        stock: input.stock,
+        isActive: input.isActive,
+        isFeatured: input.isFeatured,
+      },
+    });
+
+    if (input.stock !== 0) {
+      await recordStockChange(tx, {
+        productId: created.id,
+        change: input.stock,
+        reason: "MANUAL",
+        note: "Boshlang'ich qoldiq",
+      });
+    }
   });
 
   revalidatePath("/admin/products");
@@ -81,30 +93,46 @@ export async function updateProduct(
   if (!input.categoryId) return { ok: false, error: "Kategoriyani tanlang." };
   if (input.price <= 0) return { ok: false, error: "Narx noto'g'ri." };
 
-  const existing = await prisma.product.findUnique({
-    where: { id: productId },
-    select: { moySkladId: true, name: true, price: true, stock: true, imageUrl: true },
-  });
-  if (!existing) return { ok: false, error: "Mahsulot topilmadi." };
+  await prisma.$transaction(async (tx) => {
+    const current = await tx.product.findUniqueOrThrow({
+      where: { id: productId },
+      select: { stock: true, price: true },
+    });
 
-  const isMoySkladSynced = existing.moySkladId !== null;
+    await tx.product.update({
+      where: { id: productId },
+      data: {
+        name,
+        description: input.description.trim(),
+        price: input.price,
+        oldPrice: input.oldPrice,
+        imageUrl: input.imageUrl,
+        categoryId: input.categoryId,
+        isActive: input.isActive,
+        isFeatured: input.isFeatured,
+        // stock bu yerda o'zgartirilmaydi — quyidagi recordStockChange
+        // Product.stock ustidan yagona yozuvchi hisoblanadi
+      },
+    });
 
-  await prisma.product.update({
-    where: { id: productId },
-    data: {
-      // MoySklad bilan sinxronlangan mahsulotlarda nomi, narxi, ombordagi
-      // soni va rasmi faqat sinxronizatsiya orqali yangilanadi — disabled
-      // formani chetlab o'tishga urinishlardan himoya.
-      name: isMoySkladSynced ? existing.name : name,
-      description: input.description.trim(),
-      price: isMoySkladSynced ? existing.price : input.price,
-      oldPrice: input.oldPrice,
-      imageUrl: isMoySkladSynced ? existing.imageUrl : input.imageUrl,
-      categoryId: input.categoryId,
-      stock: isMoySkladSynced ? existing.stock : input.stock,
-      isActive: input.isActive,
-      isFeatured: input.isFeatured,
-    },
+    if (input.price !== current.price) {
+      await tx.priceHistory.create({
+        data: {
+          productId,
+          oldPrice: current.price,
+          newPrice: input.price,
+        },
+      });
+    }
+
+    const delta = input.stock - current.stock;
+    if (delta !== 0) {
+      await recordStockChange(tx, {
+        productId,
+        change: delta,
+        reason: "MANUAL",
+      });
+    }
   });
 
   revalidatePath("/admin/products");
