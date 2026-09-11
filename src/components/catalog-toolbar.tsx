@@ -1,7 +1,9 @@
 "use client";
 
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { SORT_LABELS, type SortOption } from "@/lib/product-query";
+import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
+import { useRouter, usePathname } from "@/i18n/navigation";
+import { SORT_OPTIONS, type SortOption } from "@/lib/product-query";
 
 export function CatalogToolbar({
   totalCount,
@@ -13,6 +15,8 @@ export function CatalogToolbar({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const t = useTranslations("catalogToolbar");
+  const tSort = useTranslations("sort");
 
   function updateSort(sort: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -23,19 +27,21 @@ export function CatalogToolbar({
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-4">
       <p className="text-sm text-slate-500">
-        Topildi: <span className="font-semibold text-slate-700">{totalCount}</span> ta
-        mahsulot
+        {t("foundPrefix")}{" "}
+        <span className="font-semibold text-slate-700">
+          {t("foundSuffix", { count: totalCount })}
+        </span>
       </p>
       <div className="flex items-center gap-2">
-        <span className="text-sm text-slate-500">Saralash:</span>
+        <span className="text-sm text-slate-500">{t("sortLabel")}</span>
         <select
           value={currentSort}
           onChange={(e) => updateSort(e.target.value)}
           className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm outline-none focus:border-indigo-400"
         >
-          {Object.entries(SORT_LABELS).map(([value, label]) => (
+          {SORT_OPTIONS.map((value) => (
             <option key={value} value={value}>
-              {label}
+              {tSort(value)}
             </option>
           ))}
         </select>

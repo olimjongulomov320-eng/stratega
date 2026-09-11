@@ -2,13 +2,13 @@ import { Prisma } from "@/generated/prisma/client";
 
 export type SortOption = "popular" | "price_asc" | "price_desc" | "rating" | "newest";
 
-export const SORT_LABELS: Record<SortOption, string> = {
-  popular: "Ommabop",
-  newest: "Yangi qo'shilgan",
-  price_asc: "Arzon narx",
-  price_desc: "Qimmat narx",
-  rating: "Reyting bo'yicha",
-};
+export const SORT_OPTIONS: SortOption[] = [
+  "popular",
+  "newest",
+  "price_asc",
+  "price_desc",
+  "rating",
+];
 
 export function parseSortOption(value: string | undefined): SortOption {
   if (

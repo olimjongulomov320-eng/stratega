@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { useQuickView } from "@/lib/quick-view-context";
 import { useRfq } from "@/lib/rfq-context";
 import { useWishlist } from "@/lib/wishlist-context";
@@ -31,6 +32,8 @@ export function QuickViewModal() {
   const [loading, setLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
+  const t = useTranslations("common");
+  const tProduct = useTranslations("product");
 
   useEffect(() => {
     if (!openProductSlug) {
@@ -72,7 +75,7 @@ export function QuickViewModal() {
         <div className="flex justify-end">
           <button
             onClick={close}
-            aria-label="Yopish"
+            aria-label={tProduct("close")}
             className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-6 w-6">
@@ -149,7 +152,7 @@ export function QuickViewModal() {
                 </div>
                 <button
                   onClick={() => toggleWishlist(product.id)}
-                  aria-label="Sevimlilarga qo'shish"
+                  aria-label={t("addToWishlist")}
                   className={`flex h-9 w-9 items-center justify-center rounded-full border transition ${
                     isWishlisted(product.id)
                       ? "border-rose-200 bg-rose-50 text-rose-500"
@@ -187,17 +190,17 @@ export function QuickViewModal() {
                   className="flex-1 rounded-full bg-indigo-600 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-200"
                 >
                   {product.stock <= 0
-                    ? "Tugagan"
+                    ? t("outOfStock")
                     : added
-                      ? "Qo'shildi ✓"
-                      : "Korzinaga qo'shish"}
+                      ? t("added")
+                      : t("addToCart")}
                 </button>
                 <Link
                   href={`/product/${product.slug}`}
                   onClick={close}
                   className="flex-1 rounded-full border border-slate-200 py-2.5 text-center text-sm font-semibold text-slate-700 hover:bg-slate-50"
                 >
-                  To&apos;liq ma&apos;lumot
+                  {tProduct("fullDetails")}
                 </Link>
               </div>
             </div>

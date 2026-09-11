@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRecentlyViewed } from "@/lib/recently-viewed-context";
 import { ProductCard, type ProductCardData } from "@/components/product-card";
 
 export function RecentlyViewedSection({ excludeId }: { excludeId?: string }) {
   const { productIds } = useRecentlyViewed();
   const [products, setProducts] = useState<ProductCardData[]>([]);
+  const t = useTranslations("recentlyViewed");
 
   const relevantIds = productIds.filter((id) => id !== excludeId).slice(0, 6);
 
@@ -45,7 +47,7 @@ export function RecentlyViewedSection({ excludeId }: { excludeId?: string }) {
   return (
     <section className="mt-14 border-t border-slate-200 pt-8">
       <h2 className="mb-5 text-xl font-bold text-slate-800">
-        Yaqinda ko&apos;rilgan
+        {t("heading")}
       </h2>
       <div className="product-grid grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
         {products.map((product) => (

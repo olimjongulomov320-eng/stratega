@@ -1,11 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { useRfq } from "@/lib/rfq-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import { SearchBox } from "@/components/search-box";
 import { LogoMark } from "@/components/logo-mark";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export type HeaderCategory = {
   id: string;
@@ -30,6 +32,7 @@ export function Header({
   const { totalItems } = useRfq();
   const { count: wishlistCount } = useWishlist();
   const [menuOpen, setMenuOpen] = useState(false);
+  const t = useTranslations("header");
 
   return (
     <header className="sticky top-0 z-40">
@@ -39,22 +42,22 @@ export function Header({
           <span className="flex items-center gap-1.5 rounded bg-indigo-600 px-2 py-0.5 font-bold text-white">
             B2B
           </span>
-          <span className="hidden sm:inline">Biznes uchun platforma</span>
+          <span className="hidden sm:inline">{t("topBarTagline")}</span>
           <span className="hidden text-slate-600 md:inline">|</span>
-          <span className="hidden md:inline">
-            Toshkent va O&apos;zbekiston bo&apos;ylab
-          </span>
+          <span className="hidden md:inline">{t("topBarLocation")}</span>
           <div className="ml-auto flex items-center gap-4">
             <Link href="/payment" className="hidden hover:text-white sm:inline">
-              Hujjatlar va NDS
+              {t("docsLink")}
             </Link>
             <Link href="/faq" className="hidden hover:text-white sm:inline">
-              Yordam
+              {t("helpLink")}
             </Link>
             <span className="hidden text-slate-600 sm:inline">|</span>
             <a href="tel:+998993011170" className="font-semibold text-white">
               +998 99 301 11 70
             </a>
+            <span className="hidden text-slate-600 sm:inline">|</span>
+            <LanguageSwitcher className="hidden sm:block [&>button]:border-slate-700 [&>button]:text-slate-300 [&>button]:hover:text-white" />
           </div>
         </div>
       </div>
@@ -80,7 +83,7 @@ export function Header({
                 <line x1="3" y1="12" x2="21" y2="12" />
                 <line x1="3" y1="18" x2="21" y2="18" />
               </svg>
-              Katalog
+              {t("catalogButton")}
             </button>
             {menuOpen && (
               <div className="absolute left-0 top-full z-50 mt-2 w-64 rounded-xl border border-slate-100 bg-white py-2 shadow-lg">
@@ -129,7 +132,7 @@ export function Header({
               <circle cx="12" cy="8" r="4" />
               <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" />
             </svg>
-            {user ? user.companyName ?? user.phone : "Shaxsiy kabinet"}
+            {user ? user.companyName ?? user.phone : t("personalCabinet")}
           </Link>
 
           <Link
@@ -139,7 +142,7 @@ export function Header({
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4">
               <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 1-2 2z" />
             </svg>
-            Mening arizalarim
+            {t("myRequests")}
           </Link>
 
           <Link
@@ -157,7 +160,7 @@ export function Header({
               <circle cx="20" cy="21" r="1" />
               <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
             </svg>
-            <span className="hidden sm:inline">Korzina</span>
+            <span className="hidden sm:inline">{t("cart")}</span>
             {totalItems > 0 && (
               <span className="absolute -right-2 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1 text-xs font-bold text-white">
                 {totalItems}
@@ -167,7 +170,7 @@ export function Header({
 
           <a
             href="tel:+998993011170"
-            aria-label="Qo'ng'iroq qilish"
+            aria-label={t("callAria")}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white transition hover:bg-indigo-700 sm:hidden"
           >
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4.5 w-4.5">
@@ -199,9 +202,10 @@ export function Header({
               href="/compare"
               className="whitespace-nowrap px-3 py-2.5 text-sm font-medium text-slate-600 hover:text-indigo-600"
             >
-              Solishtirish
+              {t("compareBar")}
             </Link>
           </nav>
+          <LanguageSwitcher className="shrink-0 py-1.5 sm:hidden" />
         </div>
       </div>
     </header>

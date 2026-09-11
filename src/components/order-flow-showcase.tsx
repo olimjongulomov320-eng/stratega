@@ -1,17 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 
 const STEPS = [
-  { icon: "🔍", label: "Katalogdan tanlash", desc: "Kerakli texnikani katalogdan tanlaysiz" },
-  { icon: "📋", label: "Spetsifikatsiya", desc: "So'rovingizni menejerga yuborasiz" },
-  { icon: "🧾", label: "Hisob-faktura", desc: "NDS bilan hujjatlar tayyorlanadi" },
-  { icon: "🚚", label: "Yetkazib berish", desc: "Ob'ektga yoki ombordan olib ketasiz" },
-  { icon: "🛠️", label: "Kafolat xizmati", desc: "O'rnatish va servis yordami" },
-];
+  { icon: "🔍", labelKey: "step1Label", descKey: "step1Desc" },
+  { icon: "📋", labelKey: "step2Label", descKey: "step2Desc" },
+  { icon: "🧾", labelKey: "step3Label", descKey: "step3Desc" },
+  { icon: "🚚", labelKey: "step4Label", descKey: "step4Desc" },
+  { icon: "🛠️", labelKey: "step5Label", descKey: "step5Desc" },
+] as const;
 
 export function OrderFlowShowcase() {
   const [active, setActive] = useState(0);
+  const t = useTranslations("orderFlow");
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -32,15 +34,12 @@ export function OrderFlowShowcase() {
         />
         <div className="relative">
           <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
-            Jarayon
+            {t("eyebrow")}
           </span>
           <h2 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">
-            Buyurtma qanday amalga oshadi
+            {t("heading")}
           </h2>
-          <p className="mt-3 max-w-xl text-slate-600">
-            Tanlovdan yetkazib berishgacha — har bir bosqichda shaxsiy
-            menejer siz bilan aloqada bo&apos;ladi.
-          </p>
+          <p className="mt-3 max-w-xl text-slate-600">{t("subheading")}</p>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-5">
             {STEPS.map((step, i) => {
@@ -48,7 +47,7 @@ export function OrderFlowShowcase() {
               const isDone = i < active;
               return (
                 <div
-                  key={step.label}
+                  key={step.labelKey}
                   className="flex flex-col items-center text-center"
                 >
                   <span
@@ -67,9 +66,9 @@ export function OrderFlowShowcase() {
                       isActive ? "text-indigo-700" : "text-slate-700"
                     }`}
                   >
-                    {step.label}
+                    {t(step.labelKey)}
                   </p>
-                  <p className="mt-1 text-xs text-slate-500">{step.desc}</p>
+                  <p className="mt-1 text-xs text-slate-500">{t(step.descKey)}</p>
                 </div>
               );
             })}
@@ -78,9 +77,9 @@ export function OrderFlowShowcase() {
           <div className="mt-8 flex justify-center gap-1.5">
             {STEPS.map((step, i) => (
               <button
-                key={step.label}
+                key={step.labelKey}
                 onClick={() => setActive(i)}
-                aria-label={`${i + 1}-bosqich`}
+                aria-label={t("stepAria", { step: i + 1 })}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
                   i === active ? "w-6 bg-indigo-600" : "w-1.5 bg-slate-300"
                 }`}

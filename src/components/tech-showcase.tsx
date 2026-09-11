@@ -1,32 +1,31 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 const STEPS = [
-  { icon: "⚡", label: "Quvvat manbai" },
-  { icon: "⚙️", label: "Gidronasos" },
-  { icon: "🔧", label: "Boshqaruv bloki" },
-  { icon: "🔩", label: "Silindr" },
-  { icon: "🏗️", label: "Ish organi" },
-];
+  { icon: "⚡", labelKey: "stepPower" },
+  { icon: "⚙️", labelKey: "stepPump" },
+  { icon: "🔧", labelKey: "stepControl" },
+  { icon: "🔩", labelKey: "stepCylinder" },
+  { icon: "🏗️", labelKey: "stepWorkTool" },
+] as const;
 
 export function TechShowcase() {
   const [withPump, setWithPump] = useState(true);
+  const t = useTranslations("techShowcase");
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
       <div className="grid gap-10 rounded-2xl border border-slate-200 bg-slate-50 p-6 md:grid-cols-2 md:p-10">
         <div>
           <span className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
-            Texnologiya
+            {t("eyebrow")}
           </span>
           <h2 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">
-            Gidravlik tizim qanday ishlaydi
+            {t("heading")}
           </h2>
-          <p className="mt-3 text-slate-600">
-            To&apos;g&apos;ri tanlangan gidravlik uskunalar energiya sarfini
-            kamaytiradi va texnika xizmat muddatini uzaytiradi.
-          </p>
+          <p className="mt-3 text-slate-600">{t("description")}</p>
 
           <div className="mt-5 inline-flex rounded-full border border-slate-200 bg-white p-1">
             <button
@@ -37,7 +36,7 @@ export function TechShowcase() {
                   : "text-slate-500 hover:text-slate-700"
               }`}
             >
-              Nasozsiz
+              {t("toggleWithout")}
             </button>
             <button
               onClick={() => setWithPump(true)}
@@ -47,7 +46,7 @@ export function TechShowcase() {
                   : "text-slate-500 hover:text-slate-700"
               }`}
             >
-              Gidronasos bilan
+              {t("toggleWith")}
             </button>
           </div>
 
@@ -56,19 +55,19 @@ export function TechShowcase() {
               <p className="text-xl font-bold text-emerald-700">
                 {withPump ? "−30%" : "0%"}
               </p>
-              <p className="text-xs text-emerald-700/70">Energiya sarfi</p>
+              <p className="text-xs text-emerald-700/70">{t("statEnergy")}</p>
             </div>
             <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-center">
               <p className="text-xl font-bold text-emerald-700">
                 {withPump ? "+40%" : "0%"}
               </p>
-              <p className="text-xs text-emerald-700/70">Xizmat muddati</p>
+              <p className="text-xs text-emerald-700/70">{t("statLifetime")}</p>
             </div>
             <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-center">
               <p className="text-xl font-bold text-emerald-700">
                 {withPump ? "+25%" : "0%"}
               </p>
-              <p className="text-xs text-emerald-700/70">Tizim FIK</p>
+              <p className="text-xs text-emerald-700/70">{t("statEfficiency")}</p>
             </div>
           </div>
         </div>
@@ -76,7 +75,7 @@ export function TechShowcase() {
         <div className="flex flex-col justify-center gap-6 rounded-2xl bg-white p-6 shadow-sm">
           <div className="-mx-6 flex items-center gap-0 overflow-x-auto px-6 sm:mx-0 sm:justify-between sm:px-0">
             {STEPS.map((step, i) => (
-              <div key={step.label} className="flex shrink-0 items-center">
+              <div key={step.labelKey} className="flex shrink-0 items-center">
                 <div className="flex w-16 flex-col items-center gap-1.5">
                   <span
                     className={`flex h-12 w-12 items-center justify-center rounded-xl text-xl transition ${
@@ -88,7 +87,7 @@ export function TechShowcase() {
                     {step.icon}
                   </span>
                   <span className="max-w-[4.5rem] text-center text-[11px] text-slate-500">
-                    {step.label}
+                    {t(step.labelKey)}
                   </span>
                 </div>
                 {i < STEPS.length - 1 && (
@@ -109,9 +108,7 @@ export function TechShowcase() {
                 : "border-slate-200 bg-slate-50 text-slate-500"
             }`}
           >
-            {withPump
-              ? "✓ Tizim barqaror bosim bilan samarali ishlamoqda"
-              : "Tizim bosimi nazoratsiz — uskunaga ortiqcha yuk tushishi mumkin"}
+            {withPump ? t("statusOk") : t("statusWarning")}
           </div>
         </div>
       </div>

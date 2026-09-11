@@ -1,17 +1,20 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import type { HeaderCategory } from "@/components/header";
 
-export function CategorySidebar({
+export async function CategorySidebar({
   categories,
   activeSlug,
 }: {
   categories: HeaderCategory[];
   activeSlug?: string;
 }) {
+  const t = await getTranslations("categorySidebar");
+
   return (
     <div className="flex flex-col gap-1">
       <h3 className="mb-2 text-sm font-semibold text-slate-700">
-        Kategoriyalar
+        {t("heading")}
       </h3>
       {categories.map((cat) => (
         <Link

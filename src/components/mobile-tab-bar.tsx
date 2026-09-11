@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { Link, usePathname } from "@/i18n/navigation";
 import { useRfq } from "@/lib/rfq-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import type { HeaderUser } from "@/components/header";
@@ -55,15 +55,16 @@ export function MobileTabBar({ user }: { user: HeaderUser }) {
   const pathname = usePathname();
   const { totalItems } = useRfq();
   const { count: wishlistCount } = useWishlist();
+  const t = useTranslations("mobileTabBar");
 
   const tabs = [
-    { href: "/", label: "Bosh sahifa", icon: "home" as const, match: (p: string) => p === "/" },
-    { href: "/search", label: "Katalog", icon: "catalog" as const, match: (p: string) => p.startsWith("/search") || p.startsWith("/category") },
-    { href: "/korzina", label: "Korzina", icon: "cart" as const, match: (p: string) => p.startsWith("/korzina"), badge: totalItems },
-    { href: "/wishlist", label: "Sevimli", icon: "heart" as const, match: (p: string) => p.startsWith("/wishlist"), badge: wishlistCount },
+    { href: "/", label: t("home"), icon: "home" as const, match: (p: string) => p === "/" },
+    { href: "/search", label: t("catalog"), icon: "catalog" as const, match: (p: string) => p.startsWith("/search") || p.startsWith("/category") },
+    { href: "/korzina", label: t("cart"), icon: "cart" as const, match: (p: string) => p.startsWith("/korzina"), badge: totalItems },
+    { href: "/wishlist", label: t("wishlist"), icon: "heart" as const, match: (p: string) => p.startsWith("/wishlist"), badge: wishlistCount },
     {
       href: user ? "/kabinet" : "/kirish",
-      label: user ? "Kabinet" : "Kirish",
+      label: user ? t("cabinet") : t("login"),
       icon: "user" as const,
       match: (p: string) => p.startsWith("/kabinet") || p.startsWith("/kirish"),
     },

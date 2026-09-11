@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/navigation";
 import { useRfq } from "@/lib/rfq-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import { useCompare } from "@/lib/compare-context";
@@ -28,6 +29,8 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   const { isComparing, toggle: toggleCompare, maxReached } = useCompare();
   const { open: openQuickView } = useQuickView();
   const [added, setAdded] = useState(false);
+  const t = useTranslations("common");
+  const tProduct = useTranslations("product");
 
   function handleAdd() {
     addItem({
@@ -86,7 +89,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
 
         <button
           onClick={() => toggleWishlist(product.id)}
-          aria-label="Sevimlilarga qo'shish"
+          aria-label={t("addToWishlist")}
           className={`absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm ring-1 ring-slate-100 transition hover:scale-110 hover:shadow-md ${
             isWishlisted(product.id) ? "text-rose-500" : "text-slate-400"
           }`}
@@ -107,13 +110,13 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             onClick={() => openQuickView(product.slug)}
             className="rounded-full bg-slate-900/85 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-900"
           >
-            Tezkor ko&apos;rish
+            {tProduct("quickView")}
           </button>
           <button
             onClick={handleCompareToggle}
             disabled={!comparing && maxReached}
-            aria-label="Solishtirish"
-            title="Solishtirish"
+            aria-label={t("compare")}
+            title={t("compare")}
             className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition disabled:cursor-not-allowed disabled:opacity-40 ${
               comparing
                 ? "bg-indigo-600 text-white"
@@ -153,12 +156,12 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             <circle cx="7.5" cy="17.5" r="1.5" />
             <circle cx="17.5" cy="17.5" r="1.5" />
           </svg>
-          Bepul yetkazib berish
+          {tProduct("freeShipping")}
         </div>
 
         {product.soldCount > 0 && (
           <span className="text-sm text-slate-400">
-            {product.soldCount}+ sotilgan
+            {tProduct("soldSuffix", { count: product.soldCount })}
           </span>
         )}
 
@@ -167,7 +170,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           disabled={outOfStock}
           className="mt-3 w-full rounded-full bg-indigo-600 py-3 text-base font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
         >
-          {outOfStock ? "Tugagan" : added ? "Qo'shildi ✓" : "Korzinaga qo'shish"}
+          {outOfStock ? t("outOfStock") : added ? t("added") : t("addToCart")}
         </button>
       </div>
     </div>

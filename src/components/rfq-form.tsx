@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import { useRfq } from "@/lib/rfq-context";
 import type { ProductCardData } from "@/components/product-card";
 
@@ -9,6 +10,8 @@ export function RfqForm({ product }: { product: ProductCardData }) {
   const { addItem } = useRfq();
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
+  const t = useTranslations("common");
+  const tProduct = useTranslations("product");
   const outOfStock = product.stock <= 0;
 
   function handleAdd() {
@@ -32,7 +35,7 @@ export function RfqForm({ product }: { product: ProductCardData }) {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3">
-        <span className="text-sm font-medium text-slate-600">Miqdor:</span>
+        <span className="text-sm font-medium text-slate-600">{tProduct("quantityLabel")}</span>
         <div className="flex items-center rounded-full border border-slate-200">
           <button
             type="button"
@@ -58,14 +61,14 @@ export function RfqForm({ product }: { product: ProductCardData }) {
           disabled={outOfStock}
           className="flex-1 rounded-full border-2 border-indigo-600 py-3 font-semibold text-indigo-600 transition hover:bg-indigo-50 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
         >
-          Korzinaga qo&apos;shish
+          {t("addToCart")}
         </button>
         <button
           onClick={handleRequestNow}
           disabled={outOfStock}
           className="flex-1 rounded-full bg-indigo-600 py-3 font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-400"
         >
-          {outOfStock ? "Tugagan" : "Narxini so'rash"}
+          {outOfStock ? t("outOfStock") : tProduct("askPrice")}
         </button>
       </div>
     </div>

@@ -1,7 +1,9 @@
 "use client";
 
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { useRouter, usePathname } from "@/i18n/navigation";
 
 export function PriceFilter({
   minParam = "minPrice",
@@ -13,6 +15,7 @@ export function PriceFilter({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const t = useTranslations("priceFilter");
 
   const [min, setMin] = useState(searchParams.get(minParam) ?? "");
   const [max, setMax] = useState(searchParams.get(maxParam) ?? "");
@@ -38,14 +41,14 @@ export function PriceFilter({
 
   return (
     <form onSubmit={apply} className="flex flex-col gap-3">
-      <h3 className="text-sm font-semibold text-slate-700">Narx, so&apos;m</h3>
+      <h3 className="text-sm font-semibold text-slate-700">{t("heading")}</h3>
       <div className="flex items-center gap-2">
         <input
           type="number"
           min={0}
           value={min}
           onChange={(e) => setMin(e.target.value)}
-          placeholder="dan"
+          placeholder={t("fromPlaceholder")}
           className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm outline-none focus:border-indigo-400"
         />
         <span className="text-slate-400">—</span>
@@ -54,7 +57,7 @@ export function PriceFilter({
           min={0}
           value={max}
           onChange={(e) => setMax(e.target.value)}
-          placeholder="gacha"
+          placeholder={t("toPlaceholder")}
           className="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-sm outline-none focus:border-indigo-400"
         />
       </div>
@@ -63,7 +66,7 @@ export function PriceFilter({
           type="submit"
           className="flex-1 rounded-lg bg-indigo-600 py-1.5 text-sm font-semibold text-white hover:bg-indigo-700"
         >
-          Qo&apos;llash
+          {t("apply")}
         </button>
         {(searchParams.get(minParam) || searchParams.get(maxParam)) && (
           <button
@@ -71,7 +74,7 @@ export function PriceFilter({
             onClick={clear}
             className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-50"
           >
-            Tozalash
+            {t("clear")}
           </button>
         )}
       </div>

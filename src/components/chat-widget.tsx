@@ -1,18 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
-const GREETING: ChatMessage = {
-  role: "assistant",
-  content:
-    "Assalomu alaykum! Men Stratega yordamchisiman. Qanday uskuna izlayapsiz — qurilish, gidravlika, klining yoki bog' texnikasimi?",
-};
-
 export function ChatWidget() {
+  const t = useTranslations("chat");
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([GREETING]);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { role: "assistant", content: t("greeting") },
+  ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -40,12 +38,12 @@ export function ChatWidget() {
       const data = await res.json();
       const reply: string = res.ok
         ? data.reply
-        : (data.error ?? "Xatolik yuz berdi. Birozdan so'ng urinib ko'ring.");
+        : (data.error ?? t("genericError"));
       setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
     } catch {
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "Aloqa xatoligi. Internetni tekshirib qayta urinib ko'ring." },
+        { role: "assistant", content: t("connectionError") },
       ]);
     } finally {
       setLoading(false);
@@ -56,7 +54,7 @@ export function ChatWidget() {
     <>
       <button
         onClick={() => setOpen((v) => !v)}
-        aria-label={open ? "Chatni yopish" : "Yordamchi bilan chat"}
+        aria-label={open ? t("closeAria") : t("openAria")}
         className="fixed bottom-20 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition hover:scale-105 hover:bg-indigo-500 active:scale-95 sm:bottom-5 sm:right-5"
       >
         {open ? (
@@ -91,8 +89,8 @@ export function ChatWidget() {
             🤖
           </span>
           <div>
-            <p className="text-sm font-semibold">Stratega yordamchisi</p>
-            <p className="text-xs text-indigo-100">Odatda darhol javob beradi</p>
+            <p className="text-sm font-semibold">{t("title")}</p>
+            <p className="text-xs text-indigo-100">{t("subtitle")}</p>
           </div>
         </div>
 
@@ -135,14 +133,14 @@ export function ChatWidget() {
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Savolingizni yozing..."
+            placeholder={t("placeholder")}
             className="flex-1 rounded-full border border-slate-200 px-4 py-2 text-sm outline-none focus:border-indigo-400"
           />
           <button
             type="submit"
             disabled={loading || !input.trim()}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white transition hover:bg-indigo-500 disabled:opacity-40"
-            aria-label="Yuborish"
+            aria-label={t("sendAria")}
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
               <path d="M2 21l21-9L2 3v7l15 2-15 2v7z" />

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { getLocale } from "next-intl/server";
 import "./globals.css";
 
 const inter = Inter({
@@ -13,13 +14,15 @@ export const metadata: Metadata = {
     "Stratega — elektr shtabelerlar va gidravlik telejkalarni (rohlyalarni) kafolat bilan qulay narxlarda onlayn buyurtma qiling.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
+
   return (
-    <html lang="uz" className={`${inter.variable} h-full antialiased`}>
+    <html lang={locale} className={`${inter.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-white text-slate-800">
         {children}
       </body>

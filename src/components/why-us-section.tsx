@@ -1,4 +1,5 @@
-import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Link } from "@/i18n/navigation";
 import type { HeaderCategory } from "@/components/header";
 
 const CATEGORY_COVER: Record<string, string> = {
@@ -7,36 +8,22 @@ const CATEGORY_COVER: Record<string, string> = {
 };
 
 const TRUST_BADGES = [
-  {
-    icon: "📄",
-    title: "NDS va hujjatlar",
-    description: "Schyot-faktura, nakladnaya, shartnoma",
-  },
-  {
-    icon: "💳",
-    title: "To'lov muddati",
-    description: "Doimiy mijozlar uchun 30 kungacha",
-  },
-  {
-    icon: "👤",
-    title: "Shaxsiy menejer",
-    description: "Barcha savollar bo'yicha ajratilgan aloqa",
-  },
-];
+  { icon: "📄", titleKey: "vatBadgeTitle", descKey: "vatBadgeDesc" },
+  { icon: "💳", titleKey: "paymentTermTitle", descKey: "paymentTermDesc" },
+  { icon: "👤", titleKey: "managerTitle", descKey: "managerDesc" },
+] as const;
 
-export function WhyUsSection({
+export async function WhyUsSection({
   categories,
 }: {
   categories: HeaderCategory[];
 }) {
+  const t = await getTranslations("whyUs");
+
   return (
     <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-      <h2 className="text-xl font-bold text-slate-800">
-        Nima uchun bizdan komplektlaysiz
-      </h2>
-      <p className="mt-1 text-slate-500">
-        Ombor va logistika uchun professional yuk ko&apos;tarish texnikasi
-      </p>
+      <h2 className="text-xl font-bold text-slate-800">{t("heading")}</h2>
+      <p className="mt-1 text-slate-500">{t("subheading")}</p>
 
       <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {categories.map((cat) => (
@@ -56,7 +43,7 @@ export function WhyUsSection({
             <div className="p-4">
               <h3 className="font-semibold text-slate-800">{cat.name}</h3>
               <span className="text-xs text-slate-400">
-                {cat.productCount} ta mahsulot
+                {t("categoryProductCount", { count: cat.productCount })}
               </span>
             </div>
           </Link>
@@ -66,13 +53,13 @@ export function WhyUsSection({
       <div className="mt-6 grid gap-3 sm:grid-cols-3">
         {TRUST_BADGES.map((badge) => (
           <div
-            key={badge.title}
+            key={badge.titleKey}
             className="flex items-start gap-3 rounded-xl border border-slate-200 p-4"
           >
             <span className="text-2xl">{badge.icon}</span>
             <div>
-              <h4 className="font-semibold text-slate-800">{badge.title}</h4>
-              <p className="text-sm text-slate-500">{badge.description}</p>
+              <h4 className="font-semibold text-slate-800">{t(badge.titleKey)}</h4>
+              <p className="text-sm text-slate-500">{t(badge.descKey)}</p>
             </div>
           </div>
         ))}

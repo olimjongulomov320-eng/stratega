@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
+import { Link, useRouter } from "@/i18n/navigation";
 import { formatSum } from "@/lib/format";
 
 type Suggestion = {
@@ -17,6 +17,7 @@ export function SearchBox({ mobile = false }: { mobile?: boolean }) {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations("search");
 
   useEffect(() => {
     const q = query.trim();
@@ -98,7 +99,7 @@ export function SearchBox({ mobile = false }: { mobile?: boolean }) {
             onFocus={() => setOpen(true)}
             onKeyDown={handleKeyDown}
             type="text"
-            placeholder={mobile ? "Qidirish..." : "Mahsulot, brend yoki kategoriya qidirish..."}
+            placeholder={mobile ? t("placeholderMobile") : t("placeholderDesktop")}
             className="w-full bg-transparent px-3 text-sm outline-none placeholder:text-slate-400"
           />
         </div>
@@ -107,15 +108,15 @@ export function SearchBox({ mobile = false }: { mobile?: boolean }) {
       {open && query.trim().length >= 2 && (
         <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-96 overflow-y-auto rounded-xl border border-slate-100 bg-white py-2 shadow-xl">
           {!suggestions ? (
-            <p className="px-4 py-3 text-sm text-slate-400">Qidirilmoqda...</p>
+            <p className="px-4 py-3 text-sm text-slate-400">{t("loading")}</p>
           ) : flatResults.length === 0 ? (
-            <p className="px-4 py-3 text-sm text-slate-400">Hech narsa topilmadi</p>
+            <p className="px-4 py-3 text-sm text-slate-400">{t("noResults")}</p>
           ) : (
             <>
               {suggestions.categories.length > 0 && (
                 <div className="px-2 pb-1">
                   <p className="px-2 py-1 text-xs font-semibold uppercase text-slate-400">
-                    Kategoriyalar
+                    {t("categoriesSection")}
                   </p>
                   {suggestions.categories.map((cat, i) => (
                     <Link
@@ -135,7 +136,7 @@ export function SearchBox({ mobile = false }: { mobile?: boolean }) {
               {suggestions.products.length > 0 && (
                 <div className="px-2 pt-1">
                   <p className="px-2 py-1 text-xs font-semibold uppercase text-slate-400">
-                    Mahsulotlar
+                    {t("productsSection")}
                   </p>
                   {suggestions.products.map((p, i) => {
                     const idx = suggestions.categories.length + i;
@@ -169,7 +170,7 @@ export function SearchBox({ mobile = false }: { mobile?: boolean }) {
                 onClick={() => goToSearch(query.trim())}
                 className="mt-1 w-full border-t border-slate-100 px-4 py-2.5 text-left text-sm font-medium text-indigo-600 hover:bg-indigo-50"
               >
-                &quot;{query.trim()}&quot; bo&apos;yicha barcha natijalarni ko&apos;rish →
+                {t("viewAllResults", { query: query.trim() })}
               </button>
             </>
           )}
