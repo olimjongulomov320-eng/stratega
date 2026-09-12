@@ -10,33 +10,39 @@ import { ProductCard } from "@/components/product-card";
 import { getDemoReviews } from "@/lib/demo-reviews";
 import { TrackView } from "@/components/track-view";
 import { RecentlyViewedSection } from "@/components/recently-viewed-section";
+import { localizeProduct, localizeCategory } from "@/lib/localize";
 
 export default async function ProductPage(props: PageProps<"/[locale]/product/[slug]">) {
   const { slug } = await props.params;
   const t = await getTranslations("product");
   const tCommon = await getTranslations("common");
+  const locale = (await getLocale()) as AppLocale;
 
-  const product = await prisma.product.findUnique({
+  const productRaw = await prisma.product.findUnique({
     where: { slug },
     include: { category: true },
   });
-  if (!product || !product.isActive) notFound();
+  if (!productRaw || !productRaw.isActive) notFound();
+  const product = {
+    ...localizeProduct(productRaw, locale),
+    category: localizeCategory(productRaw.category, locale),
+  };
 
-  const relatedProducts = await prisma.product.findMany({
+  const relatedProductsRaw = await prisma.product.findMany({
     where: {
-      categoryId: product.categoryId,
+      categoryId: productRaw.categoryId,
       isActive: true,
-      id: { not: product.id },
+      id: { not: productRaw.id },
     },
     take: 6,
     orderBy: { soldCount: "desc" },
   });
+  const relatedProducts = relatedProductsRaw.map((p) => localizeProduct(p, locale));
 
   const discountPercent = product.oldPrice
     ? Math.round(100 - (product.price / product.oldPrice) * 100)
     : null;
 
-  const locale = (await getLocale()) as AppLocale;
   const reviews = getDemoReviews(product.id, product.reviewCount, locale);
 
   return (

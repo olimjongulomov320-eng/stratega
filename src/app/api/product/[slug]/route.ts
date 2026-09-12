@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getRequestLocale } from "@/lib/request-locale";
+import { localizeProduct, localizeCategory } from "@/lib/localize";
 
 export async function GET(
   _request: Request,
@@ -7,14 +9,20 @@ export async function GET(
 ) {
   const { slug } = await context.params;
 
-  const product = await prisma.product.findUnique({
+  const productRaw = await prisma.product.findUnique({
     where: { slug },
     include: { category: true },
   });
 
-  if (!product || !product.isActive) {
+  if (!productRaw || !productRaw.isActive) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+
+  const locale = await getRequestLocale();
+  const product = {
+    ...localizeProduct(productRaw, locale),
+    category: localizeCategory(productRaw.category, locale),
+  };
 
   return NextResponse.json({ product });
 }

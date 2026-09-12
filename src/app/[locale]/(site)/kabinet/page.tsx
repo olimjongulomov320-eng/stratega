@@ -4,6 +4,8 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatSum } from "@/lib/format";
 import { LogoutButton } from "@/components/logout-button";
+import { localizeProduct } from "@/lib/localize";
+import type { AppLocale } from "@/i18n/routing";
 
 const STATUS_CLASSNAMES: Record<string, string> = {
   NEW: "bg-blue-50 text-blue-700",
@@ -98,7 +100,7 @@ export default async function KabinetPage() {
                   {request.items.map((item) => (
                     <li key={item.id} className="flex justify-between">
                       <span>
-                        {item.product.name} × {item.quantity}
+                        {localizeProduct(item.product, locale as AppLocale).name} × {item.quantity}
                       </span>
                       <span>{formatSum(item.priceAtQuote * item.quantity)}</span>
                     </li>

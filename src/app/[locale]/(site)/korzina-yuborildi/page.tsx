@@ -1,7 +1,9 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/prisma";
 import { formatSum } from "@/lib/format";
+import { localizeProduct } from "@/lib/localize";
+import type { AppLocale } from "@/i18n/routing";
 
 export default async function ArizaYuborildiPage(
   props: PageProps<"/[locale]/korzina-yuborildi">
@@ -10,6 +12,7 @@ export default async function ArizaYuborildiPage(
   const id = typeof searchParams.id === "string" ? searchParams.id : undefined;
   const t = await getTranslations("cartSent");
   const tCommon = await getTranslations("common");
+  const locale = (await getLocale()) as AppLocale;
 
   const request = id
     ? await prisma.rfqRequest.findUnique({
@@ -38,7 +41,7 @@ export default async function ArizaYuborildiPage(
             {request.items.map((item) => (
               <li key={item.id} className="flex justify-between">
                 <span>
-                  {item.product.name} × {item.quantity}
+                  {localizeProduct(item.product, locale).name} × {item.quantity}
                 </span>
                 <span>{formatSum(item.priceAtQuote * item.quantity)}</span>
               </li>

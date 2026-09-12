@@ -1,8 +1,10 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product-card";
 import { getCategories } from "@/lib/categories";
+import { localizeProduct } from "@/lib/localize";
+import type { AppLocale } from "@/i18n/routing";
 import { RecentlyViewedSection } from "@/components/recently-viewed-section";
 import { HeroQuickRfqForm } from "@/components/hero-quick-rfq-form";
 import { WhyUsSection } from "@/components/why-us-section";
@@ -26,14 +28,16 @@ const SOCIALS = [
 
 export default async function Home() {
   const t = await getTranslations("home");
-  const [categories, popularProducts] = await Promise.all([
-    getCategories(),
+  const locale = (await getLocale()) as AppLocale;
+  const [categories, popularProductsRaw] = await Promise.all([
+    getCategories(locale),
     prisma.product.findMany({
       where: { isActive: true },
       orderBy: { soldCount: "desc" },
       take: 12,
     }),
   ]);
+  const popularProducts = popularProductsRaw.map((p) => localizeProduct(p, locale));
 
   const headerCategories = categories.map((c) => ({
     id: c.id,

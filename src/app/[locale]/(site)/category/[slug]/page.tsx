@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCategories } from "@/lib/categories";
@@ -8,6 +8,8 @@ import { CategorySidebar } from "@/components/category-sidebar";
 import { PriceFilter } from "@/components/price-filter";
 import { CatalogToolbar } from "@/components/catalog-toolbar";
 import { parseSortOption, sortToOrderBy } from "@/lib/product-query";
+import { localizeProduct, localizeCategory } from "@/lib/localize";
+import type { AppLocale } from "@/i18n/routing";
 import type { Prisma } from "@/generated/prisma/client";
 
 export default async function CategoryPage(
@@ -17,9 +19,11 @@ export default async function CategoryPage(
   const searchParams = await props.searchParams;
   const t = await getTranslations("category");
   const tCommon = await getTranslations("common");
+  const locale = (await getLocale()) as AppLocale;
 
-  const category = await prisma.category.findUnique({ where: { slug } });
-  if (!category) notFound();
+  const categoryRaw = await prisma.category.findUnique({ where: { slug } });
+  if (!categoryRaw) notFound();
+  const category = localizeCategory(categoryRaw, locale);
 
   const sort = parseSortOption(
     typeof searchParams.sort === "string" ? searchParams.sort : undefined
@@ -29,7 +33,7 @@ export default async function CategoryPage(
 
   const where: Prisma.ProductWhereInput = {
     isActive: true,
-    categoryId: category.id,
+    categoryId: categoryRaw.id,
     ...(minPrice !== undefined || maxPrice !== undefined
       ? {
           price: {
@@ -40,10 +44,11 @@ export default async function CategoryPage(
       : {}),
   };
 
-  const [categories, products] = await Promise.all([
-    getCategories(),
+  const [categories, productsRaw] = await Promise.all([
+    getCategories(locale),
     prisma.product.findMany({ where, orderBy: sortToOrderBy(sort) }),
   ]);
+  const products = productsRaw.map((p) => localizeProduct(p, locale));
 
   const headerCategories = categories.map((c) => ({
     id: c.id,

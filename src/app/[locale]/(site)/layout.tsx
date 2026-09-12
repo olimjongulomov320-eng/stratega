@@ -1,3 +1,4 @@
+import { getLocale } from "next-intl/server";
 import { Providers } from "@/lib/providers";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
@@ -5,14 +6,16 @@ import { getCategories } from "@/lib/categories";
 import { getCurrentUser } from "@/lib/auth";
 import { ChatWidget } from "@/components/chat-widget";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
+import type { AppLocale } from "@/i18n/routing";
 
 export default async function SiteLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = (await getLocale()) as AppLocale;
   const [categories, currentUser] = await Promise.all([
-    getCategories(),
+    getCategories(locale),
     getCurrentUser(),
   ]);
   const headerCategories = categories.map((c) => ({

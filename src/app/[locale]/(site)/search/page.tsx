@@ -1,4 +1,4 @@
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 import { prisma } from "@/lib/prisma";
 import { getCategories } from "@/lib/categories";
 import { ProductCard } from "@/components/product-card";
@@ -6,11 +6,14 @@ import { CategorySidebar } from "@/components/category-sidebar";
 import { PriceFilter } from "@/components/price-filter";
 import { CatalogToolbar } from "@/components/catalog-toolbar";
 import { parseSortOption, sortToOrderBy } from "@/lib/product-query";
+import { localizeProduct } from "@/lib/localize";
+import type { AppLocale } from "@/i18n/routing";
 import type { Prisma } from "@/generated/prisma/client";
 
 export default async function SearchPage(props: PageProps<"/[locale]/search">) {
   const searchParams = await props.searchParams;
   const t = await getTranslations("search");
+  const locale = (await getLocale()) as AppLocale;
 
   const query = typeof searchParams.q === "string" ? searchParams.q.trim() : "";
   const sort = parseSortOption(
@@ -26,6 +29,10 @@ export default async function SearchPage(props: PageProps<"/[locale]/search">) {
           OR: [
             { name: { contains: query } },
             { description: { contains: query } },
+            { nameRu: { contains: query } },
+            { descriptionRu: { contains: query } },
+            { nameEn: { contains: query } },
+            { descriptionEn: { contains: query } },
           ],
         }
       : {}),
@@ -39,10 +46,11 @@ export default async function SearchPage(props: PageProps<"/[locale]/search">) {
       : {}),
   };
 
-  const [categories, products] = await Promise.all([
-    getCategories(),
+  const [categories, productsRaw] = await Promise.all([
+    getCategories(locale),
     prisma.product.findMany({ where, orderBy: sortToOrderBy(sort) }),
   ]);
+  const products = productsRaw.map((p) => localizeProduct(p, locale));
 
   const headerCategories = categories.map((c) => ({
     id: c.id,

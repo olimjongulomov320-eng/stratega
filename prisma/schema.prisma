@@ -18,6 +18,8 @@ model Category {
   id        String    @id @default(cuid())
   slug      String    @unique
   name      String
+  nameRu    String? // ruscha tarjima — bo'lmasa "name" (o'zbekcha) ko'rsatiladi
+  nameEn    String? // inglizcha tarjima — bo'lmasa "name" (o'zbekcha) ko'rsatiladi
   icon      String? // emoji yoki icon nomi
   imageUrl  String? // "Nima uchun komplektlaymiz" bloki uchun katta rasm
   sortOrder Int       @default(0)
@@ -35,18 +37,22 @@ enum Unit {
 }
 
 model Product {
-  id          String  @id @default(cuid())
-  slug        String  @unique
-  name        String
-  description String
-  price       Int // narxi, so'mda (chakana — RETAIL narx ro'yxati bilan sinxron)
-  oldPrice    Int? // chegirmagacha bo'lgan narx (agar bo'lsa)
-  imageUrl    String?
-  isActive    Boolean @default(true)
-  isFeatured  Boolean @default(false)
-  rating      Float   @default(0)
-  reviewCount Int     @default(0)
-  soldCount   Int     @default(0)
+  id            String  @id @default(cuid())
+  slug          String  @unique
+  name          String
+  nameRu        String? // ruscha tarjima — bo'lmasa "name" (o'zbekcha) ko'rsatiladi
+  nameEn        String? // inglizcha tarjima — bo'lmasa "name" (o'zbekcha) ko'rsatiladi
+  description   String
+  descriptionRu String? // ruscha tarjima — bo'lmasa "description" ko'rsatiladi
+  descriptionEn String? // inglizcha tarjima — bo'lmasa "description" ko'rsatiladi
+  price         Int // narxi, so'mda (chakana — RETAIL narx ro'yxati bilan sinxron)
+  oldPrice      Int? // chegirmagacha bo'lgan narx (agar bo'lsa)
+  imageUrl      String?
+  isActive      Boolean @default(true)
+  isFeatured    Boolean @default(false)
+  rating        Float   @default(0)
+  reviewCount   Int     @default(0)
+  soldCount     Int     @default(0)
 
   // ERP maydonlari
   sku             String? @unique // ombor artikuli
