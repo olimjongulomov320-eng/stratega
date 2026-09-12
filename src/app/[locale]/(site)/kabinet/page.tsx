@@ -102,14 +102,14 @@ export default async function KabinetPage() {
                       <span>
                         {localizeProduct(item.product, locale as AppLocale).name} × {item.quantity}
                       </span>
-                      <span>{formatSum(item.priceAtQuote * item.quantity)}</span>
+                      <span>{formatSum(item.priceAtQuote * item.quantity, locale)}</span>
                     </li>
                   ))}
                 </ul>
 
                 <div className="mt-3 flex justify-between border-t border-slate-100 pt-3 font-semibold text-slate-800">
                   <span>{tCommon("estimatedTotal")}</span>
-                  <span>{formatSum(total)}</span>
+                  <span>{formatSum(total, locale)}</span>
                 </div>
               </div>
             );

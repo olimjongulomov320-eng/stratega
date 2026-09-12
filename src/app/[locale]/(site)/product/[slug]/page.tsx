@@ -102,11 +102,11 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
 
           <div className="flex items-baseline gap-3">
             <p className="text-3xl font-bold text-indigo-600">
-              {formatSum(product.price)}
+              {formatSum(product.price, locale)}
             </p>
             {product.oldPrice && (
               <p className="text-lg text-slate-400 line-through">
-                {formatSum(product.oldPrice)}
+                {formatSum(product.oldPrice, locale)}
               </p>
             )}
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useQuickView } from "@/lib/quick-view-context";
 import { useRfq } from "@/lib/rfq-context";
@@ -34,6 +34,7 @@ export function QuickViewModal() {
   const [added, setAdded] = useState(false);
   const t = useTranslations("common");
   const tProduct = useTranslations("product");
+  const locale = useLocale();
 
   useEffect(() => {
     if (!openProductSlug) {
@@ -119,11 +120,11 @@ export function QuickViewModal() {
 
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-bold text-indigo-600">
-                  {formatSum(product.price)}
+                  {formatSum(product.price, locale)}
                 </span>
                 {product.oldPrice && (
                   <span className="text-sm text-slate-400 line-through">
-                    {formatSum(product.oldPrice)}
+                    {formatSum(product.oldPrice, locale)}
                   </span>
                 )}
               </div>

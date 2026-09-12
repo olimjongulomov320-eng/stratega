@@ -7,6 +7,7 @@ import { PriceFilter } from "@/components/price-filter";
 import { CatalogToolbar } from "@/components/catalog-toolbar";
 import { parseSortOption, sortToOrderBy } from "@/lib/product-query";
 import { localizeProduct } from "@/lib/localize";
+import { searchQueryVariants } from "@/lib/search-normalize";
 import type { AppLocale } from "@/i18n/routing";
 import type { Prisma } from "@/generated/prisma/client";
 
@@ -26,14 +27,14 @@ export default async function SearchPage(props: PageProps<"/[locale]/search">) {
     isActive: true,
     ...(query
       ? {
-          OR: [
-            { name: { contains: query } },
-            { description: { contains: query } },
-            { nameRu: { contains: query } },
-            { descriptionRu: { contains: query } },
-            { nameEn: { contains: query } },
-            { descriptionEn: { contains: query } },
-          ],
+          OR: searchQueryVariants(query).flatMap((v) => [
+            { name: { contains: v, mode: "insensitive" as const } },
+            { description: { contains: v, mode: "insensitive" as const } },
+            { nameRu: { contains: v, mode: "insensitive" as const } },
+            { descriptionRu: { contains: v, mode: "insensitive" as const } },
+            { nameEn: { contains: v, mode: "insensitive" as const } },
+            { descriptionEn: { contains: v, mode: "insensitive" as const } },
+          ]),
         }
       : {}),
     ...(minPrice !== undefined || maxPrice !== undefined

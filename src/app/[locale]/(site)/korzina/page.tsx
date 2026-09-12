@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { useRfq } from "@/lib/rfq-context";
 import { formatSum } from "@/lib/format";
@@ -13,6 +13,7 @@ export default function KorzinaPage() {
   const t = useTranslations("cart");
   const tCommon = useTranslations("common");
   const tRequestTypes = useTranslations("requestTypes");
+  const locale = useLocale();
 
   const REQUEST_TYPES = [
     tRequestTypes("objectComplectation"),
@@ -107,7 +108,7 @@ export default function KorzinaPage() {
               >
                 {item.name}
               </Link>
-              <p className="text-sm text-slate-500">{formatSum(item.price)}</p>
+              <p className="text-sm text-slate-500">{formatSum(item.price, locale)}</p>
             </div>
 
             <div className="flex items-center rounded-full border border-slate-200">
@@ -131,7 +132,7 @@ export default function KorzinaPage() {
             </div>
 
             <span className="w-28 text-right font-semibold text-slate-800">
-              {formatSum(item.price * item.quantity)}
+              {formatSum(item.price * item.quantity, locale)}
             </span>
 
             <button
@@ -149,7 +150,7 @@ export default function KorzinaPage() {
       <div className="mt-4 flex justify-end text-lg">
         <span className="text-slate-500">{t("estimatedTotalLabel")} </span>
         <span className="ml-2 font-bold text-slate-900">
-          {formatSum(totalPrice)}
+          {formatSum(totalPrice, locale)}
         </span>
       </div>
 

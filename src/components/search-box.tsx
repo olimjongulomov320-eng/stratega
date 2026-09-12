@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Link, useRouter } from "@/i18n/navigation";
 import { formatSum } from "@/lib/format";
 
@@ -18,6 +18,7 @@ export function SearchBox({ mobile = false }: { mobile?: boolean }) {
   const [activeIndex, setActiveIndex] = useState(-1);
   const containerRef = useRef<HTMLDivElement>(null);
   const t = useTranslations("search");
+  const locale = useLocale();
 
   useEffect(() => {
     const q = query.trim();
@@ -159,7 +160,7 @@ export function SearchBox({ mobile = false }: { mobile?: boolean }) {
                         </div>
                         <span className="flex-1 truncate text-slate-700">{p.name}</span>
                         <span className="shrink-0 font-semibold text-slate-900">
-                          {formatSum(p.price)}
+                          {formatSum(p.price, locale)}
                         </span>
                       </Link>
                     );

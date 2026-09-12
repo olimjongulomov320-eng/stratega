@@ -43,7 +43,7 @@ export default async function ArizaYuborildiPage(
                 <span>
                   {localizeProduct(item.product, locale).name} × {item.quantity}
                 </span>
-                <span>{formatSum(item.priceAtQuote * item.quantity)}</span>
+                <span>{formatSum(item.priceAtQuote * item.quantity, locale)}</span>
               </li>
             ))}
           </ul>
@@ -54,7 +54,8 @@ export default async function ArizaYuborildiPage(
                 request.items.reduce(
                   (sum, i) => sum + i.priceAtQuote * i.quantity,
                   0
-                )
+                ),
+                locale
               )}
             </span>
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { useCompare } from "@/lib/compare-context";
 import { useRfq } from "@/lib/rfq-context";
@@ -30,6 +30,7 @@ export default function ComparePage() {
   const [loading, setLoading] = useState(true);
   const t = useTranslations("compare");
   const tCommon = useTranslations("common");
+  const locale = useLocale();
 
   useEffect(() => {
     if (items.length === 0) {
@@ -69,7 +70,7 @@ export default function ComparePage() {
   }
 
   const rows: { label: string; render: (p: CompareProduct) => React.ReactNode }[] = [
-    { label: t("rowPrice"), render: (p) => <span className="font-bold text-indigo-600">{formatSum(p.price)}</span> },
+    { label: t("rowPrice"), render: (p) => <span className="font-bold text-indigo-600">{formatSum(p.price, locale)}</span> },
     { label: t("rowCategory"), render: (p) => p.category.name },
     { label: t("rowRating"), render: (p) => <StarRating rating={p.rating} reviewCount={p.reviewCount} /> },
     { label: t("rowSold"), render: (p) => t("soldValue", { count: p.soldCount }) },
