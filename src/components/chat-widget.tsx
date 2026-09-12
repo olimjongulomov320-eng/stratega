@@ -55,14 +55,14 @@ export function ChatWidget() {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? t("closeAria") : t("openAria")}
-        className="fixed bottom-20 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition hover:scale-105 hover:bg-indigo-500 active:scale-95 sm:bottom-5 sm:right-5"
+        className="fixed bottom-24 right-2 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition hover:scale-105 hover:bg-indigo-500 active:scale-95 sm:bottom-5 sm:right-5 sm:h-14 sm:w-14"
       >
         {open ? (
-          <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg viewBox="0 0 24 24" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
           </svg>
         ) : (
-          <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
+          <svg viewBox="0 0 24 24" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" strokeWidth="2">
             <path
               d="M21 11.5a8.5 8.5 0 01-11.9 7.8L4 21l1.8-5A8.5 8.5 0 1121 11.5z"
               strokeLinecap="round"
@@ -77,7 +77,7 @@ export function ChatWidget() {
       </button>
 
       <div
-        className={`fixed bottom-[9.5rem] right-4 z-50 flex w-[calc(100vw-2rem)] max-w-sm origin-bottom-right flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 sm:bottom-24 sm:right-5 ${
+        className={`fixed bottom-[10rem] right-3 z-50 flex w-[calc(100vw-1.5rem)] max-w-sm origin-bottom-right flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 sm:bottom-24 sm:right-5 ${
           open
             ? "scale-100 opacity-100"
             : "pointer-events-none scale-95 opacity-0"
