@@ -2,11 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useCompare } from "@/lib/compare-context";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 export function ChatWidget() {
   const t = useTranslations("chat");
+  const { count: compareCount } = useCompare();
+  // Solishtirish paneli pastda ko'rinib turganda chat tugmasi u bilan
+  // ustma-ust tushmasligi uchun yuqoriroq ko'tariladi.
+  const liftedForCompareBar = compareCount > 0;
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: "assistant", content: t("greeting") },
@@ -55,7 +60,9 @@ export function ChatWidget() {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? t("closeAria") : t("openAria")}
-        className="fixed bottom-24 right-2 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition hover:scale-105 hover:bg-indigo-500 active:scale-95 sm:bottom-5 sm:right-5 sm:h-14 sm:w-14"
+        className={`fixed right-2 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition hover:scale-105 hover:bg-indigo-500 active:scale-95 sm:right-5 sm:h-14 sm:w-14 ${
+          liftedForCompareBar ? "bottom-40 sm:bottom-24" : "bottom-24 sm:bottom-5"
+        }`}
       >
         {open ? (
           <svg viewBox="0 0 24 24" className="h-5 w-5 sm:h-6 sm:w-6" fill="none" stroke="currentColor" strokeWidth="2">
@@ -77,7 +84,9 @@ export function ChatWidget() {
       </button>
 
       <div
-        className={`fixed bottom-[10rem] right-3 z-50 flex w-[calc(100vw-1.5rem)] max-w-sm origin-bottom-right flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 sm:bottom-24 sm:right-5 ${
+        className={`fixed right-3 z-50 flex w-[calc(100vw-1.5rem)] max-w-sm origin-bottom-right flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 sm:right-5 ${
+          liftedForCompareBar ? "bottom-[13rem] sm:bottom-24" : "bottom-[10rem] sm:bottom-24"
+        } ${
           open
             ? "scale-100 opacity-100"
             : "pointer-events-none scale-95 opacity-0"
