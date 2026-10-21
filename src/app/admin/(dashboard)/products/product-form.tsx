@@ -54,6 +54,16 @@ export function ProductForm({
       ? String(initialValues.minimumStock)
       : "0"
   );
+  const [unit, setUnit] = useState(initialValues?.unit ?? "PIECE");
+  const [reorderPoint, setReorderPoint] = useState(
+    initialValues?.reorderPoint ? String(initialValues.reorderPoint) : ""
+  );
+  const [reorderQuantity, setReorderQuantity] = useState(
+    initialValues?.reorderQuantity ? String(initialValues.reorderQuantity) : ""
+  );
+  const [weightKg, setWeightKg] = useState(
+    initialValues?.weightKg ? String(initialValues.weightKg) : ""
+  );
 
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -117,6 +127,10 @@ export function ProductForm({
       barcode: barcode.trim() || null,
       costPrice: costPrice.trim() ? Number(costPrice) : null,
       minimumStock: Number(minimumStock) || 0,
+      unit,
+      reorderPoint: reorderPoint.trim() ? Number(reorderPoint) : null,
+      reorderQuantity: reorderQuantity.trim() ? Number(reorderQuantity) : null,
+      weightKg: weightKg.trim() ? Number(weightKg) : null,
     };
 
     setSubmitting(true);
@@ -249,6 +263,65 @@ export function ProductForm({
               </option>
             ))}
           </select>
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            O&apos;lchov birligi
+          </label>
+          <select
+            value={unit}
+            onChange={(e) => setUnit(e.target.value)}
+            className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-indigo-400"
+          >
+            <option value="PIECE">Dona</option>
+            <option value="SET">To&apos;plam</option>
+            <option value="KG">Kilogramm</option>
+            <option value="METER">Metr</option>
+            <option value="LITER">Liter</option>
+            <option value="PALLET">Pallet</option>
+            <option value="BOX">Quti</option>
+          </select>
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Qayta buyurtma nuqtasi (ixtiyoriy)
+          </label>
+          <input
+            type="number"
+            value={reorderPoint}
+            onChange={(e) => setReorderPoint(e.target.value)}
+            className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-indigo-400"
+          />
+          <p className="mt-1 text-xs text-slate-400">
+            Shu darajaga tushganda qayta buyurtma tavsiya etiladi.
+          </p>
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Tavsiya buyurtma miqdori (ixtiyoriy)
+          </label>
+          <input
+            type="number"
+            value={reorderQuantity}
+            onChange={(e) => setReorderQuantity(e.target.value)}
+            className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-indigo-400"
+          />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Og&apos;irlik (kg, ixtiyoriy)
+          </label>
+          <input
+            type="number"
+            step="0.01"
+            value={weightKg}
+            onChange={(e) => setWeightKg(e.target.value)}
+            className="w-full rounded-lg border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-indigo-400"
+          />
         </div>
 
         <div>

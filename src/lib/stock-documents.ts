@@ -39,13 +39,44 @@ export type CreateStockDocumentInput = {
   items: StockDocumentItemInput[];
 };
 
+function validateItems(items: StockDocumentItemInput[]) {
+  if (items.length === 0) {
+    throw new Error("Hujjatda kamida bitta mahsulot bo'lishi kerak.");
+  }
+  for (const item of items) {
+    if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
+      throw new Error("Hujjat miqdori musbat butun son bo'lishi kerak.");
+    }
+    if (item.price !== undefined && item.price !== null && item.price < 0) {
+      throw new Error("Hujjat narxi manfiy bo'lishi mumkin emas.");
+    }
+  }
+}
+
+// Raqam generatsiyasi parallel yaratishda to'qnashuvga uchraydi —
+// unique buzilganda tranzaksiyani qayta urinamiz.
+async function withNumberRetry<T>(fn: () => Promise<T>): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      const isUniqueRace =
+        err instanceof Error && "code" in err && (err as { code?: string }).code === "P2002";
+      if (!isUniqueRace) throw err;
+      lastError = err;
+    }
+  }
+  throw lastError instanceof Error
+    ? lastError
+    : new Error("Hujjat raqamini yaratib bo'lmadi.");
+}
+
 export async function createStockDocument(
   input: CreateStockDocumentInput,
   actorId?: string | null
 ) {
-  if (input.items.length === 0) {
-    throw new Error("Hujjatda kamida bitta mahsulot bo'lishi kerak.");
-  }
+  validateItems(input.items);
   if (input.type === "TRANSFER" && !input.destWarehouseId) {
     throw new Error("Ko'chirish hujjati uchun manzil ombor tanlanishi shart.");
   }
@@ -53,44 +84,43 @@ export async function createStockDocument(
     throw new Error("Manba va manzil ombor bir xil bo'lishi mumkin emas.");
   }
 
-  const number = await generateDocumentNumber(input.type);
-
-  const document = await prisma.$transaction(async (tx) => {
-    const doc = await tx.stockDocument.create({
-      data: {
-        number,
-        type: input.type,
-        warehouseId: input.warehouseId,
-        destWarehouseId: input.destWarehouseId ?? null,
-        supplierId: input.supplierId ?? null,
-        responsibleId: input.responsibleId ?? null,
-        note: input.note ?? null,
-        items: {
-          create: input.items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
-            price: item.price ?? null,
-          })),
+  return withNumberRetry(() =>
+    prisma.$transaction(async (tx) => {
+      const number = await generateDocumentNumber(input.type);
+      const doc = await tx.stockDocument.create({
+        data: {
+          number,
+          type: input.type,
+          warehouseId: input.warehouseId,
+          destWarehouseId: input.destWarehouseId ?? null,
+          supplierId: input.supplierId ?? null,
+          responsibleId: input.responsibleId ?? null,
+          note: input.note ?? null,
+          items: {
+            create: input.items.map((item) => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              price: item.price ?? null,
+            })),
+          },
         },
-      },
-      include: { items: true },
-    });
+        include: { items: true },
+      });
 
-    await writeAuditLog(
-      {
-        actorId,
-        action: "stock_document.create",
-        entity: "StockDocument",
-        entityId: doc.id,
-        newData: { number: doc.number, type: doc.type },
-      },
-      tx
-    );
+      await writeAuditLog(
+        {
+          actorId,
+          action: "stock_document.create",
+          entity: "StockDocument",
+          entityId: doc.id,
+          newData: { number: doc.number, type: doc.type },
+        },
+        tx
+      );
 
-    return doc;
-  });
-
-  return document;
+      return doc;
+    })
+  );
 }
 
 // Hujjatni "проводка" qilish — haqiqiy ombor operatsiyasini bajaradi.
@@ -107,7 +137,7 @@ export async function postStockDocument(
 
     if (doc.status !== "DRAFT") {
       throw new Error(
-        `Faqat qoralama (DRAFT) hujjatlar проводка qilinadi. Hozirgi holat: ${doc.status}.`
+        `Faqat qoralama (DRAFT) hujjat qayd etiladi. Hozirgi holat: ${doc.status}.`
       );
     }
 

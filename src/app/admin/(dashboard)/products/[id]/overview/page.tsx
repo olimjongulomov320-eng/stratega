@@ -3,6 +3,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatSum } from "@/lib/format";
 import { getInventoryForecast, getSupplierPrices } from "@/lib/inventory-assistant";
+import { requirePagePermission } from "@/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,7 @@ const UNIT_LABELS: Record<string, string> = {
 export default async function ProductOverviewPage(
   props: PageProps<"/admin/products/[id]/overview">
 ) {
+  await requirePagePermission("products.read");
   const { id } = await props.params;
 
   const [product, stocks, recentPriceHistory, forecast, supplierPrices] =

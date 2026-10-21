@@ -2,12 +2,14 @@ import { notFound, redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { SupplierForm } from "../supplier-form";
+import { requirePagePermission } from "@/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 
 export default async function EditSupplierPage(
   props: PageProps<"/admin/suppliers/[id]">
 ) {
+  await requirePagePermission("suppliers.write");
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }

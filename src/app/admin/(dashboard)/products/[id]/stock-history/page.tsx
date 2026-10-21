@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatSum } from "@/lib/format";
+import { requirePagePermission } from "@/lib/require-permission";
 
 const REASON_LABELS: Record<string, string> = {
   MANUAL: "Qo'lda",
@@ -12,6 +13,7 @@ const REASON_LABELS: Record<string, string> = {
 export default async function StockHistoryPage(
   props: PageProps<"/admin/products/[id]/stock-history">
 ) {
+  await requirePagePermission("stock.read");
   const { id } = await props.params;
 
   const [product, moves, priceMoves] = await Promise.all([

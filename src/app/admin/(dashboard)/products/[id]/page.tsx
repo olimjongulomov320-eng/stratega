@@ -2,10 +2,12 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ProductForm } from "../product-form";
+import { requirePagePermission } from "@/lib/require-permission";
 
 export default async function EditProductPage(
   props: PageProps<"/admin/products/[id]">
 ) {
+  await requirePagePermission("products.write");
   const { id } = await props.params;
 
   const [product, categories] = await Promise.all([
@@ -49,6 +51,10 @@ export default async function EditProductPage(
             barcode: product.barcode,
             costPrice: product.costPrice,
             minimumStock: product.minimumStock,
+            unit: product.unit,
+            reorderPoint: product.reorderPoint,
+            reorderQuantity: product.reorderQuantity,
+            weightKg: product.weightKg,
           }}
         />
       </div>

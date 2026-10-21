@@ -2,10 +2,12 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { OrderForm } from "../order-form";
+import { requirePagePermission } from "@/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewOrderPage() {
+  await requirePagePermission("orders.write");
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }

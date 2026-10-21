@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { EmployeeForm } from "../employee-form";
+import { requirePagePermission } from "@/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewEmployeePage() {
+  await requirePagePermission("users.manage");
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }

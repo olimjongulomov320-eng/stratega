@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { CategoryForm } from "../category-form";
+import { requirePagePermission } from "@/lib/require-permission";
 
 export default async function EditCategoryPage(
   props: PageProps<"/admin/categories/[id]">
 ) {
+  await requirePagePermission("products.write");
   const { id } = await props.params;
 
   const category = await prisma.category.findUnique({ where: { id } });

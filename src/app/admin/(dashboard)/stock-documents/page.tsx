@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { requirePagePermission } from "@/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 
@@ -22,11 +23,12 @@ const STATUS_STYLE: Record<string, string> = {
 
 const STATUS_LABELS: Record<string, string> = {
   DRAFT: "Qoralama",
-  POSTED: "Проведено",
+  POSTED: "Qayd etilgan",
   CANCELLED: "Bekor qilingan",
 };
 
 export default async function StockDocumentsPage() {
+  await requirePagePermission("stock.read");
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }

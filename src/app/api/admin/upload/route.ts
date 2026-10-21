@@ -1,10 +1,12 @@
 import { put } from "@vercel/blob";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { requireAdminPermission } from "@/lib/require-permission";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
-  if (!(await isAdminAuthenticated())) {
+  try {
+    await requireAdminPermission("products.write");
+  } catch {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 

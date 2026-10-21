@@ -1,5 +1,6 @@
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
+import { getCurrentEmployee } from "@/lib/employee-auth";
 
 type TxClient = Prisma.TransactionClient;
 
@@ -31,4 +32,16 @@ export async function writeAuditLog(
       newData: params.newData === undefined ? undefined : (params.newData as Prisma.InputJsonValue),
     },
   });
+}
+
+// Joriy amaldor (xodim yoki umumiy admin) — audit yozuvlari uchun qulay yordamchi.
+export async function actorContext(): Promise<{
+  actorId: string | null;
+  actorLabel: string | null;
+}> {
+  const employee = await getCurrentEmployee();
+  return {
+    actorId: employee?.id ?? null,
+    actorLabel: employee ? null : "admin",
+  };
 }

@@ -3,12 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { formatSum } from "@/lib/format";
 import { WarehouseForm } from "../warehouse-form";
+import { requirePagePermission } from "@/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 
 export default async function WarehouseDetailPage(
   props: PageProps<"/admin/warehouses/[id]">
 ) {
+  await requirePagePermission("stock.write");
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }

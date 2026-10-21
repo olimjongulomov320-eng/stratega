@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { DeleteCategoryButton } from "./delete-button";
+import { requirePagePermission } from "@/lib/require-permission";
 
 export default async function AdminCategoriesPage() {
+  await requirePagePermission("products.read");
   const categories = await prisma.category.findMany({
     orderBy: { sortOrder: "asc" },
     include: { _count: { select: { products: true } } },

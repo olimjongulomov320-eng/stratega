@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createDocument } from "./actions";
+import { BarcodeCameraScanner } from "@/components/barcode-camera-scanner";
 import type { CreateStockDocumentInput } from "@/lib/stock-documents";
 
 type Option = { id: string; name: string };
@@ -41,9 +42,56 @@ export function DocumentForm({
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [barcode, setBarcode] = useState("");
+  const [scanStatus, setScanStatus] = useState<{ ok: boolean; text: string } | null>(null);
 
   const needsPrice = type === "RECEIPT" || type === "ISSUE";
   const isInventory = type === "INVENTORY";
+
+  // Shtrix-kod skaneri: barcode/SKU bo'yicha aniq moslikni topib,
+  // mavjud qatorga qo'shadi (yoki yangi qator ochadi).
+  // `rawCode` berilmasa — input qiymati ishlatiladi (klaviatura/Enter).
+  async function handleBarcodeScan(rawCode?: string) {
+    const q = (rawCode ?? barcode).trim();
+    if (q.length < 2) return;
+    setScanStatus(null);
+    try {
+      const res = await fetch(`/api/admin/product-lookup?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      const match = (data.products ?? []).find(
+        (p: { barcode: string | null; sku: string | null }) =>
+          p.barcode === q || p.sku === q
+      );
+      const found = match ?? (data.products ?? [])[0];
+      if (!found) {
+        setScanStatus({ ok: false, text: `Topilmadi: ${q}` });
+        setBarcode("");
+        return;
+      }
+      // Avval shu mahsulotning mavjud qatorini topamiz, bo'lmasa qator ochamiz.
+      setLines((l) => {
+        const idx = l.findIndex((line) => line.productId === found.id);
+        if (idx >= 0) {
+          return l.map((line, i) =>
+            i === idx
+              ? { ...line, quantity: String((Number(line.quantity) || 0) + 1) }
+              : line
+          );
+        }
+        const emptyIdx = l.findIndex((line) => !line.quantity.trim());
+        if (emptyIdx >= 0) {
+          return l.map((line, i) =>
+            i === emptyIdx ? { ...line, productId: found.id, quantity: "1" } : line
+          );
+        }
+        return [...l, { productId: found.id, quantity: "1", price: "" }];
+      });
+      setScanStatus({ ok: true, text: `${found.name} — qo'shildi` });
+      setBarcode("");
+    } catch {
+      setScanStatus({ ok: false, text: "Skanner so'rovi xatolik berdi." });
+    }
+  }
 
   function addLine() {
     setLines((l) => [
@@ -200,17 +248,56 @@ export function DocumentForm({
       </div>
 
       <div>
-        <div className="mb-2 flex items-center justify-between">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <label className="text-sm font-medium text-slate-700">
             Mahsulotlar {isInventory && "(haqiqiy sanoq miqdori)"}
           </label>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={addLine}
+              className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+            >
+              + Qator qo&apos;shish
+            </button>
+          </div>
+        </div>
+
+        {/* Shtrix-kod skaneri */}
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-3">
+          <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+            📷 Skaner
+          </span>
+          <input
+            type="text"
+            value={barcode}
+            onChange={(e) => setBarcode(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                handleBarcodeScan();
+              }
+            }}
+            placeholder="Shtrix-kod yoki ARTIKUL kiriting va Enter"
+            className="w-72 rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-indigo-400"
+          />
           <button
             type="button"
-            onClick={addLine}
-            className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+            onClick={() => handleBarcodeScan()}
+            className="rounded-lg bg-slate-900 px-3.5 py-2 text-xs font-semibold text-white hover:bg-slate-800"
           >
-            + Qator qo&apos;shish
+            Qo&apos;shish
           </button>
+          <BarcodeCameraScanner onScan={(code) => void handleBarcodeScan(code)} />
+          {scanStatus && (
+            <span
+              className={`text-xs font-medium ${
+                scanStatus.ok ? "text-emerald-600" : "text-rose-600"
+              }`}
+            >
+              {scanStatus.text}
+            </span>
+          )}
         </div>
 
         <div className="flex flex-col gap-2">

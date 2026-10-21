@@ -4,9 +4,9 @@
 // AI yoki taxminiy natija ishlab chiqarmaydi — faqat haqiqiy hisob-kitob.
 
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@/generated/prisma/client";
 import { formatSum } from "@/lib/format";
-
-const LOOKBACK_DAYS = 30;
+import { getIntSetting, SETTING_KEYS } from "@/lib/settings";
 
 function daysAgo(days: number): Date {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
@@ -41,6 +41,9 @@ export type InventoryForecast = {
 };
 
 export async function getInventoryForecast(): Promise<InventoryForecast[]> {
+  const lookbackDays = await getIntSetting(SETTING_KEYS.FORECAST_LOOKBACK_DAYS);
+  const safeLookback = Math.max(lookbackDays, 7);
+
   const [products, recentMoves] = await Promise.all([
     prisma.product.findMany({
       where: { isActive: true },
@@ -48,8 +51,10 @@ export async function getInventoryForecast(): Promise<InventoryForecast[]> {
     }),
     prisma.stockMove.findMany({
       where: {
-        createdAt: { gte: daysAgo(LOOKBACK_DAYS) },
-        reason: "ORDER",
+        createdAt: { gte: daysAgo(safeLookback) },
+        // ORDER — ariza tasdiqlanib yozilgan chiqim (eski oqim),
+        // ISSUE — jo'natma/hujjat bo'yicha chiqim (yangi oqim).
+        reason: { in: ["ORDER", "ISSUE"] },
         change: { lt: 0 },
       },
       select: { productId: true, change: true },
@@ -66,7 +71,7 @@ export async function getInventoryForecast(): Promise<InventoryForecast[]> {
 
   return products.map((p) => {
     const totalConsumed = consumption.get(p.id) ?? 0;
-    const avgDailyConsumption = totalConsumed / LOOKBACK_DAYS;
+    const avgDailyConsumption = totalConsumed / safeLookback;
     const daysUntilStockout =
       avgDailyConsumption <= 0
         ? null
@@ -362,4 +367,315 @@ export async function getTodaysProblems(): Promise<TodaysProblems> {
     pendingOrderCount: pendingOrders.length,
     reorderRecommendationCount: reorderRecs.length,
   };
+}
+
+// ============================================================
+// Savdo / moliya tahlili (boshqaruv paneli va hisobotlar uchun)
+// ============================================================
+
+export type SalesFilters = {
+  from?: Date | null;
+  to?: Date | null;
+  productId?: string | null;
+  categoryId?: string | null;
+  customerId?: string | null;
+  warehouseId?: string | null;
+};
+
+export type RevenueReport = {
+  revenue: number;
+  cogs: number;
+  grossProfit: number;
+  marginPercent: number;
+  orderCount: number;
+  averageOrderValue: number;
+};
+
+function orderItemWhere(filters: SalesFilters): Prisma.OrderItemWhereInput {
+  const orderWhere: Prisma.OrderWhereInput = {
+    status: { notIn: ["DRAFT", "CANCELLED"] },
+  };
+  if (filters.customerId) orderWhere.customerId = filters.customerId;
+  if (filters.warehouseId) orderWhere.warehouseId = filters.warehouseId;
+  if (filters.from || filters.to) {
+    orderWhere.createdAt = {
+      ...(filters.from ? { gte: filters.from } : {}),
+      ...(filters.to ? { lte: filters.to } : {}),
+    };
+  }
+
+  return {
+    order: orderWhere,
+    ...(filters.productId ? { productId: filters.productId } : {}),
+    ...(filters.categoryId
+      ? { product: { categoryId: filters.categoryId } }
+      : {}),
+  };
+}
+
+// --- getRevenueReport() ---
+export async function getRevenueReport(
+  filters: SalesFilters = {}
+): Promise<RevenueReport> {
+  const items = await prisma.orderItem.findMany({
+    where: orderItemWhere(filters),
+    select: { quantity: true, price: true, costPrice: true, orderId: true },
+  });
+
+  let revenue = 0;
+  let cogs = 0;
+  const orderIds = new Set<string>();
+  for (const item of items) {
+    revenue += item.price * item.quantity;
+    cogs += (item.costPrice ?? 0) * item.quantity;
+    orderIds.add(item.orderId);
+  }
+
+  const grossProfit = revenue - cogs;
+  return {
+    revenue,
+    cogs,
+    grossProfit,
+    marginPercent: revenue > 0 ? (grossProfit / revenue) * 100 : 0,
+    orderCount: orderIds.size,
+    averageOrderValue: orderIds.size > 0 ? revenue / orderIds.size : 0,
+  };
+}
+
+// --- getTopCustomers() ---
+export type TopCustomer = {
+  customerId: string | null;
+  companyName: string;
+  orders: number;
+  revenue: number;
+};
+
+export async function getTopCustomers(limit = 10, filters: SalesFilters = {}): Promise<TopCustomer[]> {
+  const items = await prisma.orderItem.findMany({
+    where: orderItemWhere(filters),
+    select: {
+      quantity: true,
+      price: true,
+      order: {
+        select: {
+          id: true,
+          customerId: true,
+          customer: { select: { companyName: true } },
+        },
+      },
+    },
+  });
+
+  const byCustomer = new Map<string, TopCustomer>();
+  const orderSetByCustomer = new Map<string, Set<string>>();
+  for (const item of items) {
+    const key = item.order.customerId ?? "no-customer";
+    const existing = byCustomer.get(key);
+    if (existing) {
+      existing.revenue += item.price * item.quantity;
+    } else {
+      byCustomer.set(key, {
+        customerId: item.order.customerId,
+        companyName: item.order.customer?.companyName ?? "Mijozsiz buyurtmalar",
+        orders: 0,
+        revenue: item.price * item.quantity,
+      });
+      orderSetByCustomer.set(key, new Set());
+    }
+    orderSetByCustomer.get(key)!.add(item.order.id);
+  }
+  for (const [key, orders] of orderSetByCustomer) {
+    byCustomer.get(key)!.orders = orders.size;
+  }
+
+  return Array.from(byCustomer.values())
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, limit);
+}
+
+// --- getSalesByPeriod() ---
+export type PeriodSales = {
+  today: { revenue: number; orders: number };
+  week: { revenue: number; orders: number };
+  month: { revenue: number; orders: number };
+};
+
+export async function getSalesByPeriod(): Promise<PeriodSales> {
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfWeek = new Date(startOfDay.getTime() - ((startOfDay.getDay() + 6) % 7) * 24 * 60 * 60 * 1000);
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const [todayReport, weekReport, monthReport] = await Promise.all([
+    getRevenueReport({ from: startOfDay }),
+    getRevenueReport({ from: startOfWeek }),
+    getRevenueReport({ from: startOfMonth }),
+  ]);
+
+  return {
+    today: { revenue: todayReport.revenue, orders: todayReport.orderCount },
+    week: { revenue: weekReport.revenue, orders: weekReport.orderCount },
+    month: { revenue: monthReport.revenue, orders: monthReport.orderCount },
+  };
+}
+
+// --- getDeadStock() ---
+// O'lik ombor: qoldiq bor, lekin ko'rsatilgan davrda bironta ham sotuv yo'q.
+export type DeadStockItem = {
+  productId: string;
+  name: string;
+  stock: number;
+  value: number;
+  lastSoldAt: Date | null;
+};
+
+export async function getDeadStock(minIdleDays = 60, limit = 50): Promise<DeadStockItem[]> {
+  const cutoff = daysAgo(minIdleDays);
+  const products = await prisma.product.findMany({
+    where: { isActive: true, stock: { gt: 0 } },
+    select: {
+      id: true,
+      name: true,
+      stock: true,
+      price: true,
+      stockMoves: {
+        where: { reason: { in: ["ORDER", "ISSUE"] }, change: { lt: 0 } },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: { createdAt: true },
+      },
+    },
+  });
+
+  return products
+    .filter((p) => p.stockMoves.length === 0 || p.stockMoves[0]!.createdAt < cutoff)
+    .map((p) => ({
+      productId: p.id,
+      name: p.name,
+      stock: p.stock,
+      value: p.stock * p.price,
+      lastSoldAt: p.stockMoves[0]?.createdAt ?? null,
+    }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, limit);
+}
+
+// --- getTurnover() ---
+export type TurnoverReport = {
+  cogs: number;
+  averageInventoryValue: number;
+  turnover: number; // yillik aylanma (COGS / o'rtacha ombor)
+  daysOfStock: number | null;
+};
+
+export async function getTurnover(days = 90): Promise<TurnoverReport> {
+  const report = await getRevenueReport({ from: daysAgo(days) });
+  const products = await prisma.product.findMany({
+    select: { stock: true, price: true },
+  });
+  const inventoryValue = products.reduce((s, p) => s + p.stock * p.price, 0);
+  const annualization = 365 / Math.max(days, 1);
+
+  return {
+    cogs: report.cogs,
+    averageInventoryValue: inventoryValue,
+    turnover: inventoryValue > 0 ? (report.cogs / inventoryValue) * annualization : 0,
+    daysOfStock: report.cogs > 0 ? inventoryValue / (report.cogs / Math.max(days, 1)) : null,
+  };
+}
+
+// ============================================================
+// AI yordamchi uchun vosita reyestri (LLM chaqira oladigan tool'lar)
+// Har bir vosita — haqiqiy deterministik funksiya. Soxta javob yo'q.
+// ============================================================
+
+export type AssistantTool = {
+  name: string;
+  description: string;
+  execute: (args: Record<string, unknown>) => Promise<unknown>;
+};
+
+export const ASSISTANT_TOOLS: AssistantTool[] = [
+  {
+    name: "getLowStockProducts",
+    description: "Kam qolgan (minimumStock dan past) mahsulotlar ro'yxati.",
+    execute: () => getLowStockProducts(),
+  },
+  {
+    name: "getInventoryForecast",
+    description:
+      "Har bir mahsulot uchun kunlik sotuv sur'ati va qoldiq tugash muddati (kunlar).",
+    execute: () => getInventoryForecast(),
+  },
+  {
+    name: "getReorderRecommendations",
+    description:
+      "Qayta buyurtma tavsiyalari: reorder point, tavsiya etilgan miqdor va sabab.",
+    execute: () => getReorderRecommendations(),
+  },
+  {
+    name: "getTopProducts",
+    description: "Eng ko'p sotilgan mahsulotlar (dona va tushum bo'yicha).",
+    execute: (args) => getTopProducts(Number(args.limit) || 10),
+  },
+  {
+    name: "getProductProfitability",
+    description: "Mahsulotlar bo'yicha tushum, tannarx, yalpi foyda va marja.",
+    execute: (args) => getProductProfitability(Number(args.limit) || 10),
+  },
+  {
+    name: "getSupplierPrices",
+    description:
+      "Berilgan mahsulot uchun yetkazib beruvchilar narxlari (arzonlisidan boshlab). args: { productId }",
+    execute: (args) => getSupplierPrices(String(args.productId ?? "")),
+  },
+  {
+    name: "getPendingOrders",
+    description: "Kutilayotgan (yakunlanmagan) buyurtmalar ro'yxati.",
+    execute: () => getPendingOrders(),
+  },
+  {
+    name: "getInventoryValue",
+    description:
+      "Jami ombor qiymati: umumiy, birliklar soni va kategoriyalar bo'yicha.",
+    execute: () => getInventoryValue(),
+  },
+  {
+    name: "getRevenueReport",
+    description:
+      "Savdo hisoboti: tushum, COGS, yalpi foyda, marja, buyurtmalar soni. args: { from?, to?, customerId?, productId? } (ISO sana)",
+    execute: (args) =>
+      getRevenueReport({
+        from: args.from ? new Date(String(args.from)) : null,
+        to: args.to ? new Date(String(args.to)) : null,
+        customerId: args.customerId ? String(args.customerId) : null,
+        productId: args.productId ? String(args.productId) : null,
+      }),
+  },
+  {
+    name: "getTopCustomers",
+    description: "Eng ko'p tushum keltirgan mijozlar.",
+    execute: (args) => getTopCustomers(Number(args.limit) || 10),
+  },
+  {
+    name: "getDeadStock",
+    description:
+      "O'lik ombor: sotuvi bo'lmagan, lekin qoldiq bor mahsulotlar (qiymat bo'yicha).",
+    execute: (args) => getDeadStock(Number(args.minIdleDays) || 60),
+  },
+  {
+    name: "getTurnover",
+    description: "Ombor aylanmasi (yillik) va o'rtacha qoldiq yetarli kunlar.",
+    execute: (args) => getTurnover(Number(args.days) || 90),
+  },
+  {
+    name: "getTodaysProblems",
+    description:
+      "Bugungi muhim muammolar: tugaganlar, tez tugaydiganlar, kutilayotgan buyurtmalar, qayta buyurtma tavsiyalari.",
+    execute: () => getTodaysProblems(),
+  },
+];
+
+export function getAssistantTool(name: string): AssistantTool | undefined {
+  return ASSISTANT_TOOLS.find((t) => t.name === name);
 }

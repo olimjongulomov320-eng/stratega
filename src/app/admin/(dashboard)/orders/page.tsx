@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { formatSum } from "@/lib/format";
 import { CsvExportButton } from "@/components/csv-export-button";
+import { requirePagePermission } from "@/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,7 @@ const STATUS_STYLE: Record<string, string> = {
 };
 
 export default async function OrdersPage() {
+  await requirePagePermission("orders.read");
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }

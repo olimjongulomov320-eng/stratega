@@ -1,12 +1,14 @@
 import { cookies } from "next/headers";
-import { randomBytes } from "crypto";
+import { randomBytes, randomInt } from "crypto";
 import { prisma } from "@/lib/prisma";
 
 const SESSION_COOKIE = "stratega_session";
 const SESSION_DAYS = 30;
 
+// Kriptografik jihatdan tasodifiy 6 xonali kod (Math.random emas —
+// brute-force/prediction himoyasi uchun).
 export function generateOtpCode(): string {
-  return String(Math.floor(100000 + Math.random() * 900000));
+  return String(randomInt(100000, 1000000));
 }
 
 export function normalizePhone(raw: string): string {

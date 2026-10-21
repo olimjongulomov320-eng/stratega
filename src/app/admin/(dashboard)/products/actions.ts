@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { recordStockChange } from "@/lib/stock";
 import { requireAdminPermission } from "@/lib/require-permission";
+import { writeAuditLog } from "@/lib/audit";
+import { getCurrentEmployee } from "@/lib/employee-auth";
 
 export type ProductFormResult = { ok: true } | { ok: false; error: string };
 
@@ -31,12 +33,19 @@ export type ProductInput = {
   barcode: string | null;
   costPrice: number | null;
   minimumStock: number;
+  unit?: string; // PIECE | SET | KG | METER | LITER | PALLET | BOX
+  reorderPoint?: number | null;
+  reorderQuantity?: number | null;
+  weightKg?: number | null;
 };
+
+const ALLOWED_UNITS = ["PIECE", "SET", "KG", "METER", "LITER", "PALLET", "BOX"] as const;
 
 export async function createProduct(
   input: ProductInput
 ): Promise<ProductFormResult> {
   await requireAdminPermission("products.write");
+  const employee = await getCurrentEmployee();
 
   const name = input.name.trim();
   if (!name) return { ok: false, error: "Mahsulot nomini kiriting." };
@@ -66,6 +75,12 @@ export async function createProduct(
         barcode: input.barcode,
         costPrice: input.costPrice,
         minimumStock: input.minimumStock,
+        unit: (ALLOWED_UNITS as readonly string[]).includes(input.unit ?? "")
+          ? (input.unit as (typeof ALLOWED_UNITS)[number])
+          : "PIECE",
+        reorderPoint: input.reorderPoint ?? null,
+        reorderQuantity: input.reorderQuantity ?? null,
+        weightKg: input.weightKg ?? null,
       },
     });
 
@@ -75,8 +90,21 @@ export async function createProduct(
         change: input.stock,
         reason: "MANUAL",
         note: "Boshlang'ich qoldiq",
+        createdBy: employee?.id ?? null,
       });
     }
+
+    await writeAuditLog(
+      {
+        actorId: employee?.id ?? null,
+        actorLabel: employee ? null : "admin",
+        action: "product.create",
+        entity: "Product",
+        entityId: created.id,
+        newData: { name, price: input.price, sku: input.sku },
+      },
+      tx
+    );
   });
 
   revalidatePath("/admin/products");
@@ -89,6 +117,7 @@ export async function updateProduct(
   input: ProductInput
 ): Promise<ProductFormResult> {
   await requireAdminPermission("products.write");
+  const employee = await getCurrentEmployee();
 
   const name = input.name.trim();
   if (!name) return { ok: false, error: "Mahsulot nomini kiriting." };
@@ -98,7 +127,7 @@ export async function updateProduct(
   await prisma.$transaction(async (tx) => {
     const current = await tx.product.findUniqueOrThrow({
       where: { id: productId },
-      select: { stock: true, price: true },
+      select: { stock: true, price: true, name: true, costPrice: true, isActive: true },
     });
 
     await tx.product.update({
@@ -116,6 +145,12 @@ export async function updateProduct(
         barcode: input.barcode,
         costPrice: input.costPrice,
         minimumStock: input.minimumStock,
+        unit: (ALLOWED_UNITS as readonly string[]).includes(input.unit ?? "")
+          ? (input.unit as (typeof ALLOWED_UNITS)[number])
+          : "PIECE",
+        reorderPoint: input.reorderPoint ?? null,
+        reorderQuantity: input.reorderQuantity ?? null,
+        weightKg: input.weightKg ?? null,
         // stock bu yerda o'zgartirilmaydi — quyidagi recordStockChange
         // Product.stock ustidan yagona yozuvchi hisoblanadi
       },
@@ -127,6 +162,8 @@ export async function updateProduct(
           productId,
           oldPrice: current.price,
           newPrice: input.price,
+          changedBy: employee?.id ?? "admin",
+          reason: "Mahsulot tahriri orqali o'zgartirildi",
         },
       });
     }
@@ -137,8 +174,22 @@ export async function updateProduct(
         productId,
         change: delta,
         reason: "MANUAL",
+        createdBy: employee?.id ?? null,
       });
     }
+
+    await writeAuditLog(
+      {
+        actorId: employee?.id ?? null,
+        actorLabel: employee ? null : "admin",
+        action: "product.update",
+        entity: "Product",
+        entityId: productId,
+        oldData: { name: current.name, price: current.price, costPrice: current.costPrice, isActive: current.isActive },
+        newData: { name, price: input.price, costPrice: input.costPrice, isActive: input.isActive },
+      },
+      tx
+    );
   });
 
   revalidatePath("/admin/products");
@@ -146,11 +197,57 @@ export async function updateProduct(
   redirect("/admin/products");
 }
 
+// Mahsulotni o'chirish. Tarixi bor mahsulotlar (ombor harakatlari, buyurtma
+// qatorlari) o'chirilmaydi — faqat nofaollashtiriladi, chunki ombor jurnali
+// (StockMove) muhim audit ma'lumoti hisoblanadi va yo'qolishi mumkin emas.
 export async function deleteProduct(productId: string): Promise<ProductFormResult> {
   await requireAdminPermission("products.write");
+  const employee = await getCurrentEmployee();
 
-  await prisma.rfqItem.deleteMany({ where: { productId } });
-  await prisma.product.delete({ where: { id: productId } });
+  const hasHistory = await prisma.stockMove.findFirst({
+    where: { productId },
+    select: { id: true },
+  });
+  const hasOrderItems = await prisma.orderItem.findFirst({
+    where: { productId },
+    select: { id: true },
+  });
+
+  if (hasHistory || hasOrderItems) {
+    // Faqat nofaollashtiramiz — tarix saqlanadi.
+    await prisma.product.update({
+      where: { id: productId },
+      data: { isActive: false },
+    });
+    await writeAuditLog({
+      actorId: employee?.id ?? null,
+      actorLabel: employee ? null : "admin",
+      action: "product.deactivate",
+      entity: "Product",
+      entityId: productId,
+      newData: { reason: "history-exists" },
+    });
+    revalidatePath("/admin/products");
+    return { ok: true };
+  }
+
+  await prisma.$transaction(async (tx) => {
+    // Tarixiy bog'lanishlar (so'rov/taklif qatorlari) o'chiriladi — lekin
+    // ombor jurnali va buyurtma qatorlari saqlanadi (yukorida tekshirildi).
+    await tx.rfqItem.deleteMany({ where: { productId } });
+    await tx.quotationItem.deleteMany({ where: { productId } });
+    await tx.product.delete({ where: { id: productId } });
+    await writeAuditLog(
+      {
+        actorId: employee?.id ?? null,
+        actorLabel: employee ? null : "admin",
+        action: "product.delete",
+        entity: "Product",
+        entityId: productId,
+      },
+      tx
+    );
+  });
 
   revalidatePath("/admin/products");
   revalidatePath("/");

@@ -8,6 +8,7 @@ import { AttentionPanel, type AttentionItem } from "./attention-panel";
 import { StockCategoryChart, type CategoryValue } from "./stock-category-chart";
 import { StockMovementChart, type DailyMovement } from "./stock-movement-chart";
 import { ExportReportButton } from "./export-report-button";
+import { requirePagePermission } from "@/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +31,7 @@ function daysAgo(days: number): Date {
 }
 
 export default async function StockPage() {
+  await requirePagePermission("stock.read");
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }

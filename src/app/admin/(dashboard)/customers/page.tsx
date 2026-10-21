@@ -5,10 +5,12 @@ import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { formatSum } from "@/lib/format";
 import { DeleteCustomerButton } from "./delete-button";
 import { CsvExportButton } from "@/components/csv-export-button";
+import { requirePagePermission } from "@/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 
 export default async function CustomersPage() {
+  await requirePagePermission("customers.read");
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }

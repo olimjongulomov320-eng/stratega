@@ -1,6 +1,11 @@
+import { requirePagePermission } from "@/lib/require-permission";
 import { CategoryForm } from "../category-form";
 
-export default function NewCategoryPage() {
+export const dynamic = "force-dynamic";
+
+export default async function NewCategoryPage() {
+  await requirePagePermission("products.write");
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-900">Yangi kategoriya</h1>

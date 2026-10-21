@@ -1,119 +1,211 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { requirePagePermission } from "@/lib/require-permission";
 import { formatSum } from "@/lib/format";
 import {
-  getLowStockProducts,
-  getReorderRecommendations,
+  getRevenueReport,
+  getTopCustomers,
   getTopProducts,
   getProductProfitability,
-  getInventoryValue,
-  getPendingOrders,
+  getSalesByPeriod,
+  type SalesFilters,
 } from "@/lib/inventory-assistant";
+import { CsvExportButton } from "@/components/csv-export-button";
 
 export const dynamic = "force-dynamic";
 
-export default async function AnalyticsPage() {
-  if (!(await isAdminAuthenticated())) {
-    redirect("/admin/login");
-  }
+const RANGES = [
+  { key: "7d", label: "7 kun", days: 7 },
+  { key: "30d", label: "30 kun", days: 30 },
+  { key: "90d", label: "90 kun", days: 90 },
+  { key: "365d", label: "1 yil", days: 365 },
+] as const;
 
-  const [
-    lowStock,
-    reorderRecs,
-    topProducts,
-    profitability,
-    inventoryValue,
-    pendingOrders,
-  ] = await Promise.all([
-    getLowStockProducts(),
-    getReorderRecommendations(),
-    getTopProducts(8),
-    getProductProfitability(8),
-    getInventoryValue(),
-    getPendingOrders(),
-  ]);
+type RangeKey = (typeof RANGES)[number]["key"];
+
+function parseRange(key: string | undefined): { filters: SalesFilters; days: number } {
+  const range = RANGES.find((r) => r.key === key) ?? RANGES[1];
+  return {
+    filters: { from: new Date(Date.now() - range.days * 24 * 60 * 60 * 1000) },
+    days: range.days,
+  };
+}
+
+export default async function AnalyticsPage(
+  props: PageProps<"/admin/analytics">
+) {
+  await requirePagePermission("orders.read");
+
+  const sp = await props.searchParams;
+  const rangeKey = typeof sp.range === "string" ? sp.range : "30d";
+  const { filters, days } = parseRange(rangeKey);
+
+  const [report, topCustomers, topProducts, profitability, periods] =
+    await Promise.all([
+      getRevenueReport(filters),
+      getTopCustomers(10, filters),
+      getTopProducts(10),
+      getProductProfitability(10),
+      getSalesByPeriod(),
+    ]);
+
+  const activeKey: RangeKey = (RANGES.find((r) => r.key === rangeKey)?.key ??
+    "30d") as RangeKey;
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-slate-900">Tahlil</h1>
-      <p className="mt-1 text-slate-500">
-        Savdo, ombor va foyda bo&apos;yicha aniq hisob-kitoblar.
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Savdo tahlili</h1>
+          <p className="mt-1 text-slate-500">
+            Haqiqiy buyurtma ma&apos;lumotlaridan hisoblangan tushum, foyda va
+            marja.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/admin/analytics/inventory"
+            className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50"
+          >
+            Inventar tahlili →
+          </Link>
+          <CsvExportButton
+            filename="savdo-tahlili"
+            header={["Ko'rsatkich", "Qiymat"]}
+            rows={[
+              ["Tushum (revenue)", String(report.revenue)],
+              ["Tannarx (COGS)", String(report.cogs)],
+              ["Sof foyda", String(report.grossProfit)],
+              ["Marja %", report.marginPercent.toFixed(1)],
+              ["Buyurtmalar", String(report.orderCount)],
+              ["O'rtacha chek", String(Math.round(report.averageOrderValue))],
+            ]}
+          />
+        </div>
+      </div>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* Davr tanlash */}
+      <div className="mt-6 flex flex-wrap gap-2">
+        {RANGES.map((range) => (
+          <Link
+            key={range.key}
+            href={`/admin/analytics?range=${range.key}`}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+              activeKey === range.key
+                ? "bg-slate-900 text-white"
+                : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            {range.label}
+          </Link>
+        ))}
+      </div>
+
+      {/* Asosiy KPI */}
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-slate-200 bg-white p-5">
           <p className="text-2xl font-black text-slate-900">
-            {inventoryValue.totalValueFormatted}
-          </p>
-          <p className="mt-1 text-sm text-slate-500">Ombor qiymati</p>
-        </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <p className="text-2xl font-black text-slate-900">
-            {lowStock.length}
-          </p>
-          <p className="mt-1 text-sm text-slate-500">Kam qolgan mahsulotlar</p>
-        </div>
-        <div className="rounded-xl border border-slate-200 bg-white p-5">
-          <p className="text-2xl font-black text-slate-900">
-            {reorderRecs.length}
+            {formatSum(report.revenue)}
           </p>
           <p className="mt-1 text-sm text-slate-500">
-            Qayta buyurtma tavsiyasi
+            Tushum ({days} kun)
           </p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-5">
           <p className="text-2xl font-black text-slate-900">
-            {pendingOrders.length}
+            {formatSum(report.cogs)}
+          </p>
+          <p className="mt-1 text-sm text-slate-500">Tannarx (COGS)</p>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <p
+            className={`text-2xl font-black ${
+              report.grossProfit >= 0 ? "text-emerald-600" : "text-rose-600"
+            }`}
+          >
+            {formatSum(report.grossProfit)}
           </p>
           <p className="mt-1 text-sm text-slate-500">
-            Kutilayotgan buyurtmalar
+            Sof foyda · {report.marginPercent.toFixed(1)}% marja
+          </p>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <p className="text-2xl font-black text-slate-900">
+            {report.orderCount}
+          </p>
+          <p className="mt-1 text-sm text-slate-500">
+            Buyurtmalar · o&apos;rtacha {formatSum(report.averageOrderValue)}
           </p>
         </div>
       </div>
 
+      {/* Bugun / hafta / oy */}
+      <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        {[
+          { label: "Bugun", data: periods.today },
+          { label: "Shu hafta", data: periods.week },
+          { label: "Shu oy", data: periods.month },
+        ].map((p) => (
+          <div
+            key={p.label}
+            className="rounded-xl border border-slate-200 bg-white p-5"
+          >
+            <p className="text-lg font-black text-slate-900">
+              {formatSum(p.data.revenue)}
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              {p.label} · {p.data.orders} ta buyurtma
+            </p>
+          </div>
+        ))}
+      </div>
+
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        {/* Top mijozlar */}
         <div className="rounded-xl border border-slate-200 bg-white p-6">
           <h2 className="text-lg font-semibold text-slate-900">
-            Qayta buyurtma tavsiyalari
+            Eng qimmatli mijozlar
           </h2>
-          <p className="mt-1 text-xs text-slate-400">
-            O&apos;rtacha sotuv tezligi, yetkazib berish muddati va zaxira
-            zapas asosida hisoblangan.
-          </p>
+          <p className="text-xs text-slate-400">Tushum bo&apos;yicha.</p>
           <div className="mt-4 flex flex-col divide-y divide-slate-100">
-            {reorderRecs.slice(0, 8).map((r) => (
-              <div key={r.productId} className="flex items-center justify-between py-2.5 text-sm">
-                <div>
-                  <p className="font-medium text-slate-800">{r.name}</p>
-                  <p className="text-xs text-slate-400">{r.reason}</p>
+            {topCustomers.map((c, i) => (
+              <div
+                key={c.customerId ?? `none-${i}`}
+                className="flex items-center justify-between py-2.5 text-sm"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="w-5 text-xs font-semibold text-slate-400">
+                    {i + 1}
+                  </span>
+                  <p className="font-medium text-slate-800">{c.companyName}</p>
                 </div>
                 <div className="text-right">
                   <p className="font-semibold text-slate-800">
-                    +{r.suggestedQuantity}
+                    {formatSum(c.revenue)}
                   </p>
-                  <p className="text-xs text-slate-400">qoldiq: {r.currentStock}</p>
+                  <p className="text-xs text-slate-400">{c.orders} ta buyurtma</p>
                 </div>
               </div>
             ))}
-            {reorderRecs.length === 0 && (
+            {topCustomers.length === 0 && (
               <p className="py-4 text-center text-sm text-slate-400">
-                Hozircha tavsiyalar yo&apos;q.
+                Ma&apos;lumot yo&apos;q.
               </p>
             )}
           </div>
         </div>
 
+        {/* Top mahsulotlar */}
         <div className="rounded-xl border border-slate-200 bg-white p-6">
           <h2 className="text-lg font-semibold text-slate-900">
             Eng ko&apos;p sotilgan mahsulotlar
           </h2>
-          <p className="mt-1 text-xs text-slate-400">
-            Barcha yakunlanmagan buyurtmalar bo&apos;yicha.
-          </p>
+          <p className="text-xs text-slate-400">Barcha vaqt bo&apos;yicha.</p>
           <div className="mt-4 flex flex-col divide-y divide-slate-100">
             {topProducts.map((p, i) => (
-              <div key={p.productId} className="flex items-center justify-between py-2.5 text-sm">
+              <div
+                key={p.productId}
+                className="flex items-center justify-between py-2.5 text-sm"
+              >
                 <div className="flex items-center gap-2">
                   <span className="w-5 text-xs font-semibold text-slate-400">
                     {i + 1}
@@ -130,20 +222,24 @@ export default async function AnalyticsPage() {
             ))}
             {topProducts.length === 0 && (
               <p className="py-4 text-center text-sm text-slate-400">
-                Hozircha savdo yo&apos;q.
+                Savdo yo&apos;q.
               </p>
             )}
           </div>
         </div>
 
+        {/* Marja */}
         <div className="rounded-xl border border-slate-200 bg-white p-6">
           <h2 className="text-lg font-semibold text-slate-900">
             Eng foydali mahsulotlar
           </h2>
-          <p className="mt-1 text-xs text-slate-400">Marja foizi bo&apos;yicha.</p>
+          <p className="text-xs text-slate-400">Marja foizi bo&apos;yicha.</p>
           <div className="mt-4 flex flex-col divide-y divide-slate-100">
             {profitability.map((p) => (
-              <div key={p.productId} className="flex items-center justify-between py-2.5 text-sm">
+              <div
+                key={p.productId}
+                className="flex items-center justify-between py-2.5 text-sm"
+              >
                 <p className="font-medium text-slate-800">{p.name}</p>
                 <div className="text-right">
                   <p
@@ -161,36 +257,38 @@ export default async function AnalyticsPage() {
             ))}
             {profitability.length === 0 && (
               <p className="py-4 text-center text-sm text-slate-400">
-                Hozircha ma&apos;lumot yo&apos;q.
+                Ma&apos;lumot yo&apos;q.
               </p>
             )}
           </div>
         </div>
 
+        {/* Tezkor havolalar */}
         <div className="rounded-xl border border-slate-200 bg-white p-6">
           <h2 className="text-lg font-semibold text-slate-900">
-            Kategoriya bo&apos;yicha ombor qiymati
+            Boshqa hisobotlar
           </h2>
-          <div className="mt-4 flex flex-col divide-y divide-slate-100">
-            {inventoryValue.byCategory.map((c) => (
-              <div key={c.categoryName} className="flex items-center justify-between py-2.5 text-sm">
-                <p className="font-medium text-slate-800">{c.categoryName}</p>
-                <p className="font-semibold text-slate-800">
-                  {formatSum(c.value)}
-                </p>
-              </div>
-            ))}
+          <div className="mt-4 flex flex-col gap-2">
+            <Link
+              href="/admin/analytics/inventory"
+              className="rounded-lg border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Inventar tahlili — aylanma, o&apos;lik ombor, qayta buyurtma →
+            </Link>
+            <Link
+              href="/admin/payments"
+              className="rounded-lg border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              To&apos;lovlar va qarzdorlik →
+            </Link>
+            <Link
+              href="/admin/stock-movements"
+              className="rounded-lg border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Ombor harakatlari jurnali →
+            </Link>
           </div>
         </div>
-      </div>
-
-      <div className="mt-6">
-        <Link
-          href="/admin/stock"
-          className="text-sm font-medium text-indigo-600 hover:underline"
-        >
-          To&apos;liq ombor tahlilini ko&apos;rish →
-        </Link>
       </div>
     </div>
   );

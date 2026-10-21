@@ -2,8 +2,10 @@ import { prisma } from "@/lib/prisma";
 import { formatSum } from "@/lib/format";
 import { StatusSelect } from "./status-select";
 import { ConvertToOrderButton } from "./convert-to-order-button";
+import { requirePagePermission } from "@/lib/require-permission";
 
 export default async function AdminRequestsPage() {
+  await requirePagePermission("orders.read");
   const requests = await prisma.rfqRequest.findMany({
     include: {
       items: { include: { product: true } },

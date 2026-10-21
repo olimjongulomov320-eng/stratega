@@ -3,11 +3,16 @@ import { prisma } from "@/lib/prisma";
 import { reserveStock, releaseStock, recordStockChange } from "@/lib/stock";
 import { writeAuditLog } from "@/lib/audit";
 import { getMainWarehouseId } from "@/lib/warehouse";
+import { getBoolSetting, SETTING_KEYS } from "@/lib/settings";
 
 type TxClient = Prisma.TransactionClient;
 
-export async function generateOrderNumber(): Promise<string> {
-  const count = await prisma.order.count();
+// Raqam generatsiyasi: ORD-000123. Count asosidagi generator parallel
+// chaqiruvlarda dubl yaratishi mumkin — shuning uchun yaratish tranzaksiyasi
+// P2002 (unique) xatosida qayta uriniladi.
+export async function generateOrderNumber(tx?: TxClient): Promise<string> {
+  const client = tx ?? prisma;
+  const count = await client.order.count();
   return `ORD-${String(count + 1).padStart(6, "0")}`;
 }
 
@@ -24,9 +29,26 @@ export type CreateOrderInput = {
   items: OrderItemInput[];
 };
 
-// Buyurtma yaratish — mahsulotlarni band qiladi (reserveStock), lekin
-// jismoniy qoldiqni hali kamaytirmaydi. DRAFT holatda yaratiladi, keyin
-// CONFIRMED holatiga o'tkazilganda zaxira qo'yiladi (pastga qarang).
+// Holatlar jadvali — ixtiyoriy o'tishlar taqiqlanadi.
+const ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  DRAFT: ["CONFIRMED", "CANCELLED"],
+  CONFIRMED: ["PROCESSING", "READY_TO_SHIP", "CANCELLED"],
+  PROCESSING: ["READY_TO_SHIP", "CANCELLED"],
+  READY_TO_SHIP: ["SHIPPED", "PROCESSING", "CANCELLED"],
+  // Jo'natilgan buyurtma faqat "yetkazildi" bo'ladi — ombordan chiqgan
+  // mahsulot qaytarilmaydi (qaytarish uchun alohida RETURN hujjati bor).
+  SHIPPED: ["COMPLETED"],
+  COMPLETED: [],
+  CANCELLED: [],
+};
+
+// UI faqat shu ro'yxatdagi holatlarni ko'rsatadi (server ham tekshiradi).
+export function allowedOrderTransitions(status: OrderStatus): OrderStatus[] {
+  return ORDER_TRANSITIONS[status] ?? [];
+}
+
+// Buyurtma yaratish — mahsulotlarni band qilmaydi (DRAFT), lekin tannarxni
+// snapshotlaydi — foyda hisob-kitobi uchun.
 export async function createOrder(
   input: CreateOrderInput,
   actorId?: string | null
@@ -34,13 +56,32 @@ export async function createOrder(
   if (input.items.length === 0) {
     throw new Error("Buyurtmada kamida bitta mahsulot bo'lishi kerak.");
   }
+  for (const item of input.items) {
+    if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
+      throw new Error("Buyurtma miqdori musbat butun son bo'lishi kerak.");
+    }
+    if (!Number.isFinite(item.price) || item.price < 0) {
+      throw new Error("Buyurtma narxi noto'g'ri.");
+    }
+  }
 
-  const number = await generateOrderNumber();
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return await createOrderInner(input, actorId);
+    } catch (err) {
+      const isUniqueRace =
+        err instanceof Error && "code" in err && (err as { code?: string }).code === "P2002";
+      if (!isUniqueRace || attempt === 2) throw err;
+    }
+  }
+  throw new Error("Buyurtma raqamini yaratib bo'lmadi.");
+}
 
+async function createOrderInner(input: CreateOrderInput, actorId?: string | null) {
   return prisma.$transaction(async (tx) => {
+    const number = await generateOrderNumber(tx);
     const warehouseId = input.warehouseId ?? (await getMainWarehouseId(tx));
 
-    // Narx bilan birga tannarxni ham saqlaymiz — foyda hisob-kitobi uchun.
     const productIds = input.items.map((i) => i.productId);
     const products = await tx.product.findMany({
       where: { id: { in: productIds } },
@@ -73,7 +114,7 @@ export async function createOrder(
         action: "order.create",
         entity: "Order",
         entityId: order.id,
-        newData: { number: order.number },
+        newData: { number: order.number, items: input.items.length },
       },
       tx
     );
@@ -82,21 +123,23 @@ export async function createOrder(
   });
 }
 
-const REVERSIBLE_STATUSES: OrderStatus[] = [
-  "DRAFT",
-  "CONFIRMED",
-  "PROCESSING",
-  "READY_TO_SHIP",
-];
+const RESERVED_STATUSES: OrderStatus[] = ["CONFIRMED", "PROCESSING", "READY_TO_SHIP"];
 
-// Buyurtma holatini o'zgartiradi va tegishli ombor harakatini bajaradi:
-// - DRAFT -> CONFIRMED: mahsulotlarni zaxiralaydi (reserveStock)
-// - ... -> SHIPPED: zaxirani yopib, jismoniy qoldiqni kamaytiradi (ORDER chiqim)
-// - ... -> CANCELLED: agar zaxira qo'yilgan bo'lsa, bo'shatadi
+export type UpdateOrderStatusOptions = {
+  // OWNER/ADMIN roli yoki tizim sozlamasi orqali oshiqcha zaxiraga ruxsat.
+  allowOverReserve?: boolean;
+};
+
+// Buyurtma holatini o'zgartiradi va tegishli ombor harakatlarini bajaradi:
+// - DRAFT -> CONFIRMED: mahsulotlarni zaxiralaydi (reserved += qty)
+// - ... -> SHIPPED: zaxirani yopib, jismoniy qoldiqni kamaytiradi (bir marta!)
+// - ... -> CANCELLED: zaxirani bo'shatadi (agar qo'yilgan bo'lsa)
+// Barcha ombor yozuvlari bitta tranzaksiyada; idempotent (qayta ishga tushirilmaydi).
 export async function updateOrderStatus(
   orderId: string,
   nextStatus: OrderStatus,
-  actorId?: string | null
+  actorId?: string | null,
+  options: UpdateOrderStatusOptions = {}
 ) {
   await prisma.$transaction(async (tx) => {
     const order = await tx.order.findUniqueOrThrow({
@@ -106,26 +149,52 @@ export async function updateOrderStatus(
 
     if (order.status === nextStatus) return;
 
+    const allowed = ORDER_TRANSITIONS[order.status] ?? [];
+    if (!allowed.includes(nextStatus)) {
+      throw new Error(
+        `"${order.status}" holatidan "${nextStatus}" holatiga o'tib bo'lmaydi. Ruxsat etilgan: ${allowed.join(", ") || "yo'q"}.`
+      );
+    }
+
     const warehouseId = order.warehouseId ?? (await getMainWarehouseId(tx));
+    const isReserved = order.stockReservedAt !== null;
 
-    // DRAFT -> CONFIRMED (yoki undan keyingi bosqichlarga to'g'ridan-to'g'ri
-    // o'tish): birinchi marta zaxiralanadi.
-    const wasReserved = order.status !== "DRAFT";
-    const willBeReserved = REVERSIBLE_STATUSES.includes(nextStatus);
-
-    if (!wasReserved && willBeReserved) {
+    // Zaxira: birinchi marta CONFIRMED o'tishida qo'yiladi.
+    if (!isReserved && RESERVED_STATUSES.includes(nextStatus)) {
+      const overReserveAllowed =
+        options.allowOverReserve ??
+        (await getBoolSetting(SETTING_KEYS.ALLOW_OVER_RESERVE));
       for (const item of order.items) {
         await reserveStock(tx, {
           productId: item.productId,
           warehouseId,
           quantity: item.quantity,
-          allowOverReserve: true, // admin qo'lda boshqaradi, qattiq bloklamaymiz
+          allowOverReserve: overReserveAllowed,
         });
       }
+      await tx.order.update({
+        where: { id: orderId },
+        data: { stockReservedAt: new Date() },
+      });
     }
 
-    // ... -> SHIPPED: zaxira yopiladi, jismoniy qoldiq kamayadi.
-    if (nextStatus === "SHIPPED" && order.status !== "SHIPPED") {
+    // Bekor qilinishi: zaxira bo'shatiladi (faqt jo'natilmagan bo'lsa).
+    if (nextStatus === "CANCELLED" && isReserved && order.stockDeductedAt === null) {
+      for (const item of order.items) {
+        await releaseStock(tx, {
+          productId: item.productId,
+          warehouseId,
+          quantity: item.quantity,
+        });
+      }
+      await tx.order.update({
+        where: { id: orderId },
+        data: { stockReservedAt: null },
+      });
+    }
+
+    // Jo'natilishi: zaxira yopiladi + jismoniy qoldiq kamayadi — BIR MARTA.
+    if (nextStatus === "SHIPPED" && order.stockDeductedAt === null) {
       for (const item of order.items) {
         await releaseStock(tx, {
           productId: item.productId,
@@ -140,21 +209,16 @@ export async function updateOrderStatus(
           note: `Buyurtma ${order.number} jo'natildi`,
           referenceType: "Order",
           referenceId: order.id,
-          allowNegative: true,
+        });
+        await tx.product.update({
+          where: { id: item.productId },
+          data: { soldCount: { increment: item.quantity } },
         });
       }
-    }
-
-    // ... -> CANCELLED: agar zaxira qo'yilgan bo'lsa (lekin hali
-    // jo'natilmagan bo'lsa), bo'shatiladi.
-    if (nextStatus === "CANCELLED" && wasReserved && order.status !== "SHIPPED") {
-      for (const item of order.items) {
-        await releaseStock(tx, {
-          productId: item.productId,
-          warehouseId,
-          quantity: item.quantity,
-        });
-      }
+      await tx.order.update({
+        where: { id: orderId },
+        data: { stockDeductedAt: new Date(), stockReservedAt: null },
+      });
     }
 
     await tx.order.update({

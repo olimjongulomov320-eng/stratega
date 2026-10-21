@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
@@ -45,6 +46,16 @@ ${catalogLines}`;
 }
 
 export async function POST(req: Request) {
+  // Rate limit: ochiq endpoint (LLM xarajati) — IP bo'yicha 20 so'rov/daqiqa.
+  const ip = clientIp(req.headers);
+  const limit = rateLimit(`chat:${ip}`, 20, 60 * 1000);
+  if (!limit.ok) {
+    return Response.json(
+      { error: "Juda ko'p so'rov. Birozdan so'ng qayta urinib ko'ring." },
+      { status: 429 }
+    );
+  }
+
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
     return Response.json(

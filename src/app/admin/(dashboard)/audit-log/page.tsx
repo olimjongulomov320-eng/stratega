@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
+import { requirePagePermission } from "@/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,7 @@ const ACTION_LABELS: Record<string, string> = {
 };
 
 export default async function AuditLogPage() {
+  await requirePagePermission("audit.read");
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }

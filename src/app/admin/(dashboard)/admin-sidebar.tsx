@@ -2,62 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { NavGroup } from "./nav";
 
-type NavItem = { href: string; label: string };
-type NavGroup = { title: string; items: NavItem[] };
-
-const NAV_GROUPS: NavGroup[] = [
-  {
-    title: "",
-    items: [{ href: "/admin", label: "Bosh sahifa" }],
-  },
-  {
-    title: "Ombor",
-    items: [
-      { href: "/admin/products", label: "Mahsulotlar" },
-      { href: "/admin/categories", label: "Kategoriyalar" },
-      { href: "/admin/stock", label: "Sklad" },
-      { href: "/admin/warehouses", label: "Omborlar" },
-      { href: "/admin/stock-documents", label: "Ombor hujjatlari" },
-    ],
-  },
-  {
-    title: "Savdo",
-    items: [
-      { href: "/admin/requests", label: "Arizalar" },
-      { href: "/admin/orders", label: "Buyurtmalar" },
-      { href: "/admin/customers", label: "Mijozlar" },
-    ],
-  },
-  {
-    title: "Ta'minot",
-    items: [{ href: "/admin/suppliers", label: "Yetkazib beruvchilar" }],
-  },
-  {
-    title: "Tahlil",
-    items: [{ href: "/admin/analytics", label: "Tahlil" }],
-  },
-  {
-    title: "Tizim",
-    items: [
-      { href: "/admin/employees", label: "Xodimlar" },
-      { href: "/admin/audit-log", label: "Amallar tarixi" },
-    ],
-  },
-];
-
-export function AdminSidebar() {
+// Filtrlangan (sessiya ruxsatiga mos) navigatsiya guruhlarini ko'rsatadi.
+export function AdminSidebar({ groups }: { groups: NavGroup[] }) {
   const pathname = usePathname();
 
   return (
     <nav className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 py-4">
-      {NAV_GROUPS.map((group) => (
-        <div key={group.title || "root"}>
-          {group.title && (
-            <p className="mb-1.5 px-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-              {group.title}
-            </p>
-          )}
+      {groups.map((group) => (
+        <div key={group.title}>
+          <p className="mb-1.5 px-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            {group.title}
+          </p>
           <div className="flex flex-col gap-0.5">
             {group.items.map((item) => {
               const isActive =

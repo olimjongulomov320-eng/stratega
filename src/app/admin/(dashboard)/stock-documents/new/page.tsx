@@ -2,10 +2,12 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { DocumentForm } from "../document-form";
+import { requirePagePermission } from "@/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 
 export default async function NewStockDocumentPage() {
+  await requirePagePermission("stock.write");
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }

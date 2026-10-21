@@ -1,5 +1,6 @@
 import type { Prisma, StockMoveReason } from "@/generated/prisma/client";
 import { getMainWarehouseId } from "@/lib/warehouse";
+import { getBoolSetting, SETTING_KEYS } from "@/lib/settings";
 
 type TxClient = Prisma.TransactionClient;
 
@@ -67,13 +68,17 @@ export async function recordStockChange(
   const currentQty = existing?.quantity ?? 0;
   const nextQty = currentQty + params.change;
 
-  // MANUAL/ORDER/IMPORT — mavjud (eski) oqimlar, ular tarixiy sabablarga
-  // ko'ra manfiy qoldiqqa tushishga ruxsat berilgan (masalan, параллель
-  // arizalar poyga holati). Yangi WMS hujjatlari (RECEIPT/ISSUE/TRANSFER/...)
-  // uchun esa manfiyga tushish standart holatda taqiqlanadi.
-  const legacyReasonsAllowNegative: string[] = ["MANUAL", "ORDER", "IMPORT"];
-  const allowNegative =
-    params.allowNegative ?? legacyReasonsAllowNegative.includes(params.reason);
+  // Manfiy qoldiqqa ruxsat faqat ikki holatda:
+  // 1) chaqiruvchi aniq `allowNegative: true` belgagan bo'lsa (teskari
+  //    harakatlar, inventarizatsiya tuzatishlari);
+  // 2) administrator "stock.allowNegative" sozlamasini yoqgan bo'lsa
+  //    (eski oqimlar: MANUAL/ORDER/IMPORT uchun tarixiy moslik).
+  // Yangi WMS hujjatlari (RECEIPT/ISSUE/TRANSFER/...) doim qattiq tekshiriladi.
+  const legacyReasons: string[] = ["MANUAL", "ORDER", "IMPORT"];
+  let allowNegative = params.allowNegative === true;
+  if (!allowNegative && params.allowNegative === undefined && legacyReasons.includes(params.reason)) {
+    allowNegative = await getBoolSetting(SETTING_KEYS.ALLOW_NEGATIVE_STOCK);
+  }
 
   if (nextQty < 0 && !allowNegative) {
     throw new Error(

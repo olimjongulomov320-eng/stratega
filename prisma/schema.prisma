@@ -87,6 +87,8 @@ model Product {
   @@index([categoryId])
   @@index([sku])
   @@index([barcode])
+  @@index([isActive])
+  @@index([createdAt])
 }
 
 // Narx o'zgarishlari tarixi — mahsulot narxi qachon va qanday o'zgargani.
@@ -176,8 +178,10 @@ model StockMove {
 
   @@index([productId])
   @@index([warehouseId])
+  @@index([warehouseId, createdAt])
   @@index([requestId])
   @@index([referenceType, referenceId])
+  @@index([reason])
   @@index([createdAt])
 }
 
@@ -369,6 +373,7 @@ model Employee {
 
   sessions       EmployeeSession[]
   stockDocuments StockDocument[]
+  shipments      Shipment[]
   auditLogs      AuditLog[]
   resolvedAlerts Alert[]
 
@@ -446,6 +451,15 @@ model Alert {
   @@index([severity])
   @@index([resolvedAt])
   @@index([createdAt])
+  @@index([entity, entityId])
+}
+
+// Tizim sozlamalari (kalit-qiymat). Muhim holat faqat bazada saqlanadi —
+// clientda emas. Masalan: manfiy qoldiqga ruxsat, kam qoldiq chegarasi.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
 }
 
 // ============================================================
@@ -477,6 +491,7 @@ model OtpCode {
   code      String
   expiresAt DateTime
   usedAt    DateTime?
+  attempts  Int       @default(0) // noto'g'ri urinishlar soni (brute-force himoyasi)
   createdAt DateTime  @default(now())
 
   @@index([phone])
@@ -501,6 +516,9 @@ model RfqRequest {
   updatedAt   DateTime  @updatedAt
 
   quotation Quotation?
+
+  @@index([status])
+  @@index([createdAt])
 }
 
 model RfqItem {
@@ -585,6 +603,12 @@ model Order {
   warehouseId String?
   status      OrderStatus @default(DRAFT)
   note        String?
+
+  // Zaxira/jismoniy yozuv holati — idempotent ombor operatsiyalari uchun:
+  // bir marta zaxiralgan/bir marta yozilgan buyurtma qayta yozilmaydi.
+  stockReservedAt DateTime?
+  stockDeductedAt DateTime?
+
   items       OrderItem[]
   shipments   Shipment[]
   payments    Payment[]
@@ -626,6 +650,8 @@ model Shipment {
   orderId     String
   warehouse   Warehouse?     @relation(fields: [warehouseId], references: [id])
   warehouseId String?
+  responsible Employee?      @relation(fields: [responsibleId], references: [id])
+  responsibleId String?
   status      ShipmentStatus @default(DRAFT)
   note        String?
   items       ShipmentItem[]
@@ -636,6 +662,7 @@ model Shipment {
 
   @@index([orderId])
   @@index([status])
+  @@index([createdAt])
 }
 
 model ShipmentItem {
@@ -666,10 +693,12 @@ model Payment {
   status     PaymentStatus @default(PENDING)
   method     String? // "naqd", "bank o'tkazmasi", ...
   note       String?
+  receivedAt DateTime? // haqiqiy tushum sanasi (hisobotlar uchun)
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 
   @@index([orderId])
   @@index([customerId])
   @@index([status])
+  @@index([receivedAt])
 }

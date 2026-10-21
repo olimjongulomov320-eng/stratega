@@ -23,17 +23,22 @@ export function GlobalSearch() {
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Debounced qidiruv — state faqat timeout callback ichida yangilanadi.
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
     if (query.trim().length < 2) {
-      setResults([]);
-      setLoading(false);
-      return;
+      debounceRef.current = setTimeout(() => {
+        setResults([]);
+        setLoading(false);
+      }, 0);
+      return () => {
+        if (debounceRef.current) clearTimeout(debounceRef.current);
+      };
     }
 
-    setLoading(true);
     debounceRef.current = setTimeout(async () => {
+      setLoading(true);
       try {
         const res = await fetch(
           `/api/admin/search?q=${encodeURIComponent(query.trim())}`

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { formatSum } from "@/lib/format";
 import { DocumentActions } from "../document-actions";
+import { requirePagePermission } from "@/lib/require-permission";
 
 export const dynamic = "force-dynamic";
 
@@ -24,13 +25,14 @@ const STATUS_STYLE: Record<string, string> = {
 
 const STATUS_LABELS: Record<string, string> = {
   DRAFT: "Qoralama",
-  POSTED: "Проведено",
+  POSTED: "Qayd etilgan",
   CANCELLED: "Bekor qilingan",
 };
 
 export default async function StockDocumentDetailPage(
   props: PageProps<"/admin/stock-documents/[id]">
 ) {
+  await requirePagePermission("stock.read");
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }
@@ -121,7 +123,7 @@ export default async function StockDocumentDetailPage(
       <div className="mt-4 text-xs text-slate-400">
         Yaratildi: {new Date(doc.createdAt).toLocaleString("uz-UZ")}
         {doc.postedAt && (
-          <> · Проведено: {new Date(doc.postedAt).toLocaleString("uz-UZ")}</>
+          <> · Qayd etildi: {new Date(doc.postedAt).toLocaleString("uz-UZ")}</>
         )}
         {doc.responsible && <> · Mas&apos;ul: {doc.responsible.name}</>}
       </div>

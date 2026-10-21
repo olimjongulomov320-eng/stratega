@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAdminPermission } from "@/lib/require-permission";
+import { writeAuditLog, actorContext } from "@/lib/audit";
 
 export type CategoryFormResult = { ok: true } | { ok: false; error: string };
 
@@ -27,6 +28,7 @@ export async function createCategory(
   input: CategoryInput
 ): Promise<CategoryFormResult> {
   await requireAdminPermission("products.write");
+  const actor = await actorContext();
 
   const name = input.name.trim();
   if (!name) return { ok: false, error: "Kategoriya nomini kiriting." };
@@ -37,7 +39,7 @@ export async function createCategory(
     slug = `${slug}-${Date.now().toString(36)}`;
   }
 
-  await prisma.category.create({
+  const category = await prisma.category.create({
     data: {
       slug,
       name,
@@ -45,6 +47,14 @@ export async function createCategory(
       imageUrl: input.imageUrl,
       sortOrder: input.sortOrder,
     },
+  });
+
+  await writeAuditLog({
+    ...actor,
+    action: "category.create",
+    entity: "Category",
+    entityId: category.id,
+    newData: { name },
   });
 
   revalidatePath("/admin/categories");
@@ -57,9 +67,12 @@ export async function updateCategory(
   input: CategoryInput
 ): Promise<CategoryFormResult> {
   await requireAdminPermission("products.write");
+  const actor = await actorContext();
 
   const name = input.name.trim();
   if (!name) return { ok: false, error: "Kategoriya nomini kiriting." };
+
+  const current = await prisma.category.findUnique({ where: { id: categoryId } });
 
   await prisma.category.update({
     where: { id: categoryId },
@@ -71,6 +84,15 @@ export async function updateCategory(
     },
   });
 
+  await writeAuditLog({
+    ...actor,
+    action: "category.update",
+    entity: "Category",
+    entityId: categoryId,
+    oldData: { name: current?.name },
+    newData: { name },
+  });
+
   revalidatePath("/admin/categories");
   revalidatePath("/");
   redirect("/admin/categories");
@@ -80,6 +102,7 @@ export async function deleteCategory(
   categoryId: string
 ): Promise<CategoryFormResult> {
   await requireAdminPermission("products.write");
+  const actor = await actorContext();
 
   const productCount = await prisma.product.count({
     where: { categoryId },
@@ -91,7 +114,16 @@ export async function deleteCategory(
     };
   }
 
+  const category = await prisma.category.findUnique({ where: { id: categoryId } });
   await prisma.category.delete({ where: { id: categoryId } });
+
+  await writeAuditLog({
+    ...actor,
+    action: "category.delete",
+    entity: "Category",
+    entityId: categoryId,
+    oldData: { name: category?.name },
+  });
 
   revalidatePath("/admin/categories");
   revalidatePath("/");

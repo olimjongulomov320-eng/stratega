@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
-import { getInventoryForecast, getReorderRecommendations } from "@/lib/inventory-assistant";
+import { getInventoryForecast } from "@/lib/inventory-assistant";
+import { getIntSetting, SETTING_KEYS } from "@/lib/settings";
 import type { AlertType, AlertSeverity } from "@/generated/prisma/client";
 
 const STOCKOUT_WARNING_DAYS = 7;
@@ -19,6 +20,8 @@ type GeneratedAlert = {
 async function computeCurrentAlerts(): Promise<GeneratedAlert[]> {
   const forecast = await getInventoryForecast();
   const alerts: GeneratedAlert[] = [];
+  const lowStockThreshold = await getIntSetting(SETTING_KEYS.LOW_STOCK_THRESHOLD);
+  const overstockMultiplier = await getIntSetting(SETTING_KEYS.OVERSTOCK_MULTIPLIER);
 
   for (const f of forecast) {
     if (f.currentStock <= 0) {
@@ -31,6 +34,24 @@ async function computeCurrentAlerts(): Promise<GeneratedAlert[]> {
         entityId: f.productId,
       });
       continue;
+    }
+
+    // Ortiqcha ombor: qoldiq chegara×koeffitsientdan yuqori va
+    // sotuv sur'ati juda past (90+ kun yetarli).
+    const overstockLevel = Math.max(lowStockThreshold, 5) * Math.max(overstockMultiplier, 1);
+    if (
+      f.currentStock > overstockLevel &&
+      (f.avgDailyConsumption === 0 ||
+        (f.daysUntilStockout !== null && f.daysUntilStockout > 90))
+    ) {
+      alerts.push({
+        type: "OVERSTOCK",
+        severity: "INFO",
+        title: `${f.name} ortiqcha omborda`,
+        description: `Qoldiq ${f.currentStock} dona; joriy sur'at bilan 90+ kun yetadi.`,
+        entity: "Product",
+        entityId: f.productId,
+      });
     }
 
     if (
@@ -49,6 +70,7 @@ async function computeCurrentAlerts(): Promise<GeneratedAlert[]> {
     }
   }
 
+  // Kechikgan buyurtmalar (7 kundan ortiq tasdiqlangan).
   const overdueOrders = await prisma.order.findMany({
     where: {
       status: { in: ["CONFIRMED", "PROCESSING"] },
@@ -67,12 +89,126 @@ async function computeCurrentAlerts(): Promise<GeneratedAlert[]> {
     });
   }
 
+  // Kechiktirilgan to'lovlar: yetkazilgan/tasdiqlangan buyurtmada to'lov
+  // chegaradan ortiq kechikgan.
+  const paymentOverdueDays = await getIntSetting(SETTING_KEYS.PAYMENT_OVERDUE_DAYS);
+  const shippedOrders = await prisma.order.findMany({
+    where: {
+      status: { in: ["SHIPPED", "COMPLETED", "READY_TO_SHIP"] },
+      stockDeductedAt: { not: null },
+      updatedAt: {
+        lt: new Date(Date.now() - paymentOverdueDays * 24 * 60 * 60 * 1000),
+      },
+    },
+    select: {
+      id: true,
+      number: true,
+      items: { select: { price: true, quantity: true } },
+      payments: { select: { amount: true, status: true } },
+    },
+    take: 100,
+  });
+  for (const order of shippedOrders) {
+    const total = order.items.reduce((s, i) => s + i.price * i.quantity, 0);
+    const paid = order.payments
+      .filter((p) => p.status !== "REFUNDED")
+      .reduce((s, p) => s + p.amount, 0);
+    if (total > paid) {
+      alerts.push({
+        type: "PAYMENT_OVERDUE",
+        severity: paid > 0 ? "WARNING" : "CRITICAL",
+        title: `Buyurtma ${order.number}: to'lov kechikmoqda`,
+        description: `Qarz: ${(total - paid).toLocaleString("uz-UZ")} so'm, ${paymentOverdueDays}+ kun o'tgan.`,
+        entity: "Order",
+        entityId: order.id,
+      });
+    }
+  }
+
+  // So'nggi 24 soatdagi narx o'zgarishlari (muhim narx siqishlari).
+  const recentPriceChanges = await prisma.priceHistory.findMany({
+    where: { createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
+    orderBy: { createdAt: "desc" },
+    take: 50,
+    select: { id: true, productId: true, oldPrice: true, newPrice: true, createdAt: true },
+  });
+  for (const change of recentPriceChanges) {
+    // Har bir o'zgarish uchun bitta alert — mavjud (hal qilingan ham)
+    // alert shu o'zgarishdan keyin yaratilgan bo'lsa qayta yaratilmaydi.
+    const existing = await prisma.alert.findFirst({
+      where: {
+        type: "PRICE_CHANGE",
+        entityId: change.productId,
+        createdAt: { gte: change.createdAt },
+      },
+      select: { id: true },
+    });
+    if (existing) continue;
+    const direction = change.newPrice > change.oldPrice ? "qimmatlashdi" : "arzonlashdi";
+    alerts.push({
+      type: "PRICE_CHANGE",
+      severity: "INFO",
+      title: `Narx ${direction}`,
+      description: `${change.oldPrice.toLocaleString("uz-UZ")} → ${change.newPrice.toLocaleString("uz-UZ")} so'm.`,
+      entity: "Product",
+      entityId: change.productId,
+    });
+  }
+
+  // Odatiydan tashqari sotuv: so'nggi 24 soatda o'rtacha 30 kunlik
+  // kunlik sur'atdan 3 barobar ko'p sotilgan mahsulotlar.
+  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const unusualSales = await prisma.orderItem.groupBy({
+    by: ["productId"],
+    where: {
+      order: {
+        status: { notIn: ["DRAFT", "CANCELLED"] },
+        createdAt: { gte: dayAgo },
+      },
+    },
+    _sum: { quantity: true },
+  });
+  for (const row of unusualSales) {
+    const f = forecast.find((x) => x.productId === row.productId);
+    const sold24h = row._sum?.quantity ?? 0;
+    if (!f || f.avgDailyConsumption <= 0) continue;
+    if (sold24h >= f.avgDailyConsumption * 3 && sold24h > 5) {
+      alerts.push({
+        type: "UNUSUAL_SALES",
+        severity: "INFO",
+        title: `${f.name}: odatdan yuqori savdo`,
+        description: `So'nggi 24 soatda ${sold24h} dona (o'rtacha ${f.avgDailyConsumption.toFixed(1)}/kun).`,
+        entity: "Product",
+        entityId: row.productId,
+      });
+    }
+  }
+
+  // Inventarizatsiya anomaliyasi: manfiy qoldiq yoki zaxira qoldiqdan oshiq.
+  const suspiciousStock = await prisma.stock.findMany({
+    where: { OR: [{ quantity: { lt: 0 } }, { reserved: { gt: 0 } }] },
+    select: { productId: true, quantity: true, reserved: true },
+    take: 500,
+  });
+  const anomalies = suspiciousStock
+    .filter((s) => s.quantity < 0 || s.reserved > s.quantity)
+    .slice(0, 50);
+  for (const stock of anomalies) {
+    alerts.push({
+      type: "INVENTORY_ANOMALY",
+      severity: "CRITICAL",
+      title: "Ombor anomaliyasi",
+      description: `Qoldiq: ${stock.quantity}, zaxira: ${stock.reserved} — zaxira qoldiqdan oshiq yoki qoldiq manfiy.`,
+      entity: "Stock",
+      entityId: `${stock.productId}`,
+    });
+  }
+
   return alerts;
 }
 
 // Joriy muammolarni AuditLog kabi tarixiy jurnalga emas, balki "hozirgi
-// holat"ga aylantiradi: avval hal bo'lgan (resolvedAt bор) yozuvlarni
-// tekshirmaydi, faqat hal qilinmagan (resolvedAt = null) yozuvlarni
+// holat"ga aylantiradi: avval hal qilinmagan (resolvedAt = null) yozuvlarni
 // yangi hisob-kitob bilan sinxronlaydi.
 export async function refreshAlerts(): Promise<{ created: number; resolved: number }> {
   const current = await computeCurrentAlerts();
@@ -123,5 +259,24 @@ export async function getActiveAlerts(limit = 20) {
     where: { resolvedAt: null },
     orderBy: [{ severity: "desc" }, { createdAt: "desc" }],
     take: limit,
+  });
+}
+
+// Ogohlantirishni "ko'rilgan" deb belgilash.
+export async function markAlertRead(alertId: string): Promise<void> {
+  await prisma.alert.updateMany({
+    where: { id: alertId, readAt: null },
+    data: { readAt: new Date() },
+  });
+}
+
+// Ogohlantirishni qo'lda hal qilish (masalan, administrator tuzatdi).
+export async function resolveAlertManually(
+  alertId: string,
+  resolvedById?: string | null
+): Promise<void> {
+  await prisma.alert.updateMany({
+    where: { id: alertId, resolvedAt: null },
+    data: { resolvedAt: new Date(), resolvedById: resolvedById ?? null },
   });
 }

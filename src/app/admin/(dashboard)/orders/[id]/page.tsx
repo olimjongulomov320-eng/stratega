@@ -4,8 +4,18 @@ import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { formatSum } from "@/lib/format";
 import { OrderStatusSelect } from "../order-status-select";
+import { CreateShipmentButton } from "../../shipments/create-button";
+import { requirePagePermission } from "@/lib/require-permission";
 
 export const dynamic = "force-dynamic";
+
+const SHIPMENT_STATUS_LABELS: Record<string, string> = {
+  DRAFT: "Qoralama",
+  READY: "Tayyor",
+  SHIPPED: "Jo'natilgan",
+  DELIVERED: "Yetkazilgan",
+  CANCELLED: "Bekor qilingan",
+};
 
 const TIMELINE_STEPS = [
   "DRAFT",
@@ -28,6 +38,7 @@ const STEP_LABELS: Record<string, string> = {
 export default async function OrderDetailPage(
   props: PageProps<"/admin/orders/[id]">
 ) {
+  await requirePagePermission("orders.read");
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login");
   }
@@ -39,6 +50,14 @@ export default async function OrderDetailPage(
       customer: true,
       warehouse: true,
       items: { include: { product: { select: { name: true, sku: true } } } },
+      shipments: {
+        orderBy: { createdAt: "desc" },
+        include: {
+          warehouse: { select: { name: true } },
+          items: { select: { quantity: true } },
+        },
+      },
+      payments: { orderBy: { createdAt: "desc" } },
     },
   });
   if (!order) notFound();
@@ -53,6 +72,15 @@ export default async function OrderDetailPage(
   const isCancelled = order.status === "CANCELLED";
   const currentStepIndex = TIMELINE_STEPS.indexOf(
     order.status as (typeof TIMELINE_STEPS)[number]
+  );
+
+  const paidSum = order.payments
+    .filter((p) => p.status !== "REFUNDED")
+    .reduce((s, p) => s + p.amount, 0);
+  const outstanding = total - paidSum;
+
+  const canCreateShipment = ["CONFIRMED", "PROCESSING", "READY_TO_SHIP"].includes(
+    order.status
   );
 
   return (
@@ -162,6 +190,95 @@ export default async function OrderDetailPage(
           >
             {formatSum(grossProfit)}
           </p>
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        {/* To'lovlar */}
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-900">To&apos;lovlar</h2>
+            <Link
+              href="/admin/payments"
+              className="text-sm font-medium text-indigo-600 hover:underline"
+            >
+              Boshqarish →
+            </Link>
+          </div>
+          <div className="mt-3 grid grid-cols-3 gap-3 text-center">
+            <div className="rounded-lg bg-slate-50 p-3">
+              <p className="text-sm font-bold text-slate-900">{formatSum(total)}</p>
+              <p className="text-xs text-slate-500">Jami</p>
+            </div>
+            <div className="rounded-lg bg-emerald-50 p-3">
+              <p className="text-sm font-bold text-emerald-700">{formatSum(paidSum)}</p>
+              <p className="text-xs text-slate-500">To&apos;langan</p>
+            </div>
+            <div className="rounded-lg bg-rose-50 p-3">
+              <p className="text-sm font-bold text-rose-700">{formatSum(outstanding)}</p>
+              <p className="text-xs text-slate-500">Qarz</p>
+            </div>
+          </div>
+          {order.payments.length > 0 ? (
+            <div className="mt-4 flex flex-col divide-y divide-slate-100">
+              {order.payments.slice(0, 5).map((p) => (
+                <div key={p.id} className="flex items-center justify-between py-2 text-sm">
+                  <span className="text-slate-600">
+                    {(p.receivedAt ?? p.createdAt).toLocaleDateString("uz-UZ")}
+                    {p.method ? ` · ${p.method}` : ""}
+                  </span>
+                  <span
+                    className={`font-semibold ${
+                      p.status === "REFUNDED"
+                        ? "text-slate-400 line-through"
+                        : "text-slate-800"
+                    }`}
+                  >
+                    {formatSum(p.amount)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 text-sm text-slate-400">Hali to&apos;lov yo&apos;q.</p>
+          )}
+        </div>
+
+        {/* Jo'natmalar */}
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="text-lg font-semibold text-slate-900">Jo&apos;natmalar</h2>
+            {canCreateShipment && <CreateShipmentButton orderId={order.id} />}
+          </div>
+          {order.shipments.length === 0 ? (
+            <p className="mt-3 text-sm text-slate-400">
+              Jo&apos;natma yo&apos;q.
+              {canCreateShipment
+                ? " Buyurtma tasdiqlangan — yuqoridagi tugma bilan yarating."
+                : ""}
+            </p>
+          ) : (
+            <div className="mt-3 flex flex-col divide-y divide-slate-100">
+              {order.shipments.map((s) => (
+                <Link
+                  key={s.id}
+                  href={`/admin/shipments/${s.id}`}
+                  className="flex items-center justify-between py-2.5 text-sm hover:bg-slate-50"
+                >
+                  <div>
+                    <p className="font-medium text-slate-800">{s.number}</p>
+                    <p className="text-xs text-slate-400">
+                      {s.warehouse?.name ?? "Omborsiz"} ·{" "}
+                      {s.items.reduce((sum, i) => sum + i.quantity, 0)} dona
+                    </p>
+                  </div>
+                  <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600">
+                    {SHIPMENT_STATUS_LABELS[s.status] ?? s.status}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
