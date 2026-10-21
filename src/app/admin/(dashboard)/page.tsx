@@ -6,6 +6,9 @@ import {
   getRevenueReport,
   getSalesByPeriod,
   getReorderRecommendations,
+  getStockSummary,
+  getTopProducts,
+  getTopCustomers,
 } from "@/lib/inventory-assistant";
 
 export const dynamic = "force-dynamic";
@@ -25,23 +28,27 @@ export default async function AdminDashboardPage() {
   const [
     productCount,
     customerCount,
+    supplierCount,
     newRequestCount,
     pendingOrderCount,
-    products,
+    stockSummary,
     revenueReport,
     periods,
     reorderRecs,
     recentOrders,
     pendingShipments,
     alerts,
+    topProducts,
+    topCustomers,
   ] = await Promise.all([
     prisma.product.count({ where: { isActive: true } }),
     prisma.customer.count({ where: { isActive: true } }),
+    prisma.supplier.count({ where: { isActive: true } }),
     prisma.rfqRequest.count({ where: { status: "NEW" } }),
     prisma.order.count({
       where: { status: { in: ["DRAFT", "CONFIRMED", "PROCESSING"] } },
     }),
-    prisma.product.findMany({ select: { stock: true, price: true, isActive: true } }),
+    getStockSummary(),
     getRevenueReport({ from: thirtyDaysAgo() }),
     getSalesByPeriod(),
     getReorderRecommendations(),
@@ -56,10 +63,9 @@ export default async function AdminDashboardPage() {
     }),
     prisma.shipment.count({ where: { status: { in: ["DRAFT", "READY"] } } }),
     getActiveAlerts(6),
+    getTopProducts(5),
+    getTopCustomers(5),
   ]);
-
-  const inventoryValue = products.reduce((s, p) => s + p.stock * p.price, 0);
-  const lowStockCount = products.filter((p) => p.stock > 0 && p.stock <= 5).length;
 
   const kpis = [
     {
@@ -74,21 +80,77 @@ export default async function AdminDashboardPage() {
       href: "/admin/analytics",
       accent: revenueReport.grossProfit >= 0 ? "text-emerald-600" : "text-rose-600",
     },
-    { label: "Ombor qiymati", value: formatSum(inventoryValue), href: "/admin/stock", accent: "text-slate-900" },
+    {
+      label: "Ombor qiymati (tannarx)",
+      value: formatSum(stockSummary.totalValue),
+      href: "/admin/analytics/inventory",
+      accent: "text-slate-900",
+    },
+    {
+      label: "Ombor birligi",
+      value: String(stockSummary.totalUnits),
+      href: "/admin/stock",
+      accent: "text-slate-900",
+    },
+    {
+      label: "Band qilingan (zaxira)",
+      value: String(stockSummary.reservedUnits),
+      href: "/admin/stock",
+      accent: stockSummary.reservedUnits > 0 ? "text-indigo-600" : "text-slate-900",
+    },
     {
       label: "Kutilayotgan buyurtmalar",
       value: String(pendingOrderCount),
       href: "/admin/orders",
       accent: "text-slate-900",
     },
-    { label: "Mahsulotlar", value: String(productCount), href: "/admin/products", accent: "text-slate-900" },
-    { label: "Faol mijozlar", value: String(customerCount), href: "/admin/customers", accent: "text-slate-900" },
-    { label: "Yangi arizalar", value: String(newRequestCount), href: "/admin/requests", accent: "text-slate-900" },
+    {
+      label: "Jo'natma kutilmoqda",
+      value: String(pendingShipments),
+      href: "/admin/shipments",
+      accent: pendingShipments > 0 ? "text-indigo-600" : "text-slate-900",
+    },
+    {
+      label: "Tugagan mahsulotlar",
+      value: String(stockSummary.outOfStockCount),
+      href: "/admin/analytics/inventory",
+      accent: stockSummary.outOfStockCount > 0 ? "text-rose-600" : "text-slate-900",
+    },
     {
       label: "Kam qolgan mahsulotlar",
-      value: String(lowStockCount),
+      value: String(stockSummary.lowStockCount),
       href: "/admin/analytics/inventory",
-      accent: lowStockCount > 0 ? "text-amber-600" : "text-slate-900",
+      accent: stockSummary.lowStockCount > 0 ? "text-amber-600" : "text-slate-900",
+    },
+    {
+      label: "Ortiqcha ombor",
+      value: String(stockSummary.overstockCount),
+      href: "/admin/analytics/inventory",
+      accent: "text-slate-900",
+    },
+    {
+      label: "Mahsulotlar",
+      value: String(productCount),
+      href: "/admin/products",
+      accent: "text-slate-900",
+    },
+    {
+      label: "Mijozlar",
+      value: String(customerCount),
+      href: "/admin/customers",
+      accent: "text-slate-900",
+    },
+    {
+      label: "Yetkazib beruvchilar",
+      value: String(supplierCount),
+      href: "/admin/suppliers",
+      accent: "text-slate-900",
+    },
+    {
+      label: "Yangi arizalar",
+      value: String(newRequestCount),
+      href: "/admin/requests",
+      accent: newRequestCount > 0 ? "text-indigo-600" : "text-slate-900",
     },
   ];
 
@@ -233,6 +295,64 @@ export default async function AdminDashboardPage() {
                 Buyurtmalar yo&apos;q.
               </p>
             )}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-6 lg:grid-cols-2">
+        {/* Eng ko'p sotilgan mahsulotlar */}
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-900">
+              Eng ko&apos;p sotilgan mahsulotlar
+            </h2>
+            <Link href="/admin/analytics" className="text-sm font-medium text-indigo-600 hover:underline">
+              Tahlil →
+            </Link>
+          </div>
+          <div className="mt-3 flex flex-col divide-y divide-slate-100">
+            {topProducts.length === 0 && (
+              <p className="py-4 text-center text-sm text-slate-400">
+                Hali sotuvlar yo&apos;q.
+              </p>
+            )}
+            {topProducts.map((p) => (
+              <div key={p.productId} className="flex items-center justify-between py-2.5 text-sm">
+                <div>
+                  <p className="font-medium text-slate-800">{p.name}</p>
+                  <p className="text-xs text-slate-400">{p.unitsSold} dona</p>
+                </div>
+                <p className="font-semibold text-slate-800">{formatSum(p.revenue)}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Eng katta mijozlar */}
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-slate-900">
+              Eng katta mijozlar
+            </h2>
+            <Link href="/admin/analytics" className="text-sm font-medium text-indigo-600 hover:underline">
+              Tahlil →
+            </Link>
+          </div>
+          <div className="mt-3 flex flex-col divide-y divide-slate-100">
+            {topCustomers.length === 0 && (
+              <p className="py-4 text-center text-sm text-slate-400">
+                Hali mijozlar bo&apos;yicha tushum yo&apos;q.
+              </p>
+            )}
+            {topCustomers.map((c) => (
+              <div key={c.customerId ?? "none"} className="flex items-center justify-between py-2.5 text-sm">
+                <div>
+                  <p className="font-medium text-slate-800">{c.companyName}</p>
+                  <p className="text-xs text-slate-400">{c.orders} ta buyurtma</p>
+                </div>
+                <p className="font-semibold text-slate-800">{formatSum(c.revenue)}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>

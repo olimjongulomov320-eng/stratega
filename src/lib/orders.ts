@@ -1,19 +1,19 @@
 import type { Prisma, OrderStatus } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
-import { reserveStock, releaseStock, recordStockChange } from "@/lib/stock";
+import { releaseStock, reserveStock } from "@/lib/stock";
 import { writeAuditLog } from "@/lib/audit";
 import { getMainWarehouseId } from "@/lib/warehouse";
 import { getBoolSetting, SETTING_KEYS } from "@/lib/settings";
+import { nextBusinessNumber } from "@/lib/numbers";
+import { createShipmentFromOrder, postShipment, remainingToShip } from "@/lib/shipments";
 
 type TxClient = Prisma.TransactionClient;
 
-// Raqam generatsiyasi: ORD-000123. Count asosidagi generator parallel
-// chaqiruvlarda dubl yaratishi mumkin — shuning uchun yaratish tranzaksiyasi
-// P2002 (unique) xatosida qayta uriniladi.
+// Raqam generatsiyasi: ORD-000123. Sequence'dan olinadi — parallel
+// chaqiruvlarda dubl yaratilmaydi va o'chirilgan buyurtmalar raqamni
+// qayta ishlatmaydi.
 export async function generateOrderNumber(tx?: TxClient): Promise<string> {
-  const client = tx ?? prisma;
-  const count = await client.order.count();
-  return `ORD-${String(count + 1).padStart(6, "0")}`;
+  return nextBusinessNumber("order", { prefix: "ORD" }, tx);
 }
 
 export type OrderItemInput = {
@@ -65,19 +65,14 @@ export async function createOrder(
     }
   }
 
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      return await createOrderInner(input, actorId);
-    } catch (err) {
-      const isUniqueRace =
-        err instanceof Error && "code" in err && (err as { code?: string }).code === "P2002";
-      if (!isUniqueRace || attempt === 2) throw err;
+  const seen = new Set<string>();
+  for (const item of input.items) {
+    if (seen.has(item.productId)) {
+      throw new Error("Buyurtmada bir xil mahsulot bir necha marta kiritilgan.");
     }
+    seen.add(item.productId);
   }
-  throw new Error("Buyurtma raqamini yaratib bo'lmadi.");
-}
 
-async function createOrderInner(input: CreateOrderInput, actorId?: string | null) {
   return prisma.$transaction(async (tx) => {
     const number = await generateOrderNumber(tx);
     const warehouseId = input.warehouseId ?? (await getMainWarehouseId(tx));
@@ -130,11 +125,17 @@ export type UpdateOrderStatusOptions = {
   allowOverReserve?: boolean;
 };
 
-// Buyurtma holatini o'zgartiradi va tegishli ombor harakatlarini bajaradi:
-// - DRAFT -> CONFIRMED: mahsulotlarni zaxiralaydi (reserved += qty)
-// - ... -> SHIPPED: zaxirani yopib, jismoniy qoldiqni kamaytiradi (bir marta!)
-// - ... -> CANCELLED: zaxirani bo'shatadi (agar qo'yilgan bo'lsa)
-// Barcha ombor yozuvlari bitta tranzaksiyada; idempotent (qayta ishga tushirilmaydi).
+/**
+ * Buyurtma holatini o'zgartiradi va tegishli ombor harakatlarini bajaradi:
+ * - DRAFT -> CONFIRMED: mahsulotlarni zaxiralaydi (reserved += qty).
+ *   Jismoniy qoldiq BU YERDA KAMAYMAYDI — faqat band qilinadi.
+ * - ... -> SHIPPED: avval jo'natma yaratilib jo'natiladi (jo'natma orqali
+ *   zaxira yopiladi va jismoniy qoldiq kamayadi). Jismoniy yozishning
+ *   yagona yo'li — jo'natma bo'lishi kerak, aks holda jurnalda
+ *   hujjatga bog'lanmagan chiqim qoladi.
+ * - ... -> CANCELLED: jo'natilmagan qoldiq uchun zaxira bo'shatiladi.
+ * Barcha ombor yozuvlari bitta tranzaksiyada; idempotent.
+ */
 export async function updateOrderStatus(
   orderId: string,
   nextStatus: OrderStatus,
@@ -144,7 +145,7 @@ export async function updateOrderStatus(
   await prisma.$transaction(async (tx) => {
     const order = await tx.order.findUniqueOrThrow({
       where: { id: orderId },
-      include: { items: true },
+      include: { items: true, shipments: { include: { items: true } } },
     });
 
     if (order.status === nextStatus) return;
@@ -155,6 +156,10 @@ export async function updateOrderStatus(
         `"${order.status}" holatidan "${nextStatus}" holatiga o'tib bo'lmaydi. Ruxsat etilgan: ${allowed.join(", ") || "yo'q"}.`
       );
     }
+
+    // Buyurtma qatorini bloklaymiz — parallel so'rovlarda holat
+    // o'zgarishlari ketma-ket bo'lishi kafolatlanadi.
+    await tx.$executeRaw`SELECT id FROM "Order" WHERE id = ${orderId} FOR UPDATE`;
 
     const warehouseId = order.warehouseId ?? (await getMainWarehouseId(tx));
     const isReserved = order.stockReservedAt !== null;
@@ -178,14 +183,32 @@ export async function updateOrderStatus(
       });
     }
 
-    // Bekor qilinishi: zaxira bo'shatiladi (faqt jo'natilmagan bo'lsa).
-    if (nextStatus === "CANCELLED" && isReserved && order.stockDeductedAt === null) {
-      for (const item of order.items) {
-        await releaseStock(tx, {
-          productId: item.productId,
-          warehouseId,
-          quantity: item.quantity,
-        });
+    // Bekor qilinishi: JO'NATILMAGAN qoldiq uchun zaxira bo'shatiladi.
+    if (nextStatus === "CANCELLED") {
+      // Faqat ZAXIRALANGAN buyurtma uchun zaxira bo'shatiladi. DRAFT'da
+      // zaxira qo'yilmagan — o'sha paytda bo'shatish "reserved"ni manfiyga
+      // olib kelardi va DB trigger bekor qilinishini xato bilan to'xtatardi.
+      if (order.stockReservedAt !== null) {
+        const left = remainingToShip(order.items, order.shipments);
+        for (const item of order.items) {
+          const quantity = left.get(item.productId) ?? 0;
+          if (quantity <= 0) continue;
+          await releaseStock(tx, {
+            productId: item.productId,
+            warehouseId,
+            quantity,
+            allowOverRelease: true,
+          });
+        }
+      }
+      // Qoralama/tayyor jo'natmalar ham bekor qilinadi.
+      for (const shipment of order.shipments) {
+        if (shipment.status === "DRAFT" || shipment.status === "READY") {
+          await tx.shipment.update({
+            where: { id: shipment.id },
+            data: { status: "CANCELLED" },
+          });
+        }
       }
       await tx.order.update({
         where: { id: orderId },
@@ -193,32 +216,24 @@ export async function updateOrderStatus(
       });
     }
 
-    // Jo'natilishi: zaxira yopiladi + jismoniy qoldiq kamayadi — BIR MARTA.
-    if (nextStatus === "SHIPPED" && order.stockDeductedAt === null) {
-      for (const item of order.items) {
-        await releaseStock(tx, {
-          productId: item.productId,
-          warehouseId,
-          quantity: item.quantity,
-        });
-        await recordStockChange(tx, {
-          productId: item.productId,
-          warehouseId,
-          change: -item.quantity,
-          reason: "ISSUE",
-          note: `Buyurtma ${order.number} jo'natildi`,
-          referenceType: "Order",
-          referenceId: order.id,
-        });
-        await tx.product.update({
-          where: { id: item.productId },
-          data: { soldCount: { increment: item.quantity } },
-        });
+    // Jo'natish: jismoniy yozish JO'NATMA orqali amalga oshadi.
+    if (nextStatus === "SHIPPED") {
+      const left = remainingToShip(order.items, order.shipments);
+      if (left.size > 0) {
+        const shipment = await createShipmentFromOrder(
+          orderId,
+          actorId,
+          {
+            items: Array.from(left.entries()).map(([productId, quantity]) => ({
+              productId,
+              quantity,
+            })),
+            warehouseId,
+          },
+          tx
+        );
+        await postShipment(shipment.id, actorId, tx);
       }
-      await tx.order.update({
-        where: { id: orderId },
-        data: { stockDeductedAt: new Date(), stockReservedAt: null },
-      });
     }
 
     await tx.order.update({

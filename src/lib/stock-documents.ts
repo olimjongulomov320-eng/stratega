@@ -2,6 +2,7 @@ import type { Prisma, StockDocumentType } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { recordStockChange } from "@/lib/stock";
 import { writeAuditLog } from "@/lib/audit";
+import { nextBusinessNumber } from "@/lib/numbers";
 
 type TxClient = Prisma.TransactionClient;
 
@@ -16,11 +17,10 @@ const NUMBER_PREFIX: Record<StockDocumentType, string> = {
 };
 
 export async function generateDocumentNumber(
-  type: StockDocumentType
+  type: StockDocumentType,
+  tx?: TxClient
 ): Promise<string> {
-  const prefix = NUMBER_PREFIX[type];
-  const count = await prisma.stockDocument.count({ where: { type } });
-  return `${prefix}-${String(count + 1).padStart(6, "0")}`;
+  return nextBusinessNumber("stockDocument", { prefix: NUMBER_PREFIX[type] }, tx);
 }
 
 export type StockDocumentItemInput = {
@@ -53,23 +53,16 @@ function validateItems(items: StockDocumentItemInput[]) {
   }
 }
 
-// Raqam generatsiyasi parallel yaratishda to'qnashuvga uchraydi —
-// unique buzilganda tranzaksiyani qayta urinamiz.
-async function withNumberRetry<T>(fn: () => Promise<T>): Promise<T> {
-  let lastError: unknown;
-  for (let attempt = 0; attempt < 3; attempt++) {
-    try {
-      return await fn();
-    } catch (err) {
-      const isUniqueRace =
-        err instanceof Error && "code" in err && (err as { code?: string }).code === "P2002";
-      if (!isUniqueRace) throw err;
-      lastError = err;
+// Bir xil mahsulot hujjatda takrorlanmasligi kerak — aks holda bir mahsulot
+// uchun bir nechta qator bo'lib, "qolgan miqdor" hisobi chalkashadi.
+function validateNoDuplicates(items: StockDocumentItemInput[]) {
+  const seen = new Set<string>();
+  for (const item of items) {
+    if (seen.has(item.productId)) {
+      throw new Error("Hujjatda bir xil mahsulot bir necha marta kiritilgan.");
     }
+    seen.add(item.productId);
   }
-  throw lastError instanceof Error
-    ? lastError
-    : new Error("Hujjat raqamini yaratib bo'lmadi.");
 }
 
 export async function createStockDocument(
@@ -77,6 +70,7 @@ export async function createStockDocument(
   actorId?: string | null
 ) {
   validateItems(input.items);
+  validateNoDuplicates(input.items);
   if (input.type === "TRANSFER" && !input.destWarehouseId) {
     throw new Error("Ko'chirish hujjati uchun manzil ombor tanlanishi shart.");
   }
@@ -84,47 +78,47 @@ export async function createStockDocument(
     throw new Error("Manba va manzil ombor bir xil bo'lishi mumkin emas.");
   }
 
-  return withNumberRetry(() =>
-    prisma.$transaction(async (tx) => {
-      const number = await generateDocumentNumber(input.type);
-      const doc = await tx.stockDocument.create({
-        data: {
-          number,
-          type: input.type,
-          warehouseId: input.warehouseId,
-          destWarehouseId: input.destWarehouseId ?? null,
-          supplierId: input.supplierId ?? null,
-          responsibleId: input.responsibleId ?? null,
-          note: input.note ?? null,
-          items: {
-            create: input.items.map((item) => ({
-              productId: item.productId,
-              quantity: item.quantity,
-              price: item.price ?? null,
-            })),
-          },
+  return prisma.$transaction(async (tx) => {
+    const number = await generateDocumentNumber(input.type, tx);
+    const doc = await tx.stockDocument.create({
+      data: {
+        number,
+        type: input.type,
+        warehouseId: input.warehouseId,
+        destWarehouseId: input.destWarehouseId ?? null,
+        supplierId: input.supplierId ?? null,
+        responsibleId: input.responsibleId ?? null,
+        note: input.note ?? null,
+        items: {
+          create: input.items.map((item) => ({
+            productId: item.productId,
+            quantity: item.quantity,
+            price: item.price ?? null,
+          })),
         },
-        include: { items: true },
-      });
+      },
+      include: { items: true },
+    });
 
-      await writeAuditLog(
-        {
-          actorId,
-          action: "stock_document.create",
-          entity: "StockDocument",
-          entityId: doc.id,
-          newData: { number: doc.number, type: doc.type },
-        },
-        tx
-      );
+    await writeAuditLog(
+      {
+        actorId,
+        action: "stock_document.create",
+        entity: "StockDocument",
+        entityId: doc.id,
+        newData: { number: doc.number, type: doc.type },
+      },
+      tx
+    );
 
-      return doc;
-    })
-  );
+    return doc;
+  });
 }
 
-// Hujjatni "проводка" qilish — haqiqiy ombor operatsiyasini bajaradi.
-// Faqat DRAFT holatidagi hujjatlar проводка qilinishi mumkin.
+/**
+ * Hujjatni "проводка" qilish — haqiqiy ombor operatsiyasini bajaradi.
+ * Faqat DRAFT holatidagi hujjatlar проводka qilinishi mumkin.
+ */
 export async function postStockDocument(
   documentId: string,
   actorId?: string | null
@@ -141,8 +135,14 @@ export async function postStockDocument(
       );
     }
 
-    for (const item of doc.items) {
-      await applyDocumentItemStockChange(tx, doc, item.productId, item.quantity);
+    // Mahsulotlar `productId` bo'yicha tartiblanadi — barcha tranzaksiyalar
+    // bir xil tartibda bloklaydi (deadlock himoyasi).
+    const items = [...doc.items].sort((a, b) =>
+      a.productId < b.productId ? -1 : a.productId > b.productId ? 1 : 0
+    );
+
+    for (const item of items) {
+      await applyDocumentItemStockChange(tx, doc, item.productId, item.quantity, actorId);
     }
 
     await tx.stockDocument.update({
@@ -167,9 +167,11 @@ async function applyDocumentItemStockChange(
   tx: TxClient,
   doc: { id: string; type: StockDocumentType; warehouseId: string; destWarehouseId: string | null; number: string },
   productId: string,
-  quantity: number
+  quantity: number,
+  actorId?: string | null
 ) {
   const reference = { referenceType: "StockDocument", referenceId: doc.id };
+  const createdBy = actorId ?? null;
 
   switch (doc.type) {
     case "RECEIPT":
@@ -179,6 +181,7 @@ async function applyDocumentItemStockChange(
         change: quantity,
         reason: "RECEIPT",
         note: `Kirim hujjati ${doc.number}`,
+        createdBy,
         ...reference,
       });
       break;
@@ -190,6 +193,7 @@ async function applyDocumentItemStockChange(
         change: -quantity,
         reason: "ISSUE",
         note: `Chiqim hujjati ${doc.number}`,
+        createdBy,
         ...reference,
       });
       break;
@@ -201,6 +205,7 @@ async function applyDocumentItemStockChange(
         change: quantity,
         reason: "RETURN",
         note: `Qaytarish hujjati ${doc.number}`,
+        createdBy,
         ...reference,
       });
       break;
@@ -212,6 +217,7 @@ async function applyDocumentItemStockChange(
         change: -quantity,
         reason: "WRITE_OFF",
         note: `Hisobdan chiqarish hujjati ${doc.number}`,
+        createdBy,
         ...reference,
       });
       break;
@@ -232,7 +238,7 @@ async function applyDocumentItemStockChange(
           change: delta,
           reason: "INVENTORY_ADJUSTMENT",
           note: `Inventarizatsiya hujjati ${doc.number}`,
-          allowNegative: true,
+          createdBy,
           ...reference,
         });
       }
@@ -243,12 +249,14 @@ async function applyDocumentItemStockChange(
       if (!doc.destWarehouseId) {
         throw new Error("Ko'chirish hujjatida manzil ombor yo'q.");
       }
+      // Manbadan chiqarish va manzilga kiritish — bitta tranzaksiyada.
       await recordStockChange(tx, {
         productId,
         warehouseId: doc.warehouseId,
         change: -quantity,
         reason: "TRANSFER_OUT",
         note: `Ko'chirish hujjati ${doc.number}`,
+        createdBy,
         ...reference,
       });
       await recordStockChange(tx, {
@@ -257,6 +265,7 @@ async function applyDocumentItemStockChange(
         change: quantity,
         reason: "TRANSFER_IN",
         note: `Ko'chirish hujjati ${doc.number}`,
+        createdBy,
         ...reference,
       });
       break;
@@ -264,9 +273,15 @@ async function applyDocumentItemStockChange(
   }
 }
 
-// Hujjatni bekor qilish. POSTED hujjat bekor qilinsa, teskari harakat
-// (reversal) yoziladi — hech qachon jim tarzda qoldiqni to'g'ridan-to'g'ri
-// o'zgartirmaymiz.
+/**
+ * Hujjatni bekor qilish. POSTED hujjat bekor qilinsa, teskari harakat
+ * (reversal) yoziladi — hech qachon jim tarzda qoldiqni to'g'ridan-to'g'ri
+ * o'zgartirmaymiz.
+ *
+ * Teskari harakat qoldiqni manfiyga tushirsa — bekor qilish rad etiladi va
+ * foydalanuvchiga aniq ko'rsatma beriladi ("chiqim hujjati yarating").
+ * Sabab: "manfiy qoldiq" — bu ma'lumot buzilishi.
+ */
 export async function cancelStockDocument(
   documentId: string,
   actorId?: string | null
@@ -282,10 +297,14 @@ export async function cancelStockDocument(
     }
 
     if (doc.status === "POSTED") {
-      // Teskari harakatlarni yozamiz (проводкani "ажратмаймиз", faqat
-      // qarama-qarshi StockMove qo'shamiz — audit iz saqlanib qoladi).
-      for (const item of doc.items) {
-        await reverseDocumentItemStockChange(tx, doc, item.productId, item.quantity);
+      // Teskari harakat qoldiqni manfiyga tushirmasligini oldindan tekshiramiz.
+      await assertReversible(tx, doc);
+
+      const items = [...doc.items].sort((a, b) =>
+        a.productId < b.productId ? -1 : a.productId > b.productId ? 1 : 0
+      );
+      for (const item of items) {
+        await reverseDocumentItemStockChange(tx, doc, item.productId, item.quantity, actorId);
       }
     }
 
@@ -307,14 +326,90 @@ export async function cancelStockDocument(
   });
 }
 
+/**
+ * Bekor qilish qoldiqni manfiyga tushiradimi? tekshiradi.
+ * Manfiyga tushsa — aniq, harakatcha xato bilan rad etadi.
+ */
+async function assertReversible(
+  tx: TxClient,
+  doc: {
+    type: StockDocumentType;
+    warehouseId: string;
+    destWarehouseId: string | null;
+    number: string;
+    items: { productId: string; quantity: number }[];
+  }
+): Promise<void> {
+  const balances = await tx.stock.findMany({
+    where: {
+      productId: { in: doc.items.map((i) => i.productId) },
+      OR: [
+        { warehouseId: doc.warehouseId },
+        ...(doc.destWarehouseId ? [{ warehouseId: doc.destWarehouseId }] : []),
+      ],
+    },
+    select: { productId: true, warehouseId: true, quantity: true, reserved: true },
+  });
+
+  const balanceOf = (productId: string, warehouseId: string) =>
+    balances.find((b) => b.productId === productId && b.warehouseId === warehouseId);
+
+  for (const item of doc.items) {
+    switch (doc.type) {
+      case "RECEIPT":
+      case "RETURN": {
+        const balance = balanceOf(item.productId, doc.warehouseId);
+        const available = balance?.quantity ?? 0;
+        if (available < item.quantity) {
+          throw new Error(
+            `Hujjat ${doc.number} ni bekor qilib bo'lmaydi: ombordagi qoldiq (${available}) qaytarilayotgan miqdordan (${item.quantity}) kam. Mahsulot allaqachon sarflangan — chiqim (WRITE_OFF) hujjati yarating.`
+          );
+        }
+        // Qoldiqni kamaytirsak, band (reserved) miqdori qoldiqdan oshmasligi kerak.
+        if ((balance?.reserved ?? 0) > available - item.quantity) {
+          throw new Error(
+            `Hujjat ${doc.number} ni bekor qilib bo'lmaydi: mahsulot buyurtmalar uchun band qilingan (zaxira ${balance?.reserved ?? 0}). Avval bandlangan buyurtmalarni bekor qiling.`
+          );
+        }
+        break;
+      }
+      case "ISSUE":
+      case "WRITE_OFF":
+        // Teskari harakat qoldiqni oshiradi — manfiy qoldiq xavfi yo'q.
+        break;
+      case "TRANSFER": {
+        if (!doc.destWarehouseId) break;
+        const destBalance = balanceOf(item.productId, doc.destWarehouseId);
+        const destAvailable = destBalance?.quantity ?? 0;
+        if (destAvailable < item.quantity) {
+          throw new Error(
+            `Hujjat ${doc.number} ni bekor qilib bo'lmaydi: manzil ombordagi qoldiq (${destAvailable}) qaytarilayotgan miqdordan (${item.quantity}) kam — ko'chirilgan tovar allaqachon sarflangan.`
+          );
+        }
+        if ((destBalance?.reserved ?? 0) > destAvailable - item.quantity) {
+          throw new Error(
+            `Hujjat ${doc.number} ni bekor qilib bo'lmaydi: manzil ombordagi mahsulot band qilingan (zaxira ${destBalance?.reserved ?? 0}).`
+          );
+        }
+        break;
+      }
+      case "INVENTORY":
+        // Inventarizatsiya natijasi haqiqiy sanoq — bekor qilish ma'nosiz.
+        break;
+    }
+  }
+}
+
 async function reverseDocumentItemStockChange(
   tx: TxClient,
   doc: { id: string; type: StockDocumentType; warehouseId: string; destWarehouseId: string | null; number: string },
   productId: string,
-  quantity: number
+  quantity: number,
+  actorId?: string | null
 ) {
   const reference = { referenceType: "StockDocument", referenceId: doc.id };
   const note = `Hujjat ${doc.number} bekor qilindi`;
+  const createdBy = actorId ?? null;
 
   switch (doc.type) {
     case "RECEIPT":
@@ -325,7 +420,7 @@ async function reverseDocumentItemStockChange(
         change: -quantity,
         reason: doc.type === "RECEIPT" ? "RECEIPT" : "RETURN",
         note,
-        allowNegative: true,
+        createdBy,
         ...reference,
       });
       break;
@@ -337,6 +432,7 @@ async function reverseDocumentItemStockChange(
         change: quantity,
         reason: doc.type === "ISSUE" ? "ISSUE" : "WRITE_OFF",
         note,
+        createdBy,
         ...reference,
       });
       break;
@@ -348,6 +444,7 @@ async function reverseDocumentItemStockChange(
         change: quantity,
         reason: "TRANSFER_IN",
         note,
+        createdBy,
         ...reference,
       });
       await recordStockChange(tx, {
@@ -356,7 +453,7 @@ async function reverseDocumentItemStockChange(
         change: -quantity,
         reason: "TRANSFER_OUT",
         note,
-        allowNegative: true,
+        createdBy,
         ...reference,
       });
       break;

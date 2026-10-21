@@ -2,6 +2,7 @@ import type { QuotationStatus, Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit";
 import { createOrder } from "@/lib/orders";
+import { nextBusinessNumber } from "@/lib/numbers";
 
 type TxClient = Prisma.TransactionClient;
 
@@ -20,9 +21,9 @@ export type CreateQuotationInput = {
 };
 
 export async function generateQuotationNumber(tx?: TxClient): Promise<string> {
-  const client = tx ?? prisma;
-  const count = await client.quotation.count();
-  return `QUO-${String(count + 1).padStart(6, "0")}`;
+  // Sequence'dan — `count() + 1` raqam takrorlanishiga va parallel
+  // yaratishlarda dubl raqamga olib kelardi.
+  return nextBusinessNumber("quotation", { prefix: "QUO" }, tx);
 }
 
 export async function createQuotation(

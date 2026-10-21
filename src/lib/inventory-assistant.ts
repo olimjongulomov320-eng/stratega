@@ -4,12 +4,31 @@
 // AI yoki taxminiy natija ishlab chiqarmaydi — faqat haqiqiy hisob-kitob.
 
 import { prisma } from "@/lib/prisma";
-import type { Prisma } from "@/generated/prisma/client";
+import { Prisma } from "@/generated/prisma/client";
 import { formatSum } from "@/lib/format";
 import { getIntSetting, SETTING_KEYS } from "@/lib/settings";
 
 function daysAgo(days: number): Date {
   return new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+}
+
+/** Tizim sozlamasidagi "kam qoldiq" chegarasi (zaxira bo'lmasa — 5). */
+export async function getLowStockThreshold(): Promise<number> {
+  const value = await getIntSetting(SETTING_KEYS.LOW_STOCK_THRESHOLD);
+  return Number.isFinite(value) && value > 0 ? value : 5;
+}
+
+/**
+ * Mahsulotning "kam qoldiq" chegarasi:
+ * 1) mahsulotning o'z minimumStock qiymati (agar belgilangan bo'lsa);
+ * 2) aks holda tizim sozlamasi (stock.lowStockThreshold).
+ */
+export function effectiveLowStockThreshold(
+  minimumStock: number | null | undefined,
+  globalThreshold: number
+): number {
+  if (typeof minimumStock === "number" && minimumStock > 0) return minimumStock;
+  return globalThreshold;
 }
 
 // --- getLowStockProducts() ---
@@ -19,15 +38,41 @@ export type LowStockProduct = {
   sku: string | null;
   stock: number;
   minimumStock: number;
+  isOutOfStock: boolean;
 };
 
 export async function getLowStockProducts(): Promise<LowStockProduct[]> {
-  const products = await prisma.product.findMany({
-    where: { isActive: true },
-    select: { id: true, name: true, sku: true, stock: true, minimumStock: true },
-  });
-  return products
-    .filter((p) => p.stock <= (p.minimumStock || 5))
+  const globalThreshold = await getLowStockThreshold();
+
+  // Jami qoldiq — Stock jadvalidan (asl haqiqat manbai), Product.stock
+  // emas (u denormalizatsiya bo'lib, kechikishi mumkin).
+  const rows = await prisma.$queryRaw<
+    {
+      id: string;
+      name: string;
+      sku: string | null;
+      quantity: number;
+      minimumStock: number;
+    }[]
+  >`
+    SELECT p."id", p."name", p."sku", p."minimumStock",
+           COALESCE(SUM(s."quantity"), 0)::int AS quantity
+    FROM "Product" p
+    LEFT JOIN "Stock" s ON s."productId" = p."id"
+    WHERE p."isActive" = true
+    GROUP BY p."id", p."name", p."sku", p."minimumStock"
+  `;
+
+  return rows
+    .map((r) => ({
+      id: r.id,
+      name: r.name,
+      sku: r.sku,
+      stock: Number(r.quantity),
+      minimumStock: effectiveLowStockThreshold(r.minimumStock, globalThreshold),
+      isOutOfStock: Number(r.quantity) <= 0,
+    }))
+    .filter((p) => p.stock <= p.minimumStock)
     .sort((a, b) => a.stock - b.stock);
 }
 
@@ -36,6 +81,7 @@ export type InventoryForecast = {
   productId: string;
   name: string;
   currentStock: number;
+  reserved: number;
   avgDailyConsumption: number;
   daysUntilStockout: number | null; // null = ma'lumot yetarli emas
 };
@@ -43,46 +89,68 @@ export type InventoryForecast = {
 export async function getInventoryForecast(): Promise<InventoryForecast[]> {
   const lookbackDays = await getIntSetting(SETTING_KEYS.FORECAST_LOOKBACK_DAYS);
   const safeLookback = Math.max(lookbackDays, 7);
+  const since = daysAgo(safeLookback);
 
-  const [products, recentMoves] = await Promise.all([
-    prisma.product.findMany({
-      where: { isActive: true },
-      select: { id: true, name: true, stock: true },
-    }),
-    prisma.stockMove.findMany({
-      where: {
-        createdAt: { gte: daysAgo(safeLookback) },
-        // ORDER — ariza tasdiqlanib yozilgan chiqim (eski oqim),
-        // ISSUE — jo'natma/hujjat bo'yicha chiqim (yangi oqim).
-        reason: { in: ["ORDER", "ISSUE"] },
-        change: { lt: 0 },
-      },
-      select: { productId: true, change: true },
-    }),
-  ]);
+  // Bitta SQL bilan: jami qoldiq (Stock), band (reserved) va iste'mol
+  // (StockMove). Har bir qator uchun alohida so'rov yuborish N+1
+  // muammosini keltirib chiqardi.
+  //
+  //Muhim: FAOL bo'lmagan mahsulotlar ham ro'yxatga olinadi — qoldig'i
+  // tugagach tizim ularni avtomatik "nofaol" qiladi (Product.isActive=false).
+  // Faqat faol mahsulotlarni olsa, "tugagan" ogohlantirishlari umuman
+  // chiqmasdi. Shuning uchun: faol YOKI omborda qoldig'i bor.
+  const rows = await prisma.$queryRaw<
+    {
+      productId: string;
+      name: string;
+      quantity: number;
+      reserved: number;
+      consumed: number;
+    }[]
+  >`
+    WITH stock AS (
+      SELECT "productId",
+             SUM("quantity")::int AS qty,
+             SUM("reserved")::int AS res
+      FROM "Stock"
+      GROUP BY "productId"
+    ),
+    consumption AS (
+      SELECT "productId", SUM(ABS("change"))::int AS consumed
+      FROM "StockMove"
+      WHERE "createdAt" >= ${since}
+        AND "reason" IN ('ORDER', 'ISSUE')
+        AND "change" < 0
+      GROUP BY "productId"
+    )
+    SELECT p."id" AS "productId",
+           p."name",
+           COALESCE(s.qty, 0)::int AS quantity,
+           COALESCE(s.res, 0)::int AS reserved,
+           COALESCE(c.consumed, 0)::int AS consumed
+    FROM "Product" p
+    LEFT JOIN stock s ON s."productId" = p."id"
+    LEFT JOIN consumption c ON c."productId" = p."id"
+    WHERE p."isActive" = true
+       OR s."productId" IS NOT NULL
+  `;
 
-  const consumption = new Map<string, number>();
-  for (const move of recentMoves) {
-    consumption.set(
-      move.productId,
-      (consumption.get(move.productId) ?? 0) + Math.abs(move.change)
-    );
-  }
-
-  return products.map((p) => {
-    const totalConsumed = consumption.get(p.id) ?? 0;
+  return rows.map((r) => {
+    const currentStock = Number(r.quantity);
+    const totalConsumed = Number(r.consumed);
     const avgDailyConsumption = totalConsumed / safeLookback;
     const daysUntilStockout =
       avgDailyConsumption <= 0
         ? null
-        : p.stock <= 0
+        : currentStock <= 0
           ? 0
-          : p.stock / avgDailyConsumption;
+          : currentStock / avgDailyConsumption;
 
     return {
-      productId: p.id,
-      name: p.name,
-      currentStock: p.stock,
+      productId: r.productId,
+      name: r.name,
+      currentStock,
+      reserved: Number(r.reserved),
       avgDailyConsumption,
       daysUntilStockout,
     };
@@ -163,35 +231,30 @@ export type TopProduct = {
 };
 
 export async function getTopProducts(limit = 10): Promise<TopProduct[]> {
-  const items = await prisma.orderItem.findMany({
-    where: { order: { status: { not: "CANCELLED" } } },
-    select: {
-      productId: true,
-      quantity: true,
-      price: true,
-      product: { select: { name: true } },
-    },
-  });
+  // DB da agregatsiya — barcha buyurtma qatorlarini JS ga tortib
+  // guruhlash o'rniga. Natija bir xil, ammo jami satrlar yuklanmaydi.
+  const rows = await prisma.$queryRaw<
+    { productId: string; name: string; units: number; revenue: number }[]
+  >`
+    SELECT oi."productId",
+           p."name",
+           SUM(oi."quantity")::int AS units,
+           SUM(oi."price" * oi."quantity")::bigint AS revenue
+    FROM "OrderItem" oi
+    JOIN "Order" o ON o."id" = oi."orderId"
+    JOIN "Product" p ON p."id" = oi."productId"
+    WHERE o."status" NOT IN ('DRAFT', 'CANCELLED')
+    GROUP BY oi."productId", p."name"
+    ORDER BY revenue DESC
+    LIMIT ${limit}
+  `;
 
-  const byProduct = new Map<string, TopProduct>();
-  for (const item of items) {
-    const existing = byProduct.get(item.productId);
-    if (existing) {
-      existing.unitsSold += item.quantity;
-      existing.revenue += item.price * item.quantity;
-    } else {
-      byProduct.set(item.productId, {
-        productId: item.productId,
-        name: item.product.name,
-        unitsSold: item.quantity,
-        revenue: item.price * item.quantity,
-      });
-    }
-  }
-
-  return Array.from(byProduct.values())
-    .sort((a, b) => b.revenue - a.revenue)
-    .slice(0, limit);
+  return rows.map((r) => ({
+    productId: r.productId,
+    name: r.name,
+    unitsSold: Number(r.units),
+    revenue: Number(r.revenue),
+  }));
 }
 
 // --- getProductProfitability() ---
@@ -207,42 +270,39 @@ export type ProductProfitability = {
 export async function getProductProfitability(
   limit = 10
 ): Promise<ProductProfitability[]> {
-  const items = await prisma.orderItem.findMany({
-    where: { order: { status: { not: "CANCELLED" } } },
-    select: {
-      productId: true,
-      quantity: true,
-      price: true,
-      costPrice: true,
-      product: { select: { name: true } },
-    },
-  });
+  const rows = await prisma.$queryRaw<
+    {
+      productId: string;
+      name: string;
+      revenue: number;
+      cost: number;
+    }[]
+  >`
+    SELECT oi."productId",
+           p."name",
+           SUM(oi."price" * oi."quantity")::bigint AS revenue,
+           SUM(COALESCE(oi."costPrice", 0) * oi."quantity")::bigint AS cost
+    FROM "OrderItem" oi
+    JOIN "Order" o ON o."id" = oi."orderId"
+    JOIN "Product" p ON p."id" = oi."productId"
+    WHERE o."status" NOT IN ('DRAFT', 'CANCELLED')
+    GROUP BY oi."productId", p."name"
+  `;
 
-  const byProduct = new Map<string, ProductProfitability>();
-  for (const item of items) {
-    const revenue = item.price * item.quantity;
-    const cost = (item.costPrice ?? 0) * item.quantity;
-    const existing = byProduct.get(item.productId);
-    if (existing) {
-      existing.revenue += revenue;
-      existing.cost += cost;
-    } else {
-      byProduct.set(item.productId, {
-        productId: item.productId,
-        name: item.product.name,
+  return rows
+    .map((r) => {
+      const revenue = Number(r.revenue);
+      const cost = Number(r.cost);
+      const grossProfit = revenue - cost;
+      const marginPercent = revenue > 0 ? (grossProfit / revenue) * 100 : 0;
+      return {
+        productId: r.productId,
+        name: r.name,
         revenue,
         cost,
-        grossProfit: 0,
-        marginPercent: 0,
-      });
-    }
-  }
-
-  return Array.from(byProduct.values())
-    .map((p) => {
-      const grossProfit = p.revenue - p.cost;
-      const marginPercent = p.revenue > 0 ? (grossProfit / p.revenue) * 100 : 0;
-      return { ...p, grossProfit, marginPercent };
+        grossProfit,
+        marginPercent,
+      };
     })
     .sort((a, b) => b.marginPercent - a.marginPercent)
     .slice(0, limit);
@@ -283,61 +343,175 @@ export type PendingOrder = {
 };
 
 export async function getPendingOrders(): Promise<PendingOrder[]> {
-  const orders = await prisma.order.findMany({
-    where: { status: { in: ["DRAFT", "CONFIRMED", "PROCESSING", "READY_TO_SHIP"] } },
-    include: {
-      customer: { select: { companyName: true } },
-      items: { select: { price: true, quantity: true } },
-    },
-    orderBy: { createdAt: "asc" },
-  });
+  const rows = await prisma.$queryRaw<
+    {
+      orderId: string;
+      number: string;
+      customerName: string | null;
+      status: string;
+      total: number;
+    }[]
+  >`
+    SELECT o."id" AS "orderId",
+           o."number",
+           c."companyName" AS "customerName",
+           o."status",
+           COALESCE(SUM(oi."price" * oi."quantity"), 0)::bigint AS total
+    FROM "Order" o
+    LEFT JOIN "Customer" c ON c."id" = o."customerId"
+    LEFT JOIN "OrderItem" oi ON oi."orderId" = o."id"
+    WHERE o."status" IN ('DRAFT', 'CONFIRMED', 'PROCESSING', 'READY_TO_SHIP')
+    GROUP BY o."id", o."number", c."companyName", o."status", o."createdAt"
+    ORDER BY o."createdAt" ASC
+  `;
 
-  return orders.map((o) => ({
-    orderId: o.id,
-    number: o.number,
-    customerName: o.customer?.companyName ?? null,
-    status: o.status,
-    total: o.items.reduce((s, i) => s + i.price * i.quantity, 0),
+  return rows.map((r) => ({
+    orderId: r.orderId,
+    number: r.number,
+    customerName: r.customerName ?? null,
+    status: r.status,
+    total: Number(r.total),
   }));
 }
 
 // --- getInventoryValue() ---
 export type InventoryValueSummary = {
-  totalValue: number;
+  totalValue: number; // tannarx (costPrice) bo'yicha — kapital qanchaga tushgan
+  totalRetailValue: number; // sotuv narxi bo'yicha — potensial tushum
   totalValueFormatted: string;
   totalUnits: number;
   productCount: number;
+  reservedUnits: number;
   byCategory: { categoryName: string; value: number }[];
 };
 
 export async function getInventoryValue(): Promise<InventoryValueSummary> {
-  const products = await prisma.product.findMany({
-    select: {
-      stock: true,
-      price: true,
-      category: { select: { name: true } },
-    },
-  });
+  // Qiymat TANNARX (costPrice) bo'yicha hisoblanadi — omborga bog'langan
+  // kapital. Sotuv narxi ("retail value") alohida ko'rsatiladi.
+  // Qiymat Stock jadvalidan olinadi (asl haqiqat manbai).
+  const rows = await prisma.$queryRaw<
+    {
+      categoryName: string;
+      units: number;
+      reserved: number;
+      costValue: number;
+      retailValue: number;
+      products: number;
+    }[]
+  >`
+    SELECT c."name" AS "categoryName",
+           SUM(s."quantity")::int AS units,
+           SUM(s."reserved")::int AS reserved,
+           SUM(s."quantity" * COALESCE(p."costPrice", p."price"))::bigint AS "costValue",
+           SUM(s."quantity" * p."price")::bigint AS "retailValue",
+           COUNT(DISTINCT p."id")::int AS products
+    FROM "Stock" s
+    JOIN "Product" p ON p."id" = s."productId"
+    JOIN "Category" c ON c."id" = p."categoryId"
+    GROUP BY c."name"
+  `;
 
-  const totalValue = products.reduce((s, p) => s + p.stock * p.price, 0);
-  const totalUnits = products.reduce((s, p) => s + p.stock, 0);
-
-  const byCategoryMap = new Map<string, number>();
-  for (const p of products) {
-    byCategoryMap.set(
-      p.category.name,
-      (byCategoryMap.get(p.category.name) ?? 0) + p.stock * p.price
-    );
-  }
+  const totalValue = rows.reduce((s, r) => s + Number(r.costValue), 0);
+  const totalRetailValue = rows.reduce((s, r) => s + Number(r.retailValue), 0);
+  const totalUnits = rows.reduce((s, r) => s + Number(r.units), 0);
+  const reservedUnits = rows.reduce((s, r) => s + Number(r.reserved), 0);
+  const productCount = rows.reduce((s, r) => s + Number(r.products), 0);
 
   return {
     totalValue,
+    totalRetailValue,
     totalValueFormatted: formatSum(totalValue),
     totalUnits,
-    productCount: products.length,
-    byCategory: Array.from(byCategoryMap.entries())
-      .map(([categoryName, value]) => ({ categoryName, value }))
+    productCount,
+    reservedUnits,
+    byCategory: rows
+      .map((r) => ({ categoryName: r.categoryName, value: Number(r.costValue) }))
       .sort((a, b) => b.value - a.value),
+  };
+}
+
+// ============================================================
+// Boshqaruv paneli uchun jamlangan ombor ko'rsatkichlari
+// ============================================================
+
+export type StockSummary = {
+  productCount: number;
+  warehouseCount: number;
+  totalUnits: number;
+  reservedUnits: number;
+  availableUnits: number;
+  totalValue: number; // tannarx bo'yicha
+  totalRetailValue: number; // sotuv narxi bo'yicha
+  outOfStockCount: number;
+  lowStockCount: number;
+  overstockCount: number;
+};
+
+/**
+ * Bitta SQL bilan ombor ko'rsatkichlari — boshqaruv paneli uchun.
+ * Barcha mahsulotlar JS ga yuklanmaydi (faqat agregatlar).
+ */
+export async function getStockSummary(): Promise<StockSummary> {
+  const [globalThreshold, overstockMultiplier] = await Promise.all([
+    getLowStockThreshold(),
+    getIntSetting(SETTING_KEYS.OVERSTOCK_MULTIPLIER),
+  ]);
+  const overstockLevel = globalThreshold * Math.max(overstockMultiplier, 1);
+
+  const rows = await prisma.$queryRaw<
+    {
+      productCount: number;
+      totalUnits: number;
+      reservedUnits: number;
+      totalValue: number;
+      totalRetailValue: number;
+      outOfStockCount: number;
+      lowStockCount: number;
+      overstockCount: number;
+    }[]
+  >`
+    WITH stock AS (
+      SELECT "productId",
+             SUM("quantity")::int AS qty,
+             SUM("reserved")::int AS res
+      FROM "Stock"
+      GROUP BY "productId"
+    )
+    SELECT COUNT(*)::int AS "productCount",
+           COALESCE(SUM(s.qty), 0)::int AS "totalUnits",
+           COALESCE(SUM(s.res), 0)::int AS "reservedUnits",
+           COALESCE(SUM(s.qty * COALESCE(p."costPrice", p."price")), 0)::bigint AS "totalValue",
+           COALESCE(SUM(s.qty * p."price"), 0)::bigint AS "totalRetailValue",
+           COUNT(*) FILTER (WHERE s.qty <= 0)::int AS "outOfStockCount",
+           COUNT(*) FILTER (
+             WHERE s.qty > 0
+               AND s.qty <= CASE
+                     WHEN p."minimumStock" > 0 THEN p."minimumStock"
+                     ELSE ${globalThreshold}
+                   END
+           )::int AS "lowStockCount",
+           COUNT(*) FILTER (WHERE s.qty > ${overstockLevel})::int AS "overstockCount"
+    FROM stock s
+    JOIN "Product" p ON p."id" = s."productId"
+  `;
+
+  const row = rows[0];
+  const totalUnits = Number(row?.totalUnits ?? 0);
+  const reservedUnits = Number(row?.reservedUnits ?? 0);
+
+  const warehouseCount = await prisma.warehouse.count({ where: { isActive: true } });
+
+  return {
+    productCount: Number(row?.productCount ?? 0),
+    warehouseCount,
+    totalUnits,
+    reservedUnits,
+    availableUnits: totalUnits - reservedUnits,
+    totalValue: Number(row?.totalValue ?? 0),
+    totalRetailValue: Number(row?.totalRetailValue ?? 0),
+    outOfStockCount: Number(row?.outOfStockCount ?? 0),
+    lowStockCount: Number(row?.lowStockCount ?? 0),
+    overstockCount: Number(row?.overstockCount ?? 0),
   };
 }
 
@@ -391,54 +565,65 @@ export type RevenueReport = {
   averageOrderValue: number;
 };
 
-function orderItemWhere(filters: SalesFilters): Prisma.OrderItemWhereInput {
-  const orderWhere: Prisma.OrderWhereInput = {
-    status: { notIn: ["DRAFT", "CANCELLED"] },
-  };
-  if (filters.customerId) orderWhere.customerId = filters.customerId;
-  if (filters.warehouseId) orderWhere.warehouseId = filters.warehouseId;
-  if (filters.from || filters.to) {
-    orderWhere.createdAt = {
-      ...(filters.from ? { gte: filters.from } : {}),
-      ...(filters.to ? { lte: filters.to } : {}),
-    };
+/**
+ * Savdo filtrlarini SQL shartiga aylantiradi. Barcha qiymatlar
+ * parametr sifatida yuboriladi (SQL injection'dan himoyalangan).
+ */
+function salesWhereSql(filters: SalesFilters): Prisma.Sql {
+  const parts: Prisma.Sql[] = [
+    Prisma.sql`o."status" NOT IN ('DRAFT', 'CANCELLED')`,
+  ];
+  if (filters.customerId) {
+    parts.push(Prisma.sql`o."customerId" = ${filters.customerId}`);
   }
-
-  return {
-    order: orderWhere,
-    ...(filters.productId ? { productId: filters.productId } : {}),
-    ...(filters.categoryId
-      ? { product: { categoryId: filters.categoryId } }
-      : {}),
-  };
+  if (filters.warehouseId) {
+    parts.push(Prisma.sql`o."warehouseId" = ${filters.warehouseId}`);
+  }
+  if (filters.from) {
+    parts.push(Prisma.sql`o."createdAt" >= ${filters.from}`);
+  }
+  if (filters.to) {
+    parts.push(Prisma.sql`o."createdAt" <= ${filters.to}`);
+  }
+  if (filters.productId) {
+    parts.push(Prisma.sql`oi."productId" = ${filters.productId}`);
+  }
+  if (filters.categoryId) {
+    parts.push(Prisma.sql`p."categoryId" = ${filters.categoryId}`);
+  }
+  return Prisma.join(parts, " AND ");
 }
 
 // --- getRevenueReport() ---
 export async function getRevenueReport(
   filters: SalesFilters = {}
 ): Promise<RevenueReport> {
-  const items = await prisma.orderItem.findMany({
-    where: orderItemWhere(filters),
-    select: { quantity: true, price: true, costPrice: true, orderId: true },
-  });
+  const where = salesWhereSql(filters);
 
-  let revenue = 0;
-  let cogs = 0;
-  const orderIds = new Set<string>();
-  for (const item of items) {
-    revenue += item.price * item.quantity;
-    cogs += (item.costPrice ?? 0) * item.quantity;
-    orderIds.add(item.orderId);
-  }
+  const rows = await prisma.$queryRaw<
+    { revenue: number | null; cogs: number | null; orders: number }[]
+  >`
+    SELECT SUM(oi."price" * oi."quantity")::bigint AS revenue,
+           SUM(COALESCE(oi."costPrice", 0) * oi."quantity")::bigint AS cogs,
+           COUNT(DISTINCT o."id")::int AS orders
+    FROM "OrderItem" oi
+    JOIN "Order" o ON o."id" = oi."orderId"
+    JOIN "Product" p ON p."id" = oi."productId"
+    WHERE ${where}
+  `;
 
+  const revenue = Number(rows[0]?.revenue ?? 0);
+  const cogs = Number(rows[0]?.cogs ?? 0);
+  const orderCount = Number(rows[0]?.orders ?? 0);
   const grossProfit = revenue - cogs;
+
   return {
     revenue,
     cogs,
     grossProfit,
     marginPercent: revenue > 0 ? (grossProfit / revenue) * 100 : 0,
-    orderCount: orderIds.size,
-    averageOrderValue: orderIds.size > 0 ? revenue / orderIds.size : 0,
+    orderCount,
+    averageOrderValue: orderCount > 0 ? revenue / orderCount : 0,
   };
 }
 
@@ -451,46 +636,36 @@ export type TopCustomer = {
 };
 
 export async function getTopCustomers(limit = 10, filters: SalesFilters = {}): Promise<TopCustomer[]> {
-  const items = await prisma.orderItem.findMany({
-    where: orderItemWhere(filters),
-    select: {
-      quantity: true,
-      price: true,
-      order: {
-        select: {
-          id: true,
-          customerId: true,
-          customer: { select: { companyName: true } },
-        },
-      },
-    },
-  });
+  const where = salesWhereSql(filters);
 
-  const byCustomer = new Map<string, TopCustomer>();
-  const orderSetByCustomer = new Map<string, Set<string>>();
-  for (const item of items) {
-    const key = item.order.customerId ?? "no-customer";
-    const existing = byCustomer.get(key);
-    if (existing) {
-      existing.revenue += item.price * item.quantity;
-    } else {
-      byCustomer.set(key, {
-        customerId: item.order.customerId,
-        companyName: item.order.customer?.companyName ?? "Mijozsiz buyurtmalar",
-        orders: 0,
-        revenue: item.price * item.quantity,
-      });
-      orderSetByCustomer.set(key, new Set());
-    }
-    orderSetByCustomer.get(key)!.add(item.order.id);
-  }
-  for (const [key, orders] of orderSetByCustomer) {
-    byCustomer.get(key)!.orders = orders.size;
-  }
+  const rows = await prisma.$queryRaw<
+    {
+      customerId: string | null;
+      companyName: string | null;
+      orders: number;
+      revenue: number;
+    }[]
+  >`
+    SELECT o."customerId",
+           c."companyName",
+           COUNT(DISTINCT o."id")::int AS orders,
+           SUM(oi."price" * oi."quantity")::bigint AS revenue
+    FROM "OrderItem" oi
+    JOIN "Order" o ON o."id" = oi."orderId"
+    JOIN "Product" p ON p."id" = oi."productId"
+    LEFT JOIN "Customer" c ON c."id" = o."customerId"
+    WHERE ${where}
+    GROUP BY o."customerId", c."companyName"
+    ORDER BY revenue DESC
+    LIMIT ${limit}
+  `;
 
-  return Array.from(byCustomer.values())
-    .sort((a, b) => b.revenue - a.revenue)
-    .slice(0, limit);
+  return rows.map((r) => ({
+    customerId: r.customerId,
+    companyName: r.companyName ?? "Mijozsiz buyurtmalar",
+    orders: Number(r.orders),
+    revenue: Number(r.revenue),
+  }));
 }
 
 // --- getSalesByPeriod() ---
@@ -531,30 +706,49 @@ export type DeadStockItem = {
 
 export async function getDeadStock(minIdleDays = 60, limit = 50): Promise<DeadStockItem[]> {
   const cutoff = daysAgo(minIdleDays);
-  const products = await prisma.product.findMany({
-    where: { isActive: true, stock: { gt: 0 } },
-    select: {
-      id: true,
-      name: true,
-      stock: true,
-      price: true,
-      stockMoves: {
-        where: { reason: { in: ["ORDER", "ISSUE"] }, change: { lt: 0 } },
-        orderBy: { createdAt: "desc" },
-        take: 1,
-        select: { createdAt: true },
-      },
-    },
-  });
 
-  return products
-    .filter((p) => p.stockMoves.length === 0 || p.stockMoves[0]!.createdAt < cutoff)
-    .map((p) => ({
-      productId: p.id,
-      name: p.name,
-      stock: p.stock,
-      value: p.stock * p.price,
-      lastSoldAt: p.stockMoves[0]?.createdAt ?? null,
+  // Chiqim harakati bo'lgan mahsulotlar — ular "sotilgan" hisoblanadi.
+  const soldRows = await prisma.$queryRaw<
+    { productId: string; lastSoldAt: Date }[]
+  >`
+    SELECT "productId", MAX("createdAt") AS "lastSoldAt"
+    FROM "StockMove"
+    WHERE "reason" IN ('ORDER', 'ISSUE') AND "change" < 0
+    GROUP BY "productId"
+  `;
+  const lastSoldByProduct = new Map(
+    soldRows.map((r) => [r.productId, r.lastSoldAt])
+  );
+
+  const rows = await prisma.$queryRaw<
+    {
+      productId: string;
+      name: string;
+      stock: number;
+      value: number;
+    }[]
+  >`
+    SELECT p."id" AS "productId",
+           p."name",
+           SUM(s."quantity")::int AS stock,
+           SUM(s."quantity" * COALESCE(p."costPrice", p."price"))::bigint AS value
+    FROM "Stock" s
+    JOIN "Product" p ON p."id" = s."productId"
+    GROUP BY p."id", p."name"
+    HAVING SUM(s."quantity") > 0
+  `;
+
+  return rows
+    .filter((r) => {
+      const lastSoldAt = lastSoldByProduct.get(r.productId);
+      return !lastSoldAt || lastSoldAt < cutoff;
+    })
+    .map((r) => ({
+      productId: r.productId,
+      name: r.name,
+      stock: Number(r.stock),
+      value: Number(r.value),
+      lastSoldAt: lastSoldByProduct.get(r.productId) ?? null,
     }))
     .sort((a, b) => b.value - a.value)
     .slice(0, limit);
@@ -570,10 +764,14 @@ export type TurnoverReport = {
 
 export async function getTurnover(days = 90): Promise<TurnoverReport> {
   const report = await getRevenueReport({ from: daysAgo(days) });
-  const products = await prisma.product.findMany({
-    select: { stock: true, price: true },
-  });
-  const inventoryValue = products.reduce((s, p) => s + p.stock * p.price, 0);
+
+  // O'rtacha ombor qiymati — tannarx bo'yicha (COGS bilan solishtiriladigan).
+  const rows = await prisma.$queryRaw<{ value: number }[]>`
+    SELECT SUM(s."quantity" * COALESCE(p."costPrice", p."price"))::bigint AS value
+    FROM "Stock" s
+    JOIN "Product" p ON p."id" = s."productId"
+  `;
+  const inventoryValue = Number(rows[0]?.value ?? 0);
   const annualization = 365 / Math.max(days, 1);
 
   return {
