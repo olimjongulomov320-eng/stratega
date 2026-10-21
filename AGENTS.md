@@ -15,6 +15,14 @@ This version has breaking changes — APIs, conventions, and file structure may 
 - After adding a migration file manually, run `npm run db:deploy` and then
   `npx prisma generate` (client lives in `src/generated/prisma`).
 
+### Connection limit (P2037)
+
+The hosted role allows ~45 connections and `next build` starts multiple
+workers. `src/lib/prisma.ts` caps each process at `DATABASE_POOL_MAX`
+(default 3). If you see `P2037 / too many connections for role
+"prisma_migration"`, stop stray dev servers/builds, then clear stale idle
+sessions (`pg_terminate_backend` for idle pids of the current user).
+
 ## Validation before pushing
 
 ```bash
