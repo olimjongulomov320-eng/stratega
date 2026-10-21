@@ -7,9 +7,15 @@ import { adjustStock } from "./actions";
 export function StockCell({
   productId,
   stock,
+  reserved,
+  warehouseId,
+  editable,
 }: {
   productId: string;
   stock: number;
+  reserved: number;
+  warehouseId: string | null;
+  editable: boolean;
 }) {
   const router = useRouter();
   const [value, setValue] = useState(String(stock));
@@ -37,7 +43,7 @@ export function StockCell({
   function handleSave() {
     setError(null);
     startTransition(async () => {
-      const result = await adjustStock(productId, numValue);
+      const result = await adjustStock(productId, numValue, warehouseId);
       if (!result.ok) {
         setError(result.error);
         setValue(String(stock));
@@ -46,6 +52,22 @@ export function StockCell({
       setJustSaved(true);
       router.refresh();
     });
+  }
+
+  if (!editable) {
+    return (
+      <div className="flex items-center gap-2">
+        <span
+          className={`w-16 rounded-lg border px-2 py-1.5 text-sm ${toneClass}`}
+          title="Barcha omborlar yig'indisi — tahrirlash uchun omborni tanlang"
+        >
+          {stock}
+        </span>
+        <span className="text-xs text-slate-400">
+          omborni tanlang
+        </span>
+      </div>
+    );
   }
 
   return (
@@ -62,6 +84,14 @@ export function StockCell({
             : toneClass
         }`}
       />
+      {reserved > 0 && (
+        <span
+          className="text-xs text-indigo-500"
+          title="Buyurtmalar uchun band qilingan miqdor"
+        >
+          ({reserved} band)
+        </span>
+      )}
       {isDirty && !pending && (
         <button
           type="button"

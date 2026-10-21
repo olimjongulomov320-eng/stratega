@@ -35,11 +35,18 @@ export async function writeAuditLog(
 }
 
 // Joriy amaldor (xodim yoki umumiy admin) — audit yozuvlari uchun qulay yordamchi.
+// Cookie konteksti bo'lmasa (skript/test) xato TASHLANMAYDI — audit konteksti
+// asosiy operatsiyani buzmasligi kerak.
 export async function actorContext(): Promise<{
   actorId: string | null;
   actorLabel: string | null;
 }> {
-  const employee = await getCurrentEmployee();
+  let employee: { id: string } | null = null;
+  try {
+    employee = await getCurrentEmployee();
+  } catch {
+    employee = null;
+  }
   return {
     actorId: employee?.id ?? null,
     actorLabel: employee ? null : "admin",
