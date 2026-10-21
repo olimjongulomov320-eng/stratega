@@ -132,48 +132,27 @@ async function computeCurrentAlerts(): Promise<GeneratedAlert[]> {
     take: 50,
     select: { id: true, productId: true, oldPrice: true, newPrice: true, createdAt: true },
   });
-
-  if (recentPriceChanges.length > 0) {
-    // Har bir mahsulot uchun FAQAT eng so'nggi o'zgarish hisobga olinadi
-    // (bir mahsulot uchun 10 ta alert kerak emas).
-    const latestByProduct = new Map<string, (typeof recentPriceChanges)[number]>();
-    for (const change of recentPriceChanges) {
-      if (!latestByProduct.has(change.productId)) {
-        latestByProduct.set(change.productId, change);
-      }
-    }
-
-    // Mavjud PRICE_CHANGE alertlari bitta so'rovda olinadi (N+1 yo'q):
-    // mahsulot uchun eng oldingi alert yaratilgan vaqti kerak.
-    const oldestChangeAt = recentPriceChanges[recentPriceChanges.length - 1]!.createdAt;
-    const existingAlerts = await prisma.alert.findMany({
-      where: { type: "PRICE_CHANGE", createdAt: { gte: oldestChangeAt } },
-      select: { entityId: true, createdAt: true },
-    });
-    const firstAlertAt = new Map<string, Date>();
-    for (const alert of existingAlerts) {
-      if (!alert.entityId) continue;
-      const current = firstAlertAt.get(alert.entityId);
-      if (!current || alert.createdAt < current) {
-        firstAlertAt.set(alert.entityId, alert.createdAt);
-      }
-    }
-
-    for (const change of latestByProduct.values()) {
-      // Bu o'zgarishdan keyin alert yaratilgan bo'lsa — qayta yaratilmaydi.
-      const existingAt = firstAlertAt.get(change.productId);
-      if (existingAt && existingAt >= change.createdAt) continue;
-
-      const direction = change.newPrice > change.oldPrice ? "qimmatlashdi" : "arzonlashdi";
-      alerts.push({
+  for (const change of recentPriceChanges) {
+    // Har bir o'zgarish uchun bitta alert — mavjud (hal qilingan ham)
+    // alert shu o'zgarishdan keyin yaratilgan bo'lsa qayta yaratilmaydi.
+    const existing = await prisma.alert.findFirst({
+      where: {
         type: "PRICE_CHANGE",
-        severity: "INFO",
-        title: `Narx ${direction}`,
-        description: `${change.oldPrice.toLocaleString("uz-UZ")} → ${change.newPrice.toLocaleString("uz-UZ")} so'm.`,
-        entity: "Product",
         entityId: change.productId,
-      });
-    }
+        createdAt: { gte: change.createdAt },
+      },
+      select: { id: true },
+    });
+    if (existing) continue;
+    const direction = change.newPrice > change.oldPrice ? "qimmatlashdi" : "arzonlashdi";
+    alerts.push({
+      type: "PRICE_CHANGE",
+      severity: "INFO",
+      title: `Narx ${direction}`,
+      description: `${change.oldPrice.toLocaleString("uz-UZ")} → ${change.newPrice.toLocaleString("uz-UZ")} so'm.`,
+      entity: "Product",
+      entityId: change.productId,
+    });
   }
 
   // Odatiydan tashqari sotuv: so'nggi 24 soatda o'rtacha 30 kunlik
@@ -206,18 +185,15 @@ async function computeCurrentAlerts(): Promise<GeneratedAlert[]> {
   }
 
   // Inventarizatsiya anomaliyasi: manfiy qoldiq yoki zaxira qoldiqdan oshiq.
-  // Anomaliya sharti bazada tekshiriladi — JS da filtrlash uchun barcha
-  // "reserved > 0" qatorlarini yuklash kerak emas.
-  const suspiciousStock = await prisma.$queryRaw<
-    { productId: string; quantity: number; reserved: number }[]
-  >`
-    SELECT "productId", "quantity", "reserved"
-    FROM "Stock"
-    WHERE "quantity" < 0 OR "reserved" > "quantity"
-    LIMIT 50
-  `;
-
-  for (const stock of suspiciousStock) {
+  const suspiciousStock = await prisma.stock.findMany({
+    where: { OR: [{ quantity: { lt: 0 } }, { reserved: { gt: 0 } }] },
+    select: { productId: true, quantity: true, reserved: true },
+    take: 500,
+  });
+  const anomalies = suspiciousStock
+    .filter((s) => s.quantity < 0 || s.reserved > s.quantity)
+    .slice(0, 50);
+  for (const stock of anomalies) {
     alerts.push({
       type: "INVENTORY_ANOMALY",
       severity: "CRITICAL",
@@ -277,18 +253,8 @@ export async function refreshAlerts(): Promise<{ created: number; resolved: numb
   return { created: toCreate.length, resolved: toResolve.length };
 }
 
-/**
- * Faol ogohlantirishlarni o'qiydi — HECH QANDAY yozuv qilmaydi.
- *
- * Avval bu funksiya har chaqirilishida `refreshAlerts()` ni ishga tushirib,
- * GET so'rovida bazaga yozuv qilardi (write-on-read). Bu:
- *   * har sahifa yuklanishida yozuv yukini keltiradi;
- *   * faqat o'qish huquqi bilan kirgan foydalanuvchi orqali ma'lumot
- *     o'zgarishiga olib kelishi mumkin edi.
- * Endi yangilash faqat aniq "Yangilash" amali orqali bajariladi
- * (`refreshAlerts()` / `refreshAlertsAction`).
- */
 export async function getActiveAlerts(limit = 20) {
+  await refreshAlerts();
   return prisma.alert.findMany({
     where: { resolvedAt: null },
     orderBy: [{ severity: "desc" }, { createdAt: "desc" }],

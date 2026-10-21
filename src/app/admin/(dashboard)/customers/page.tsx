@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { formatSum } from "@/lib/format";
 import { DeleteCustomerButton } from "./delete-button";
-import { CustomerImportForm } from "./import-form";
 import { CsvExportButton } from "@/components/csv-export-button";
 import { requirePagePermission } from "@/lib/require-permission";
 
@@ -51,8 +50,6 @@ export default async function CustomersPage() {
           </Link>
         </div>
       </div>
-
-      <CustomerImportForm />
 
       <div className="mt-6 overflow-x-auto rounded-xl border border-slate-200 bg-white">
         <table className="w-full text-left text-sm">

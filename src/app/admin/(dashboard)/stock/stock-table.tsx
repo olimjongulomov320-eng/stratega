@@ -13,9 +13,7 @@ type ProductRow = {
   imageUrl: string | null;
   price: number;
   stock: number;
-  reserved: number;
   isActive: boolean;
-  isLow: boolean;
   category: { name: string };
   daysUntilStockout: number | null;
 };
@@ -72,15 +70,7 @@ function SortHeader({
   );
 }
 
-export function StockTable({
-  products,
-  editable,
-  warehouseId,
-}: {
-  products: ProductRow[];
-  editable: boolean;
-  warehouseId: string | null;
-}) {
+export function StockTable({ products }: { products: ProductRow[] }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [onlyLow, setOnlyLow] = useState(false);
@@ -105,7 +95,7 @@ export function StockTable({
 
   const filtered = useMemo(() => {
     return products.filter((p) => {
-      if (onlyLow && !p.isLow) return false;
+      if (onlyLow && p.stock > 5) return false;
       if (categoryFilter !== "all" && p.category.name !== categoryFilter) {
         return false;
       }
@@ -371,13 +361,7 @@ export function StockTable({
                   {formatSum(product.price)}
                 </td>
                 <td className="px-4 py-3">
-                  <StockCell
-                    productId={product.id}
-                    stock={product.stock}
-                    reserved={product.reserved}
-                    warehouseId={warehouseId}
-                    editable={editable}
-                  />
+                  <StockCell productId={product.id} stock={product.stock} />
                 </td>
                 <td className="px-4 py-3">
                   <StockoutBadge days={product.daysUntilStockout} />

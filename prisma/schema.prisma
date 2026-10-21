@@ -179,11 +179,9 @@ model StockMove {
   @@index([productId])
   @@index([warehouseId])
   @@index([warehouseId, createdAt])
-  @@index([productId, createdAt])
   @@index([requestId])
   @@index([referenceType, referenceId])
   @@index([reason])
-  @@index([reason, createdAt])
   @@index([createdAt])
 }
 
@@ -659,16 +657,12 @@ model Shipment {
   items       ShipmentItem[]
   shippedAt   DateTime?
   deliveredAt DateTime?
-  // Qachon bu jo'natma uchun ombor qoldig'i yozilgan (jismoniy chiqim).
-  // Idempotentlik belgisi: bir jo'natma faqat bir marta yoziladi.
-  stockAppliedAt DateTime?
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
   @@index([orderId])
   @@index([status])
   @@index([createdAt])
-  @@index([stockAppliedAt])
 }
 
 model ShipmentItem {

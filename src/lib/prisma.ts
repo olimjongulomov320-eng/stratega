@@ -18,18 +18,7 @@ function createPrismaClient() {
     idleTimeoutMillis: 10_000,
     connectionTimeoutMillis: 15_000,
   });
-  return new PrismaClient({
-    adapter,
-    // Interaktiv tranzaksiyalar uchun kengaytirilgan limit. Buyurtma/
-    // jo'natma operatsiyalari bir tranzaksiyada bir nechta ketma-ket
-    // so'rov bajaradi; masofaviy bazada har bir so'rov 0.5-1.5s olishi
-    // mumkin — 5s (Prisma sukut bo'yicha) yetarli emas edi va operatsiya
-    // "transaction expired" bilan yarim yo'lda to'xtab qolardi.
-    transactionOptions: {
-      maxWait: 10_000, // tranzaksiya boshlanishini kutish
-      timeout: 60_000, // tranzaksiya ichida ishlash limiti
-    },
-  });
+  return new PrismaClient({ adapter });
 }
 
 // Dev'da HMR va prod'da instansiya qayta ishlatilishi uchun global cache.

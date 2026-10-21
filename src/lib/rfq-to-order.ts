@@ -2,22 +2,15 @@ import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit";
 import { getMainWarehouseId } from "@/lib/warehouse";
 import { generateOrderNumber } from "@/lib/orders";
-import { nextBusinessNumber } from "@/lib/numbers";
 
-/**
- * Tasdiqlangan arizani (RfqRequest) rasmiy Buyurtma (Order) hujjatiga
- * aylantiradi.
- *
- * MUHIM: RfqRequest CONFIRMED holatiga o'tganda requests/actions.ts allaqachon
- * jismoniy qoldiqni ORDER sababi bilan kamaytirgan. Shu sababli bu yerda
- * qayta zaxiralash yoki yana bir marta qoldiq kamaytirish YO'Q — aks holda
- * ikki marta hisobdan chiqadi.
- *
- * Lekin buyurtma "hujjatsiz" qolmasligi kerak: shuning uchun haqiqiy
- * Shipment yaratiladi (SHIPPED, stockAppliedAt to'ldirilgan) — jurnaldagi
- * chiqim izi buyurtma va jo'natma bilan bog'lanadi, va buyurtmaning
- * hayot sikli to'liq bo'ladi.
- */
+// Tasdiqlangan arizani (RfqRequest) rasmiy Buyurtma (Order) hujjatiga
+// aylantiradi. MUHIM: RfqRequest CONFIRMED holatiga o'tganda
+// requests/actions.ts allaqachon jismoniy qoldiqni ORDER sababi bilan
+// kamaytirgan — shuning uchun bu yerda QAYTA zaxiralash yoki yana bir
+// marta qoldiq kamaytirish YO'Q, aks holda ikki marta hisobdan chiqadi.
+// Order shunchaki SHIPPED holatida yaratiladi (chunki qoldiq allaqachon
+// jismoniy ravishda kamaygan) — buyurtma hujjatlari va hisobotlar
+// (foyda, tarix) uchun rasmiylashtirish.
 export async function convertRfqToOrder(
   rfqRequestId: string,
   actorId?: string | null
@@ -34,11 +27,11 @@ export async function convertRfqToOrder(
       );
     }
 
-    const existing = await tx.quotation.findUnique({
+    const existingOrder = await tx.quotation.findUnique({
       where: { rfqRequestId },
       include: { order: true },
     });
-    if (existing?.order) {
+    if (existingOrder?.order) {
       throw new Error("Bu ariza allaqachon buyurtmaga aylantirilgan.");
     }
 
@@ -61,11 +54,11 @@ export async function convertRfqToOrder(
     }
 
     const warehouseId = await getMainWarehouseId(tx);
-    const number = await generateOrderNumber(tx);
+    const number = await generateOrderNumber();
 
     const quotation = await tx.quotation.create({
       data: {
-        number: await nextBusinessNumber("quotation", { prefix: "QUO" }, tx),
+        number: `QUO-${number.split("-")[1]}`,
         rfqRequestId,
         customerId,
         status: "ACCEPTED",
@@ -86,7 +79,6 @@ export async function convertRfqToOrder(
         warehouseId,
         quotationId: quotation.id,
         status: "SHIPPED", // qoldiq allaqachon RFQ tasdiqlanganda kamaygan
-        stockDeductedAt: new Date(),
         note: `Ariza #${rfq.id.slice(0, 8)} asosida avtomatik yaratildi`,
         items: {
           create: rfq.items.map((item) => ({
@@ -94,28 +86,6 @@ export async function convertRfqToOrder(
             quantity: item.quantity,
             price: item.priceAtQuote,
             costPrice: item.product.costPrice,
-          })),
-        },
-      },
-    });
-
-    // Haqiqiy jo'natma — buyurtmaning ombor qismi rasmiylashtiriladi.
-    // Qoldiq allaqachon kamaygani uchun `stockAppliedAt` to'ldiriladi:
-    // bu jo'natma qayta yozilmaydi.
-    await tx.shipment.create({
-      data: {
-        number: await nextBusinessNumber("shipment", { prefix: "SHP" }, tx),
-        orderId: order.id,
-        warehouseId,
-        responsibleId: actorId ?? null,
-        status: "SHIPPED",
-        shippedAt: new Date(),
-        stockAppliedAt: new Date(),
-        note: `Ariza ${rfq.id.slice(0, 8)} asosida`,
-        items: {
-          create: rfq.items.map((item) => ({
-            productId: item.productId,
-            quantity: item.quantity,
           })),
         },
       },

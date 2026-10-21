@@ -2,9 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { recordStockChange } from "@/lib/stock";
 import { writeAuditLog, actorContext } from "@/lib/audit";
 import { parseCsv } from "@/lib/csv";
-import { getMainWarehouseId } from "@/lib/warehouse";
 
-// CSV sarlavhalari: slug,narx,ombordagi_soni — va ixtiyoriy ombor_kod.
 const EXPECTED_HEADER = ["slug", "narx", "ombordagi_soni"];
 
 export type ImportRowResult =
@@ -19,11 +17,6 @@ export type PlannedRow = {
   action: "update" | "skip";
   reason?: string;
   changes: { field: string; from: string | number; to: string | number }[];
-  // Tuzatish qaysi omborda bajariladi (bo'sh = asosiy ombor).
-  warehouseId?: string | null;
-  warehouseName?: string | null;
-  priceChange?: { from: number; to: number } | null;
-  stockChange?: { from: number; to: number } | null;
 };
 
 export type ImportPreview = {
@@ -51,45 +44,17 @@ async function planRows(csvText: string): Promise<ImportPreview> {
     };
   }
 
-  const mainWarehouseId = await getMainWarehouseId();
-  const warehouses = await prisma.warehouse.findMany({
-    select: { id: true, name: true, code: true },
-  });
-  const warehouseByCode = new Map(
-    warehouses.map((w) => [w.code.toUpperCase(), w])
-  );
-
   const planned: PlannedRow[] = [];
   let rowNumber = 1;
 
   for (const row of dataRows) {
-    const [slug, narxRaw, stockRaw, warehouseCodeRaw] = row;
+    const [slug, narxRaw, stockRaw] = row;
     rowNumber++;
     if (!slug) continue;
 
-    // Qaysi ombor? (ixtiyoriy ustun bo'lmasa — asosiy ombor)
-    let warehouseId = mainWarehouseId;
-    let warehouseName: string | null = null;
-    const code = (warehouseCodeRaw ?? "").trim();
-    if (code) {
-      const warehouse = warehouseByCode.get(code.toUpperCase());
-      if (!warehouse) {
-        planned.push({
-          row: rowNumber,
-          slug,
-          action: "skip",
-          reason: `Ombor kodi topilmadi: "${code}"`,
-          changes: [],
-        });
-        continue;
-      }
-      warehouseId = warehouse.id;
-      warehouseName = warehouse.name;
-    }
-
     const product = await prisma.product.findUnique({
       where: { slug },
-      select: { id: true, price: true },
+      select: { id: true, price: true, stock: true },
     });
 
     if (!product) {
@@ -104,8 +69,6 @@ async function planRows(csvText: string): Promise<ImportPreview> {
     }
 
     const changes: PlannedRow["changes"] = [];
-    let priceChange: PlannedRow["priceChange"] = null;
-    let stockChange: PlannedRow["stockChange"] = null;
 
     if (narxRaw) {
       const newPrice = Number(narxRaw);
@@ -114,7 +77,6 @@ async function planRows(csvText: string): Promise<ImportPreview> {
         continue;
       }
       if (newPrice !== product.price) {
-        priceChange = { from: product.price, to: newPrice };
         changes.push({ field: "Narx", from: product.price, to: newPrice });
       }
     }
@@ -125,51 +87,17 @@ async function planRows(csvText: string): Promise<ImportPreview> {
         planned.push({ row: rowNumber, slug, action: "skip", reason: `Qoldiq noto'g'ri: "${stockRaw}"`, changes: [] });
         continue;
       }
-      // Joriy qoldiq — SHU ombor bo'yicha (barcha omborlar yig'indisi emas).
-      const stockRow = await prisma.stock.findUnique({
-        where: { productId_warehouseId: { productId: product.id, warehouseId } },
-        select: { quantity: true, reserved: true },
-      });
-      const currentStock = stockRow?.quantity ?? 0;
-
-      if (newStock < (stockRow?.reserved ?? 0)) {
-        planned.push({
-          row: rowNumber,
-          slug,
-          action: "skip",
-          reason: `Bu omborda ${stockRow?.reserved ?? 0} dona band qilingan — qoldiqni shundan pastga tushirib bo'lmaydi.`,
-          changes: [],
-        });
-        continue;
-      }
-
-      if (newStock !== currentStock) {
-        stockChange = { from: currentStock, to: newStock };
-        changes.push({ field: "Qoldiq", from: currentStock, to: newStock });
+      if (newStock !== product.stock) {
+        changes.push({ field: "Qoldiq", from: product.stock, to: newStock });
       }
     }
 
     if (changes.length === 0) {
-      planned.push({
-        row: rowNumber,
-        slug,
-        action: "skip",
-        reason: "O'zgarish yo'q",
-        changes: [],
-      });
+      planned.push({ row: rowNumber, slug, action: "skip", reason: "O'zgarish yo'q", changes: [] });
       continue;
     }
 
-    planned.push({
-      row: rowNumber,
-      slug,
-      action: "update",
-      changes,
-      warehouseId,
-      warehouseName,
-      priceChange,
-      stockChange,
-    });
+    planned.push({ row: rowNumber, slug, action: "update", changes });
   }
 
   return {
@@ -199,21 +127,11 @@ export async function applyStockImport(
   }
 
   const actor = await actorContext();
-  // Rejalashtirishda skip qilingan qatorlar ham hisobotda ko'rinadi —
-  // aks holda foydalanuvchi "nima uchun o'zgarmadi" ni ko'rolmaydi.
-  const results: ImportRowResult[] = plan.rows
-    .filter((r) => r.action === "skip")
-    .map((r) => ({
-      status: "skipped" as const,
-      slug: r.slug,
-      reason: r.reason ?? "O'zgarish yo'q",
-    }));
+  const results: ImportRowResult[] = [];
 
   for (const planned of plan.rows.filter((r) => r.action === "update")) {
-    const slug = planned.slug;
+    const [slug] = [planned.slug];
     try {
-      // Har bir qator alohida tranzaksiyada — bitta qatorning xatosi
-      // butun faylni buzmaydi. Narx va qoldiq bir tranzaksiyada.
       await prisma.$transaction(async (tx) => {
         const product = await tx.product.findUnique({ where: { slug } });
         if (!product) {
@@ -225,19 +143,20 @@ export async function applyStockImport(
           return;
         }
 
-        const priceChange = planned.priceChange;
-        const stockChange = planned.stockChange;
+        const priceChange = planned.changes.find((c) => c.field === "Narx");
+        const stockChange = planned.changes.find((c) => c.field === "Qoldiq");
 
         if (priceChange) {
+          const newPrice = Number(priceChange.to);
           await tx.product.update({
             where: { id: product.id },
-            data: { price: priceChange.to },
+            data: { price: newPrice },
           });
           await tx.priceHistory.create({
             data: {
               productId: product.id,
-              oldPrice: priceChange.from,
-              newPrice: priceChange.to,
+              oldPrice: product.price,
+              newPrice,
               changedBy: actor.actorId ?? "csv-import",
               reason: "CSV import (narx)",
             },
@@ -245,11 +164,11 @@ export async function applyStockImport(
         }
 
         if (stockChange) {
-          const delta = stockChange.to - stockChange.from;
+          const newStock = Number(stockChange.to);
+          const delta = newStock - product.stock;
           if (delta !== 0) {
             await recordStockChange(tx, {
               productId: product.id,
-              warehouseId: planned.warehouseId ?? null,
               change: delta,
               reason: "IMPORT",
               note: "CSV import",
