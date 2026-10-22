@@ -13,6 +13,8 @@ import "dotenv/config"; // .env ni yuklash — prisma clientidan OLDIN bo'lishi 
 //   E — yetarli qoldiq yo'q holati
 //   +  — o'zgarishlar takrorlanmasligi, bekor qilish, ledger izi
 
+import { dbTestsEnabled } from "./helpers/guard";
+import { sweepTestData } from "./helpers/sweep";
 import { test, describe, before, after, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { prisma } from "@/lib/prisma";
@@ -33,15 +35,22 @@ import {
 let f: Fixtures;
 
 before(async () => {
+  if (!dbTestsEnabled) return;
   f = await createFixtures();
 });
 
 after(async () => {
+  if (!dbTestsEnabled) {
+    await prisma.$disconnect();
+    return;
+  }
+  await sweepTestData();
   await cleanupFixtures(f);
   await prisma.$disconnect();
 });
 
 beforeEach(async () => {
+  if (!dbTestsEnabled) return;
   // Har bir test oldidan ombor tozalanadi (boshlang'ich 0).
   await prisma.stockMove.deleteMany({ where: { productId: { in: f.productIds } } });
   await prisma.stock.deleteMany({ where: { productId: { in: f.productIds } } });
@@ -51,7 +60,7 @@ beforeEach(async () => {
   });
 });
 
-describe("Test B — kirim hujjati (Stock receipt)", () => {
+describe("Test B — kirim hujjati (Stock receipt)", { skip: !dbTestsEnabled }, () => {
   test("0 dan 100 ta kirim: fizik 100, zaxira 0, mavjud 100, ledger yozuvi bor", async () => {
     assert.equal((await readStock(f.productId, f.warehouseId)).quantity, 0);
 
@@ -108,7 +117,7 @@ describe("Test B — kirim hujjati (Stock receipt)", () => {
   });
 });
 
-describe("Test C — zaxiralash va yozish (Reservation & fulfilment)", () => {
+describe("Test C — zaxiralash va yozish (Reservation & fulfilment)", { skip: !dbTestsEnabled }, () => {
   test("100 fizik -> 25 zaxira (fizik 100, mavjud 75) -> yozish (fizik 75, zaxira 0)", async () => {
     await prisma.$transaction(async (tx) => {
       await recordStockChange(tx, {
@@ -213,7 +222,7 @@ describe("Test C — zaxiralash va yozish (Reservation & fulfilment)", () => {
   });
 });
 
-describe("Test D — omborlararo ko'chirish (Transfer)", () => {
+describe("Test D — omborlararo ko'chirish (Transfer)", { skip: !dbTestsEnabled }, () => {
   test("A omborida 100, B omborida 0 -> 20 ko'chiriladi: A=80, B=20, jami 100", async () => {
     await prisma.$transaction(async (tx) => {
       await recordStockChange(tx, {
@@ -289,7 +298,7 @@ describe("Test D — omborlararo ko'chirish (Transfer)", () => {
   });
 });
 
-describe("Test E — yetarli qoldiq yo'q (Insufficient stock)", () => {
+describe("Test E — yetarli qoldiq yo'q (Insufficient stock)", { skip: !dbTestsEnabled }, () => {
   test("chiqim rad etiladi: qoldiq o'zgarmaydi, yozuv yaratilmaydi", async () => {
     await prisma.$transaction(async (tx) => {
       await recordStockChange(tx, {
@@ -347,7 +356,7 @@ describe("Test E — yetarli qoldiq yo'q (Insufficient stock)", () => {
   });
 });
 
-describe("Ombor invariantlari", () => {
+describe("Ombor invariantlari", { skip: !dbTestsEnabled }, () => {
   test("har bir qoldiq o'zgarishi ledgerda iz qoldiradi", async () => {
     await prisma.$transaction(async (tx) => {
       await recordStockChange(tx, {
@@ -464,7 +473,7 @@ describe("Ombor invariantlari", () => {
   });
 });
 
-describe("Konkurentsiya (Concurrency)", () => {
+describe("Konkurentsiya (Concurrency)", { skip: !dbTestsEnabled }, () => {
   test("parallel chiqimlar qoldiqni manfiyga tushirmaydi (lost update yo'q)", async () => {
     await prisma.$transaction(async (tx) => {
       await recordStockChange(tx, {

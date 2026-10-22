@@ -22,6 +22,8 @@ import { applyStockImport, previewStockImport } from "@/lib/stock-import";
 import { applyCustomersImport, previewCustomersImport } from "@/lib/customers-import";
 import { refreshAlerts, getActiveAlerts } from "@/lib/alerts";
 import { adjustStock } from "@/app/admin/(dashboard)/stock/actions";
+import { dbTestsEnabled } from "./helpers/guard";
+import { sweepTestData } from "./helpers/sweep";
 
 // Ushbu fayl butun ERP oqimini HAQIQIY bazada tekshiradi:
 // Taklif -> Buyurtma -> Zaxira -> Jo'natma -> To'lov, RFQ konversiyasi,
@@ -62,11 +64,15 @@ async function cleanup() {
 }
 
 before(async () => {
+  if (!dbTestsEnabled) return;
   await cleanup();
 });
 
 after(async () => {
+  if (!dbTestsEnabled) return;
   await cleanup();
+  // Barcha test qoldiqlarini tozalash (boshqa test fayllaridan qolganlar ham).
+  await sweepTestData();
 });
 
 // Yordamchi: test ombori + ixtiyoran qoldig'i bor mahsulot yaratadi.
@@ -112,7 +118,7 @@ async function makeProduct(
   return { product, warehouse };
 }
 
-describe("F. Savdo oqimi: Taklif -> Buyurtma -> Jo'natma -> To'lov", () => {
+describe("F. Savdo oqimi: Taklif -> Buyurtma -> Jo'natma -> To'lov", { skip: !dbTestsEnabled }, () => {
   test("Taklif yaratiladi, holatlar ketma-ketligi sakrab o'tmaydi", async () => {
     const { product, warehouse } = await makeProduct("quo1", { stock: 10 });
     const customer = await prisma.customer.create({
@@ -312,7 +318,7 @@ describe("F. Savdo oqimi: Taklif -> Buyurtma -> Jo'natma -> To'lov", () => {
   });
 });
 
-describe("G. Ruxsatlar (permissions)", () => {
+describe("G. Ruxsatlar (permissions)", { skip: !dbTestsEnabled }, () => {
   test("Rol matritsasi: OWNER hamma narsaga ega, VIEWER hech qayerga yozolmaydi", () => {
     const owner = getRolePermissions("OWNER");
     assert.equal(owner.length, PERMISSIONS.length);
@@ -337,7 +343,7 @@ describe("G. Ruxsatlar (permissions)", () => {
   });
 });
 
-describe("H. CSV import: ombor guruhlash, priceHistory va audit", () => {
+describe("H. CSV import: ombor guruhlash, priceHistory va audit", { skip: !dbTestsEnabled }, () => {
   test("Noto'g'ri sarlavha rad etiladi", async () => {
     const preview = await previewStockImport("name,price\nfoo,100\n");
     assert.ok(preview.error);
@@ -447,7 +453,7 @@ describe("H. CSV import: ombor guruhlash, priceHistory va audit", () => {
   });
 });
 
-describe("I. Tahlillar (analytics) haqiqiy raqamlar bilan", () => {
+describe("I. Tahlillar (analytics) haqiqiy raqamlar bilan", { skip: !dbTestsEnabled }, () => {
   test("getRevenueReport: faqat savdo holatidagi buyurtmalar, aniq summalar", async () => {
     const { product, warehouse } = await makeProduct("rev1", { price: 40_000, cost: 25_000, stock: 10 });
     const customer = await prisma.customer.create({
@@ -574,7 +580,7 @@ describe("I. Tahlillar (analytics) haqiqiy raqamlar bilan", () => {
   });
 });
 
-describe("A. Buyurtma validatsiyasi", () => {
+describe("A. Buyurtma validatsiyasi", { skip: !dbTestsEnabled }, () => {
   test("Noto'g'ri miqdor/narx/takroriy mahsulot rad etiladi", async () => {
     const { product } = await makeProduct("val2", { stock: 1 });
     await assert.rejects(() => createOrder({ items: [] }, null), /kamida bitta/);
@@ -606,7 +612,7 @@ describe("A. Buyurtma validatsiyasi", () => {
   });
 });
 
-describe("K. Alerts: haqiqiy qoldiq bo'yicha", () => {
+describe("K. Alerts: haqiqiy qoldiq bo'yicha", { skip: !dbTestsEnabled }, () => {
   test("Tugagan mahsulot uchun OUT_OF_STOCK ogohlantirishi paydo bo'ladi", async () => {
     const { product } = await makeProduct("alert1", { stock: 0 });
     await refreshAlerts();
@@ -625,7 +631,7 @@ describe("K. Alerts: haqiqiy qoldiq bo'yicha", () => {
   });
 });
 
-describe("L. Audit tizimi", () => {
+describe("L. Audit tizimi", { skip: !dbTestsEnabled }, () => {
   test("writeAuditLog yozadi, JSON maydonlar saqlanadi", async () => {
     await writeAuditLog({
       actorId: null,
