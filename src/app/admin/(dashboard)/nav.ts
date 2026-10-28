@@ -50,6 +50,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/admin/analytics", label: "Savdo tahlili", permission: "orders.read" },
       { href: "/admin/analytics/inventory", label: "Inventar tahlili", permission: "stock.read" },
+      { href: "/admin/analytics/suppliers", label: "Yetkazib beruvchilar tahlili", permission: "suppliers.read" },
     ],
   },
   {

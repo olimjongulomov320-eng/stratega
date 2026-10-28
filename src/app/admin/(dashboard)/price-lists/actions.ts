@@ -97,11 +97,33 @@ export async function upsertPriceListItemAction(
   }
   try {
     await prisma.$transaction(async (tx) => {
+      const [list, product, previous] = await Promise.all([
+        tx.priceList.findUnique({ where: { id: priceListId }, select: { name: true } }),
+        tx.product.findUnique({ where: { id: productId }, select: { price: true } }),
+        tx.priceListItem.findUnique({
+          where: { priceListId_productId: { priceListId, productId } },
+          select: { price: true },
+        }),
+      ]);
+      if (!list || !product) throw new Error("Ro'yxat yoki mahsulot topilmadi.");
+      const newPrice = Math.round(price);
+      const oldPrice = previous?.price ?? product.price;
       await tx.priceListItem.upsert({
         where: { priceListId_productId: { priceListId, productId } },
-        create: { priceListId, productId, price: Math.round(price) },
-        update: { price: Math.round(price) },
+        create: { priceListId, productId, price: newPrice },
+        update: { price: newPrice },
       });
+      if (oldPrice !== newPrice) {
+        await tx.priceHistory.create({
+          data: {
+            productId,
+            oldPrice,
+            newPrice,
+            changedBy: actorId ?? "system",
+            reason: `Narxlar ro'yxati: ${list.name}`,
+          },
+        });
+      }
       await writeAuditLog(
         {
           actorId,
@@ -128,7 +150,27 @@ export async function removePriceListItemAction(
   const actorId = await getActorId();
   try {
     await prisma.$transaction(async (tx) => {
+      const [list, product, previous] = await Promise.all([
+        tx.priceList.findUnique({ where: { id: priceListId }, select: { name: true } }),
+        tx.product.findUnique({ where: { id: productId }, select: { price: true } }),
+        tx.priceListItem.findUnique({
+          where: { priceListId_productId: { priceListId, productId } },
+          select: { price: true },
+        }),
+      ]);
       await tx.priceListItem.deleteMany({ where: { priceListId, productId } });
+      // Ro'yxatdan chiqarilgach mahsulot asosiy narxga qaytadi — bu ham narx o'zgarishi.
+      if (list && product && previous && previous.price !== product.price) {
+        await tx.priceHistory.create({
+          data: {
+            productId,
+            oldPrice: previous.price,
+            newPrice: product.price,
+            changedBy: actorId ?? "system",
+            reason: `Narxlar ro'yxatidan chiqarildi: ${list.name}`,
+          },
+        });
+      }
       await writeAuditLog(
         {
           actorId,

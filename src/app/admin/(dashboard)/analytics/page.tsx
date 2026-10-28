@@ -5,6 +5,7 @@ import {
   getRevenueReport,
   getTopCustomers,
   getTopProducts,
+  getTopCategories,
   getProductProfitability,
   getSalesByPeriod,
   type SalesFilters,
@@ -39,12 +40,13 @@ export default async function AnalyticsPage(
   const rangeKey = typeof sp.range === "string" ? sp.range : "30d";
   const { filters, days } = parseRange(rangeKey);
 
-  const [report, topCustomers, topProducts, profitability, periods] =
+  const [report, topCustomers, topProducts, topCategories, profitability, periods] =
     await Promise.all([
       getRevenueReport(filters),
       getTopCustomers(10, filters),
-      getTopProducts(10),
-      getProductProfitability(10),
+      getTopProducts(10, filters),
+      getTopCategories(10, filters),
+      getProductProfitability(10, filters),
       getSalesByPeriod(),
     ]);
 
@@ -194,6 +196,28 @@ export default async function AnalyticsPage(
           </div>
         </div>
 
+        {/* Top kategoriyalar */}
+        <div className="rounded-xl border border-slate-200 bg-white p-5">
+          <h2 className="text-lg font-semibold text-slate-900">Top kategoriyalar</h2>
+          <div className="mt-4 divide-y divide-slate-100">
+            {topCategories.map((c, i) => (
+              <div key={c.categoryId ?? `none-${i}`} className="flex items-center justify-between py-2.5 text-sm">
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-slate-900">{c.name}</p>
+                  <p className="text-xs text-slate-500">{c.unitsSold} dona</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-semibold text-slate-900">{formatSum(c.revenue)}</p>
+                  <p className="text-xs text-slate-500">foyda {formatSum(c.grossProfit)}</p>
+                </div>
+              </div>
+            ))}
+            {topCategories.length === 0 && (
+              <p className="py-4 text-sm text-slate-500">Bu davrda sotuv yo&apos;q.</p>
+            )}
+          </div>
+        </div>
+
         {/* Top mahsulotlar */}
         <div className="rounded-xl border border-slate-200 bg-white p-6">
           <h2 className="text-lg font-semibold text-slate-900">
@@ -274,6 +298,12 @@ export default async function AnalyticsPage(
               className="rounded-lg border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
             >
               Inventar tahlili — aylanma, o&apos;lik ombor, qayta buyurtma →
+            </Link>
+            <Link
+              href="/admin/analytics/suppliers"
+              className="rounded-lg border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Yetkazib beruvchilar tahlili — xaridlar, tannarx, muddat →
             </Link>
             <Link
               href="/admin/payments"

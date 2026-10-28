@@ -13,8 +13,23 @@ import { CsvExportButton } from "@/components/csv-export-button";
 
 export const dynamic = "force-dynamic";
 
-export default async function InventoryAnalyticsPage() {
+const WINDOWS = [
+  { days: 30, label: "30 kun" },
+  { days: 90, label: "90 kun" },
+  { days: 180, label: "180 kun" },
+  { days: 365, label: "1 yil" },
+] as const;
+
+export default async function InventoryAnalyticsPage(
+  props: PageProps<"/admin/analytics/inventory">
+) {
   await requirePagePermission("stock.read");
+
+  // Davr: aylanma hisoblash oynasi va "o'lik ombor" uchun sotuvsiz kunlar.
+  const sp = await props.searchParams;
+  const requested = Number(typeof sp.days === "string" ? sp.days : "");
+  const days = WINDOWS.find((w) => w.days === requested)?.days ?? 90;
+  const idleDays = Math.max(30, Math.round(days / 1.5));
 
   const [
     lowStock,
@@ -27,8 +42,8 @@ export default async function InventoryAnalyticsPage() {
     getLowStockProducts(),
     getReorderRecommendations(),
     getInventoryValue(),
-    getDeadStock(60, 30),
-    getTurnover(90),
+    getDeadStock(idleDays, 30),
+    getTurnover(days),
     getInventoryForecast(),
   ]);
 
@@ -59,7 +74,7 @@ export default async function InventoryAnalyticsPage() {
             header={["Ko'rsatkich", "Qiymat"]}
             rows={[
               ["Ombor qiymati", String(inventoryValue.totalValue)],
-              ["COGS (90 kun)", String(turnover.cogs)],
+              [`COGS (${days} kun)`, String(turnover.cogs)],
               ["Aylanma (yillik)", turnover.turnover.toFixed(2)],
               ["Ombor kunlari", turnover.daysOfStock ? String(Math.round(turnover.daysOfStock)) : "—"],
               ["Kam qolgan", String(lowStock.length)],
@@ -68,6 +83,25 @@ export default async function InventoryAnalyticsPage() {
             ]}
           />
         </div>
+      </div>
+
+      <div className="mt-6 flex flex-wrap gap-2">
+        {WINDOWS.map((w) => (
+          <Link
+            key={w.days}
+            href={`/admin/analytics/inventory?days=${w.days}`}
+            className={`rounded-full px-4 py-1.5 text-sm font-medium transition ${
+              days === w.days
+                ? "bg-slate-900 text-white"
+                : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            {w.label}
+          </Link>
+        ))}
+        <span className="self-center text-xs text-slate-400">
+          O&apos;lik ombor: {idleDays} kundan beri sotuvsiz
+        </span>
       </div>
 
       {/* KPI */}
@@ -83,7 +117,7 @@ export default async function InventoryAnalyticsPage() {
             {turnover.turnover.toFixed(2)}×
           </p>
           <p className="mt-1 text-sm text-slate-500">
-            Yillik aylanma (90 kun asosida)
+            Yillik aylanma ({days} kun asosida)
           </p>
         </div>
         <div className="rounded-xl border border-slate-200 bg-white p-5">

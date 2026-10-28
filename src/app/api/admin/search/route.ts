@@ -1,5 +1,6 @@
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { prisma } from "@/lib/prisma";
+import { canReadPage } from "@/lib/require-permission";
 
 export const runtime = "nodejs";
 
@@ -24,8 +25,16 @@ export async function GET(req: Request) {
     return Response.json({ results: [] });
   }
 
+  // Har bir turdagi natija faqat tegishli o'qish ruxsati bo'lsagina qaytariladi.
+  const [canProducts, canCustomers, canSuppliers, canOrders] = await Promise.all([
+    canReadPage("products.read"),
+    canReadPage("customers.read"),
+    canReadPage("suppliers.read"),
+    canReadPage("orders.read"),
+  ]);
+
   const [products, customers, suppliers, orders, requests] = await Promise.all([
-    prisma.product.findMany({
+    !canProducts ? [] : prisma.product.findMany({
       where: {
         OR: [
           { name: { contains: q, mode: "insensitive" } },
@@ -36,7 +45,7 @@ export async function GET(req: Request) {
       select: { id: true, name: true, sku: true },
       take: RESULTS_PER_TYPE,
     }),
-    prisma.customer.findMany({
+    !canCustomers ? [] : prisma.customer.findMany({
       where: {
         OR: [
           { companyName: { contains: q, mode: "insensitive" } },
@@ -46,17 +55,17 @@ export async function GET(req: Request) {
       select: { id: true, companyName: true, phone: true },
       take: RESULTS_PER_TYPE,
     }),
-    prisma.supplier.findMany({
+    !canSuppliers ? [] : prisma.supplier.findMany({
       where: { name: { contains: q, mode: "insensitive" } },
       select: { id: true, name: true, phone: true },
       take: RESULTS_PER_TYPE,
     }),
-    prisma.order.findMany({
+    !canOrders ? [] : prisma.order.findMany({
       where: { number: { contains: q, mode: "insensitive" } },
       select: { id: true, number: true, status: true },
       take: RESULTS_PER_TYPE,
     }),
-    prisma.rfqRequest.findMany({
+    !canOrders ? [] : prisma.rfqRequest.findMany({
       where: {
         OR: [
           { companyName: { contains: q, mode: "insensitive" } },

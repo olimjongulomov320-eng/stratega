@@ -230,7 +230,11 @@ export type TopProduct = {
   revenue: number;
 };
 
-export async function getTopProducts(limit = 10): Promise<TopProduct[]> {
+export async function getTopProducts(
+  limit = 10,
+  filters: SalesFilters = {}
+): Promise<TopProduct[]> {
+  const where = salesWhereSql(filters);
   // DB da agregatsiya — barcha buyurtma qatorlarini JS ga tortib
   // guruhlash o'rniga. Natija bir xil, ammo jami satrlar yuklanmaydi.
   const rows = await prisma.$queryRaw<
@@ -243,7 +247,7 @@ export async function getTopProducts(limit = 10): Promise<TopProduct[]> {
     FROM "OrderItem" oi
     JOIN "Order" o ON o."id" = oi."orderId"
     JOIN "Product" p ON p."id" = oi."productId"
-    WHERE o."status" NOT IN ('DRAFT', 'CANCELLED')
+    WHERE ${where}
     GROUP BY oi."productId", p."name"
     ORDER BY revenue DESC
     LIMIT ${limit}
@@ -268,8 +272,10 @@ export type ProductProfitability = {
 };
 
 export async function getProductProfitability(
-  limit = 10
+  limit = 10,
+  filters: SalesFilters = {}
 ): Promise<ProductProfitability[]> {
+  const where = salesWhereSql(filters);
   const rows = await prisma.$queryRaw<
     {
       productId: string;
@@ -285,7 +291,7 @@ export async function getProductProfitability(
     FROM "OrderItem" oi
     JOIN "Order" o ON o."id" = oi."orderId"
     JOIN "Product" p ON p."id" = oi."productId"
-    WHERE o."status" NOT IN ('DRAFT', 'CANCELLED')
+    WHERE ${where}
     GROUP BY oi."productId", p."name"
   `;
 
@@ -668,6 +674,152 @@ export async function getTopCustomers(limit = 10, filters: SalesFilters = {}): P
   }));
 }
 
+// --- getTopCategories() ---
+export type TopCategory = {
+  categoryId: string | null;
+  name: string;
+  unitsSold: number;
+  revenue: number;
+  grossProfit: number;
+};
+
+export async function getTopCategories(
+  limit = 10,
+  filters: SalesFilters = {}
+): Promise<TopCategory[]> {
+  const where = salesWhereSql(filters);
+
+  const rows = await prisma.$queryRaw<
+    {
+      categoryId: string | null;
+      name: string | null;
+      units: number;
+      revenue: number;
+      cogs: number;
+    }[]
+  >`
+    SELECT p."categoryId",
+           c."name",
+           SUM(oi."quantity")::int AS units,
+           SUM(oi."price" * oi."quantity")::bigint AS revenue,
+           SUM(COALESCE(oi."costPrice", 0) * oi."quantity")::bigint AS cogs
+    FROM "OrderItem" oi
+    JOIN "Order" o ON o."id" = oi."orderId"
+    JOIN "Product" p ON p."id" = oi."productId"
+    LEFT JOIN "Category" c ON c."id" = p."categoryId"
+    WHERE ${where}
+    GROUP BY p."categoryId", c."name"
+    ORDER BY revenue DESC
+    LIMIT ${limit}
+  `;
+
+  return rows.map((r) => ({
+    categoryId: r.categoryId,
+    name: r.name ?? "Kategoriyasiz",
+    unitsSold: Number(r.units),
+    revenue: Number(r.revenue),
+    grossProfit: Number(r.revenue) - Number(r.cogs),
+  }));
+}
+
+// --- getSupplierReport() ---
+// Yetkazib beruvchilar hisoboti: kirim hujjatlari (RECEIPT) bo'yicha xaridlar,
+// o'rtacha tannarx, katalogdagi yetkazib berish muddati va bajarilish ko'rsatkichi.
+// Haqiqiy buyurtma->qabul muddati ma'lumoti tizimda yo'q (xarid buyurtmasi
+// modeli yo'q), shu sababli lead time — SupplierProduct'dagi belgilangan qiymat.
+export type SupplierReportRow = {
+  supplierId: string;
+  name: string;
+  postedDocuments: number;
+  cancelledDocuments: number;
+  unitsPurchased: number;
+  purchaseValue: number;
+  averageUnitCost: number;
+  averageLeadTimeDays: number | null;
+  suppliedProducts: number;
+  completionRate: number; // POSTED / (POSTED + CANCELLED), %
+  lastPurchaseAt: Date | null;
+};
+
+export async function getSupplierReport(
+  range: { from?: Date | null; to?: Date | null } = {}
+): Promise<SupplierReportRow[]> {
+  const dateParts: Prisma.Sql[] = [];
+  if (range.from) dateParts.push(Prisma.sql`d."createdAt" >= ${range.from}`);
+  if (range.to) dateParts.push(Prisma.sql`d."createdAt" <= ${range.to}`);
+  const dateWhere = dateParts.length
+    ? Prisma.sql` AND ${Prisma.join(dateParts, " AND ")}`
+    : Prisma.empty;
+
+  const docRows = await prisma.$queryRaw<
+    {
+      supplierId: string;
+      posted: number;
+      cancelled: number;
+      units: number | null;
+      value: number | null;
+      lastAt: Date | null;
+    }[]
+  >`
+    SELECT d."supplierId",
+           COUNT(*) FILTER (WHERE d."status" = 'POSTED')::int AS posted,
+           COUNT(*) FILTER (WHERE d."status" = 'CANCELLED')::int AS cancelled,
+           COALESCE(SUM(i."units") FILTER (WHERE d."status" = 'POSTED'), 0)::int AS units,
+           COALESCE(SUM(i."value") FILTER (WHERE d."status" = 'POSTED'), 0)::bigint AS value,
+           MAX(d."postedAt") AS "lastAt"
+    FROM "StockDocument" d
+    LEFT JOIN (
+      SELECT "documentId",
+             SUM("quantity") AS units,
+             SUM("quantity" * COALESCE("price", 0)) AS value
+      FROM "StockDocumentItem"
+      GROUP BY "documentId"
+    ) i ON i."documentId" = d."id"
+    WHERE d."type" = 'RECEIPT' AND d."supplierId" IS NOT NULL${dateWhere}
+    GROUP BY d."supplierId"
+  `;
+
+  const suppliers = await prisma.supplier.findMany({
+    where: { isActive: true },
+    select: {
+      id: true,
+      name: true,
+      products: { select: { leadTimeDays: true } },
+    },
+  });
+  const docsBySupplier = new Map(docRows.map((r) => [r.supplierId, r]));
+
+  return suppliers
+    .map((s) => {
+      const d = docsBySupplier.get(s.id);
+      const posted = Number(d?.posted ?? 0);
+      const cancelled = Number(d?.cancelled ?? 0);
+      const units = Number(d?.units ?? 0);
+      const value = Number(d?.value ?? 0);
+      const leads = s.products
+        .map((p) => p.leadTimeDays)
+        .filter((n): n is number => n !== null);
+      return {
+        supplierId: s.id,
+        name: s.name,
+        postedDocuments: posted,
+        cancelledDocuments: cancelled,
+        unitsPurchased: units,
+        purchaseValue: value,
+        averageUnitCost: units > 0 ? value / units : 0,
+        averageLeadTimeDays: leads.length
+          ? leads.reduce((a, b) => a + b, 0) / leads.length
+          : null,
+        suppliedProducts: s.products.length,
+        completionRate:
+          posted + cancelled > 0 ? (posted / (posted + cancelled)) * 100 : 0,
+        lastPurchaseAt: d?.lastAt ?? null,
+      };
+    })
+    .filter((r) => r.postedDocuments + r.cancelledDocuments > 0 || r.suppliedProducts > 0)
+    .sort((a, b) => b.purchaseValue - a.purchaseValue);
+}
+
 // --- getSalesByPeriod() ---
 export type PeriodSales = {
   today: { revenue: number; orders: number };
@@ -814,7 +966,11 @@ export const ASSISTANT_TOOLS: AssistantTool[] = [
   {
     name: "getTopProducts",
     description: "Eng ko'p sotilgan mahsulotlar (dona va tushum bo'yicha).",
-    execute: (args) => getTopProducts(Number(args.limit) || 10),
+    execute: (args) =>
+      getTopProducts(Number(args.limit) || 10, {
+        from: args.from ? new Date(String(args.from)) : null,
+        to: args.to ? new Date(String(args.to)) : null,
+      }),
   },
   {
     name: "getProductProfitability",
@@ -854,6 +1010,26 @@ export const ASSISTANT_TOOLS: AssistantTool[] = [
     name: "getTopCustomers",
     description: "Eng ko'p tushum keltirgan mijozlar.",
     execute: (args) => getTopCustomers(Number(args.limit) || 10),
+  },
+  {
+    name: "getTopCategories",
+    description:
+      "Eng yaxshi kategoriyalar: tushum, sotilgan dona va yalpi foyda. args: { limit?, from?, to? } (ISO sana)",
+    execute: (args) =>
+      getTopCategories(Number(args.limit) || 10, {
+        from: args.from ? new Date(String(args.from)) : null,
+        to: args.to ? new Date(String(args.to)) : null,
+      }),
+  },
+  {
+    name: "getSupplierReport",
+    description:
+      "Yetkazib beruvchilar hisoboti: xaridlar, o'rtacha tannarx, yetkazib berish muddati, bajarilish %. args: { from?, to? } (ISO sana)",
+    execute: (args) =>
+      getSupplierReport({
+        from: args.from ? new Date(String(args.from)) : null,
+        to: args.to ? new Date(String(args.to)) : null,
+      }),
   },
   {
     name: "getDeadStock",
