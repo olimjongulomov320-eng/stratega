@@ -28,6 +28,7 @@ export type ProductFormValues = {
   images?: string[];
   warrantyMonths?: number | null;
   freeDelivery?: boolean;
+  priceOnRequest?: boolean;
   minimumStock?: number;
   reorderPoint?: number | null;
   reorderQuantity?: number | null;
@@ -271,6 +272,13 @@ export function ProductForm({
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" name="freeDelivery" defaultChecked={values.freeDelivery ?? false} /> Bepul yetkazib berish
+          </label>
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" name="priceOnRequest" defaultChecked={values.priceOnRequest ?? false} className="mt-0.5" />
+            <span>
+              Narxi so&apos;rov bo&apos;yicha
+              <span className="block text-xs text-slate-500">Narx hali tasdiqlanmagan: saytda, botda va OLXda narx ko&apos;rsatilmaydi.</span>
+            </span>
           </label>
         </section>
 

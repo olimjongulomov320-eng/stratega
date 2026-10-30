@@ -97,7 +97,7 @@ export async function buildOlxRows(settings: OlxSettings): Promise<{ rows: OlxRo
   for (const p of products) {
     const name = settings.lang === "ru" ? p.nameRu || p.name : p.name;
     const images = [p.imageUrl, ...p.images].filter((x): x is string => Boolean(x)).slice(0, 8).map((u) => (u.startsWith("http") ? u : absoluteUrl(u)));
-    if (p.price <= 0) { skipped.push({ name, reason: "narx yo'q" }); continue; }
+    if (p.price <= 0 || p.priceOnRequest) { skipped.push({ name, reason: "narx yo'q" }); continue; }
     if (images.length === 0) { skipped.push({ name, reason: "rasm yo'q" }); continue; }
     if (settings.onlyInStock && p.stock <= 0) { skipped.push({ name, reason: "omborda yo'q" }); continue; }
     const base = cleanDescription((settings.lang === "ru" ? p.descriptionRu || p.description : p.description) || "");

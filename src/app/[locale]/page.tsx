@@ -75,11 +75,12 @@ export default async function Home(props: PageProps<"/[locale]">) {
       orderBy: sortToOrderBy("popular"),
       take: 8,
     }),
-    prisma.product.count({ where: { isActive: true, stock: { gt: 0 } } }),
+    // Stock figures from imports are not reliable yet, so the hero counts the catalogue, not the warehouse.
+    prisma.product.count({ where: { isActive: true } }),
     prisma.product.findMany({
       where: { isActive: true, imageUrl: { not: null } },
       select: { categoryId: true, imageUrl: true },
-      orderBy: [{ isFeatured: "desc" }, { price: "desc" }],
+      orderBy: [{ isFeatured: "desc" }, { priceOnRequest: "asc" }, { price: "desc" }],
     }),
   ]);
   const directions = directionsFrom(categories, locale);

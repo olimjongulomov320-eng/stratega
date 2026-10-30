@@ -92,7 +92,7 @@ export default function KorzinaPage() {
               <Link href={href(`/product/${item.slug}`)} className="font-medium text-slate-800 hover:text-indigo-700">
                 {localNames[item.productId] ?? item.name}
               </Link>
-              <p className="text-sm text-slate-500">{formatSum(item.price, locale)}</p>
+              <p className="text-sm text-slate-500">{item.price > 0 ? formatSum(item.price, locale) : t.product.priceOnRequest}</p>
             </div>
             <div className="flex items-center rounded-full border border-slate-200">
               <button type="button" aria-label="−" onClick={() => setQuantity(item.productId, item.quantity - 1)} className="h-8 w-8 rounded-full text-slate-600 hover:bg-slate-100">
@@ -103,7 +103,7 @@ export default function KorzinaPage() {
                 +
               </button>
             </div>
-            <span className="w-32 text-right font-semibold text-slate-800">{formatSum(item.price * item.quantity, locale)}</span>
+            <span className="w-32 text-right font-semibold text-slate-800">{item.price > 0 ? formatSum(item.price * item.quantity, locale) : "—"}</span>
             <button type="button" onClick={() => removeItem(item.productId)} aria-label={t.common.remove} className="text-slate-400 hover:text-red-500">
               ✕
             </button>
@@ -115,6 +115,7 @@ export default function KorzinaPage() {
         <span className="text-slate-500">{t.cart.estimated}:</span>
         <span className="ml-2 font-bold text-slate-900">{formatSum(totalPrice, locale)}</span>
       </div>
+      {items.some((i) => i.price <= 0) && <p className="mt-1 text-right text-sm text-slate-500">{t.product.notInTotal}</p>}
 
       <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
         <div>

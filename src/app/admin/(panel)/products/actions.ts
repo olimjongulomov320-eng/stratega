@@ -63,6 +63,7 @@ function readProduct(form: FormData) {
     images,
     warrantyMonths: int(form, "warrantyMonths"),
     freeDelivery: bool(form, "freeDelivery"),
+    priceOnRequest: bool(form, "priceOnRequest"),
     minimumStock: int(form, "minimumStock") ?? 0,
     reorderPoint: int(form, "reorderPoint"),
     reorderQuantity: int(form, "reorderQuantity"),

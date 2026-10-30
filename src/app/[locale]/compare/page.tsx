@@ -15,6 +15,7 @@ type CompareProduct = {
   name: string;
   description: string;
   price: number;
+  priceOnRequest: boolean;
   imageUrl: string | null;
   stock: number;
   sku: string | null;
@@ -59,7 +60,7 @@ export default function ComparePage() {
   }
 
   const rows: { label: string; render: (p: CompareProduct) => React.ReactNode }[] = [
-    { label: t.compare.price, render: (p) => <span className="font-bold text-indigo-600">{formatSum(p.price, locale)}</span> },
+    { label: t.compare.price, render: (p) => <span className="font-bold text-indigo-600">{p.priceOnRequest ? t.product.priceOnRequest : formatSum(p.price, locale)}</span> },
     { label: t.compare.model, render: (p) => p.sku ?? "—" },
     { label: t.compare.category, render: (p) => p.categoryName },
     { label: t.compare.stock, render: (p) => (p.stock > 0 ? fmt(t.product.inStock, { n: p.stock }) : t.product.notInStock) },

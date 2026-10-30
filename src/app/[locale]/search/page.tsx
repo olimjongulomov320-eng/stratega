@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { getHeaderCategories } from "@/lib/categories";
 import { ProductCard } from "@/components/product-card";
 import { CategorySidebar } from "@/components/category-sidebar";
+import { CatalogAside } from "@/components/catalog-aside";
 import { PriceFilter } from "@/components/price-filter";
 import { CatalogToolbar } from "@/components/catalog-toolbar";
 import { CatalogFilters } from "@/components/catalog-filters";
@@ -66,7 +67,7 @@ export default async function SearchPage(props: PageProps<"/[locale]/search">) {
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <h1 className="mb-6 text-2xl font-bold text-slate-800">{q ? fmt(t.catalog.searchResults, { q }) : t.catalog.allProducts}</h1>
       <div className="grid gap-8 md:grid-cols-[220px_1fr]">
-        <aside className="flex flex-col gap-6">
+        <CatalogAside label={t.catalog.categoriesAndFilters}>
           <CategorySidebar categories={categories} locale={locale} />
           <div className="border-t border-slate-200 pt-5">
             <Suspense fallback={null}>
@@ -74,7 +75,7 @@ export default async function SearchPage(props: PageProps<"/[locale]/search">) {
             </Suspense>
             <CatalogFilters brands={brandOptions} />
           </div>
-        </aside>
+        </CatalogAside>
         <div>
           <Suspense fallback={null}>
             <CatalogToolbar totalCount={total} currentSort={sort} />

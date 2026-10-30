@@ -11,12 +11,17 @@ export type ProductCardData = {
   imageUrl: string | null;
   stock: number;
   freeDelivery: boolean;
+  /** Price not confirmed: `price` is 0 and the site shows "price on request". */
+  priceOnRequest: boolean;
   sku: string | null;
   /** Logged-in buyer's own price (from their price list), when lower or different from the list price. */
   buyerPrice?: number | null;
 };
 
 export function toCard(p: Product, locale: Locale, buyerPrice?: number | null): ProductCardData {
+  if (p.priceOnRequest) {
+    return { ...toCard({ ...p, priceOnRequest: false }, locale), price: 0, oldPrice: null, buyerPrice: null, priceOnRequest: true };
+  }
   return {
     id: p.id,
     slug: p.slug,
@@ -26,6 +31,7 @@ export function toCard(p: Product, locale: Locale, buyerPrice?: number | null): 
     imageUrl: p.imageUrl,
     stock: p.stock,
     freeDelivery: p.freeDelivery,
+    priceOnRequest: false,
     sku: p.sku,
     buyerPrice: buyerPrice && buyerPrice !== p.price ? buyerPrice : null,
   };
@@ -39,10 +45,11 @@ export function parseSort(value: unknown): SortOption {
 
 export function sortToOrderBy(sort: SortOption): Prisma.ProductOrderByWithRelationInput[] {
   switch (sort) {
+    // "Price on request" items have no real price, so they go after the priced ones.
     case "price_asc":
-      return [{ price: "asc" }];
+      return [{ priceOnRequest: "asc" }, { price: "asc" }];
     case "price_desc":
-      return [{ price: "desc" }];
+      return [{ priceOnRequest: "asc" }, { price: "desc" }];
     case "newest":
       return [{ createdAt: "desc" }];
     default:

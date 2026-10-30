@@ -109,7 +109,7 @@ export function QuickViewModal() {
 
               <div className="flex items-baseline gap-2">
                 <span className="text-2xl font-bold text-indigo-600">
-                  {formatSum(product.price, locale)}
+                  {product.price > 0 ? formatSum(product.price, locale) : t.product.priceOnRequest}
                 </span>
                 {product.oldPrice && (
                   <span className="text-sm text-slate-400 line-through">

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getHeaderCategories, getSparePartCategories } from "@/lib/categories";
 import { ProductCard } from "@/components/product-card";
 import { CategorySidebar } from "@/components/category-sidebar";
+import { CatalogAside } from "@/components/catalog-aside";
 import { PriceFilter } from "@/components/price-filter";
 import { CatalogToolbar } from "@/components/catalog-toolbar";
 import { CatalogFilters } from "@/components/catalog-filters";
@@ -25,12 +26,11 @@ import { CATEGORY_SEO } from "@/config/category-seo";
 const getCategory = cache(async (slug: string) => {
   const category = await prisma.category.findUnique({ where: { slug } });
   if (!category || !category.isActive) return null;
-  const stats = await prisma.product.aggregate({
-    where: { categoryId: category.id, isActive: true },
-    _count: true,
-    _min: { price: true },
-  });
-  return { category, count: stats._count, minPrice: stats._min.price ?? 0 };
+  const [count, priced] = await Promise.all([
+    prisma.product.count({ where: { categoryId: category.id, isActive: true } }),
+    prisma.product.aggregate({ where: { categoryId: category.id, isActive: true, priceOnRequest: false }, _min: { price: true } }),
+  ]);
+  return { category, count, minPrice: priced._min.price };
 });
 
 export async function generateMetadata(props: PageProps<"/[locale]/category/[slug]">): Promise<Metadata> {
@@ -48,7 +48,11 @@ export async function generateMetadata(props: PageProps<"/[locale]/category/[slu
     title: seo?.title ?? fmt(t.meta.categoryTitle, { name }),
     description:
       seo?.description ??
-      (own ? excerpt(own) : fmt(t.meta.categoryDescription, { name, count: data.count, from: formatNumber(data.minPrice) })),
+      (own
+        ? excerpt(own)
+        : data.minPrice !== null
+          ? fmt(t.meta.categoryDescription, { name, count: data.count, from: formatNumber(data.minPrice) })
+          : fmt(t.meta.categoryDescriptionNoPrice, { name, count: data.count })),
     image: data.category.imageUrl,
     // An empty category should not be indexed until it has products on sale.
     ...(data.count === 0 && { noindex: true }),
@@ -169,7 +173,7 @@ export default async function CategoryPage(props: PageProps<"/[locale]/category/
       {intro && <p className="mt-2 max-w-3xl whitespace-pre-line text-slate-600">{intro}</p>}
 
       <div className="mt-6 grid gap-8 md:grid-cols-[220px_1fr]">
-        <aside className="flex flex-col gap-6">
+        <CatalogAside label={t.catalog.categoriesAndFilters}>
           <CategorySidebar categories={categories} activeSlug={slug} locale={locale} />
           <div className="border-t border-slate-200 pt-5">
             <Suspense fallback={null}>
@@ -190,7 +194,7 @@ export default async function CategoryPage(props: PageProps<"/[locale]/category/
               </Suspense>
             </div>
           ))}
-        </aside>
+        </CatalogAside>
 
         <div>
           <Suspense fallback={null}>

@@ -99,7 +99,11 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
 
       <div className="flex flex-1 flex-col gap-2 p-5">
         <div className="flex flex-wrap items-baseline gap-x-2">
-          <span className="text-xl font-black text-slate-900">{formatSum(product.price, locale)}</span>
+          {product.priceOnRequest ? (
+            <span className="text-lg font-bold text-slate-900">{t.product.priceOnRequest}</span>
+          ) : (
+            <span className="text-xl font-black text-slate-900">{formatSum(product.price, locale)}</span>
+          )}
           {product.oldPrice && <span className="text-sm text-slate-400 line-through">{formatSum(product.oldPrice, locale)}</span>}
         </div>
         {product.buyerPrice ? (
@@ -124,7 +128,7 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
           aria-live="polite"
           className="mt-3 w-full rounded-full bg-indigo-600 py-3 text-base font-semibold text-white transition hover:bg-indigo-700"
         >
-          {added ? t.product.added : outOfStock ? t.product.requestPrice : t.product.addToCart}
+          {added ? t.product.added : outOfStock || product.priceOnRequest ? t.product.requestPrice : t.product.addToCart}
         </button>
       </div>
     </div>

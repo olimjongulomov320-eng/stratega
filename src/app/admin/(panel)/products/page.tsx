@@ -20,6 +20,7 @@ export default async function ProductsPage(props: PageProps<"/admin/products">) 
   if (status === "hidden") conditions.push({ isActive: false });
   if (status === "noru") conditions.push({ OR: [{ nameRu: null }, { descriptionRu: null }] });
   if (status === "noimage") conditions.push({ imageUrl: null });
+  if (status === "onrequest") conditions.push({ priceOnRequest: true });
   const where: Prisma.ProductWhereInput = conditions.length ? { AND: conditions } : {};
   const [products, categories, total, allTotal] = await Promise.all([
     prisma.product.findMany({ where, include: { category: true }, orderBy: [{ category: { sortOrder: "asc" } }, { name: "asc" }], take: pageSize, skip: (page - 1) * pageSize }),
@@ -57,12 +58,13 @@ export default async function ProductsPage(props: PageProps<"/admin/products">) 
           <option value="hidden">Yashirilgan</option>
           <option value="noru">Ruscha tarjima yo&apos;q</option>
           <option value="noimage">Rasmsiz</option>
+          <option value="onrequest">Narxi so&apos;rov bo&apos;yicha</option>
         </select>
         <button className={btn("secondary")}>Qidirish</button>
       </Filters>
       <Table head={["Mahsulot", "Kategoriya", "Narx", ...(canCost ? ["Tannarx / marja"] : []), "Qoldiq", "Holat", ""]} empty="Mahsulot topilmadi.">
         {products.map((p) => {
-          const margin = p.price > 0 && p.costPrice !== null ? Math.round(((p.price / 1.12 - p.costPrice) / (p.price / 1.12)) * 100) : null;
+          const margin = p.price > 0 && !p.priceOnRequest && p.costPrice !== null ? Math.round(((p.price / 1.12 - p.costPrice) / (p.price / 1.12)) * 100) : null;
           return (
             <tr key={p.id} className="hover:bg-slate-50">
               <Td>
@@ -85,7 +87,7 @@ export default async function ProductsPage(props: PageProps<"/admin/products">) 
                 </div>
               </Td>
               <Td>{p.category.name}</Td>
-              <Td right><Money value={p.price} /></Td>
+              <Td right>{p.priceOnRequest ? <Badge tone="amber">So&apos;rov bo&apos;yicha</Badge> : <Money value={p.price} />}</Td>
               {canCost && (
                 <Td right>
                   <Money value={p.costPrice} />

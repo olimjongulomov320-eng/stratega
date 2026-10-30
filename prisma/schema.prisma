@@ -58,6 +58,7 @@ model Product {
   unit            Unit     @default(PIECE)
   price           Int // retail price, so'm, VAT included
   oldPrice        Int? // price before discount
+  priceOnRequest  Boolean  @default(false) // price not confirmed: site shows "price on request" instead of `price`
   costPrice       Int? // landed cost, so'm — never shown publicly
   imageUrl        String?
   images          String[] @default([]) // extra photos

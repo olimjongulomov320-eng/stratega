@@ -65,7 +65,7 @@ export default async function RequestsPage(props: PageProps<"/admin/requests">) 
                     {r.items.map((i) => (
                       <li key={i.id} className="flex justify-between gap-3">
                         <span>{i.product.name} × {i.quantity}</span>
-                        <Money value={i.priceAtQuote * i.quantity} />
+                        {i.priceAtQuote > 0 ? <Money value={i.priceAtQuote * i.quantity} /> : <span className="text-amber-600">narx so&apos;rov bo&apos;yicha</span>}
                       </li>
                     ))}
                     <li className="flex justify-between border-t border-slate-100 pt-1 font-semibold"><span>Taxminiy summa</span><Money value={total} /></li>

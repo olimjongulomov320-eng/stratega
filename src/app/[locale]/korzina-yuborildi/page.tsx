@@ -38,7 +38,7 @@ export default async function SentPage(props: PageProps<"/[locale]/korzina-yubor
             {request.items.map((item) => (
               <li key={item.id} className="flex justify-between gap-4">
                 <span>{localName(item.product, locale)} × {item.quantity}</span>
-                <span className="shrink-0">{formatSum(item.priceAtQuote * item.quantity, locale)}</span>
+                <span className="shrink-0">{item.priceAtQuote > 0 ? formatSum(item.priceAtQuote * item.quantity, locale) : t.product.priceOnRequest}</span>
               </li>
             ))}
           </ul>

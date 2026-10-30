@@ -35,7 +35,9 @@ export async function generateMetadata(props: PageProps<"/[locale]/product/[slug
   return pageMetadata({
     locale,
     path: `/product/${slug}`,
-    title: fmt(t.meta.productTitle, { name, price: formatNumber(product.price) }),
+    title: product.priceOnRequest
+      ? fmt(t.meta.productTitleNoPrice, { name })
+      : fmt(t.meta.productTitle, { name, price: formatNumber(product.price) }),
     description: excerpt(localDescription(product, locale) || name),
     image: product.imageUrl,
   });
@@ -66,7 +68,7 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
   const categoryName = localName(product.category, locale);
   const description = localDescription(product, locale);
   const card = toCard(product, locale);
-  const discount = product.oldPrice ? Math.round(100 - (product.price / product.oldPrice) * 100) : null;
+  const discount = product.oldPrice && !product.priceOnRequest ? Math.round(100 - (product.price / product.oldPrice) * 100) : null;
   const warranty = product.warrantyMonths ?? CLAIMS.defaultWarrantyMonths;
   const images = [product.imageUrl, ...product.images].filter((x): x is string => Boolean(x));
   const reviews = product.reviews;
@@ -85,7 +87,8 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
       brand: product.brand ? { "@type": "Brand", name: product.brand } : undefined,
       category: categoryName,
       url,
-      offers: {
+      // A Product offer needs a real price; "price on request" items are listed without one.
+      offers: product.priceOnRequest ? undefined : {
         "@type": "Offer",
         url,
         priceCurrency: "UZS",
@@ -119,7 +122,7 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
   ];
 
   const [buyerList, buyerPrices] = await Promise.all([getBuyerPriceList(), getBuyerPrices([product.id, ...related.map((p) => p.id), ...parts.map((p) => p.id)])]);
-  const buyerPrice = buyerPrices.get(product.id);
+  const buyerPrice = product.priceOnRequest ? undefined : buyerPrices.get(product.id);
   const f = t.focus;
 
   // Spec table: the filterable fields first, then the free rows.
@@ -195,10 +198,16 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
 
           <div>
             <div className="flex flex-wrap items-baseline gap-3">
-              <p className="text-3xl font-bold text-indigo-600">{formatSum(product.price, locale)}</p>
-              {product.oldPrice && <p className="text-lg text-slate-400 line-through">{formatSum(product.oldPrice, locale)}</p>}
+              {product.priceOnRequest ? (
+                <p className="text-3xl font-bold text-indigo-600">{t.product.priceOnRequest}</p>
+              ) : (
+                <>
+                  <p className="text-3xl font-bold text-indigo-600">{formatSum(product.price, locale)}</p>
+                  {product.oldPrice && <p className="text-lg text-slate-400 line-through">{formatSum(product.oldPrice, locale)}</p>}
+                </>
+              )}
             </div>
-            <p className="mt-1 text-xs text-slate-400">{t.product.priceWithVat}</p>
+            <p className="mt-1 text-xs text-slate-400">{product.priceOnRequest ? t.product.priceOnRequestNote : t.product.priceWithVat}</p>
             {buyerPrice && buyerList && buyerPrice !== product.price && (
               <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
                 <p className="text-sm text-emerald-700">{f.yourPrice}</p>
@@ -220,6 +229,20 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
           </div>
 
           <AddToCart product={buyerPrice ? { ...card, price: buyerPrice } : card} />
+
+          <div className="rounded-xl border border-slate-200 px-4 py-3">
+            <p className="text-sm text-slate-600">{t.product.askManager}</p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              <a href={`tel:${COMPANY.phoneHref}`} className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+                📞 {t.product.call}: {COMPANY.phone}
+              </a>
+              {COMPANY.messengers.telegram && (
+                <a href={COMPANY.messengers.telegram} target="_blank" rel="noopener" className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400">
+                  {t.focus.writeTelegram}
+                </a>
+              )}
+            </div>
+          </div>
 
           {(product.datasheetUrl || product.videoUrl) && (
             <div className="flex flex-wrap gap-2">

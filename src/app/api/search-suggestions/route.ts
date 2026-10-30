@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     }),
   ]);
   return NextResponse.json({
-    products: products.map((p) => ({ id: p.id, slug: p.slug, name: localName(p, locale), price: p.price, imageUrl: p.imageUrl })),
+    products: products.map((p) => ({ id: p.id, slug: p.slug, name: localName(p, locale), price: p.priceOnRequest ? 0 : p.price, imageUrl: p.imageUrl })),
     categories: categories.map((c) => ({ slug: c.slug, name: localName(c, locale), icon: c.icon })),
   });
 }

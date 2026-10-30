@@ -31,7 +31,7 @@ async function buildSystemPrompt(locale: string) {
     prisma.category.findMany({ where: { isActive: true }, orderBy: { sortOrder: "asc" }, select: { name: true, nameRu: true } }),
     prisma.product.findMany({
       where: { isActive: true },
-      select: { name: true, nameRu: true, sku: true, price: true, stock: true, category: { select: { name: true } } },
+      select: { name: true, nameRu: true, sku: true, price: true, priceOnRequest: true, stock: true, category: { select: { name: true } } },
       orderBy: [{ isFeatured: "desc" }, { price: "asc" }],
       take: 60,
     }),
@@ -39,7 +39,7 @@ async function buildSystemPrompt(locale: string) {
   const catalog = products
     .map(
       (p) =>
-        `- ${p.name}${p.nameRu ? ` / ${p.nameRu}` : ""}${p.sku ? ` [${p.sku}]` : ""} (${p.category.name}) — ${new Intl.NumberFormat("ru-RU").format(p.price)} so'm, ${p.stock > 0 ? `omborda ${p.stock} dona` : "buyurtma asosida"}`
+        `- ${p.name}${p.nameRu ? ` / ${p.nameRu}` : ""}${p.sku ? ` [${p.sku}]` : ""} (${p.category.name}) — ${p.priceOnRequest ? "narx so'rov bo'yicha (menejer aytadi)" : `${new Intl.NumberFormat("ru-RU").format(p.price)} so'm`}, ${p.stock > 0 ? `omborda ${p.stock} dona` : "buyurtma asosida"}`
     )
     .join("\n");
   const language = locale === "ru" ? "Russian" : locale === "en" ? "English" : "Uzbek (Latin script)";

@@ -33,6 +33,10 @@ const siteUrl = () => (process.env.NEXT_PUBLIC_SITE_URL || "https://www.stratega
 const tr = (locale: Locale, uz: string, ru: string, en: string) => locale === "ru" ? ru : locale === "en" ? en : uz;
 const html = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const money = (n: number) => `${new Intl.NumberFormat("uz-UZ").format(n)} so'm`;
+/** Unconfirmed ("price on request") products count as 0 until a manager quotes them. */
+const linePrice = (p: { price: number; priceOnRequest: boolean }) => (p.priceOnRequest ? 0 : p.price);
+const priceText = (p: { price: number; priceOnRequest: boolean }, locale: Locale) =>
+  p.priceOnRequest ? tr(locale, "Narxi so'rov bo'yicha", "Цена по запросу", "Price on request") : money(p.price);
 
 function localeFor(user?: TelegramUser): Locale {
   const lang = user?.language_code?.toLowerCase() ?? "uz";
@@ -138,12 +142,12 @@ async function showProducts(chatId: number, session: Session, categoryId: string
     orderBy: [{ isFeatured: "desc" }, { name: "asc" }],
     skip: page * take,
     take: take + 1,
-    select: { id: true, name: true, nameRu: true, nameEn: true, price: true, stock: true },
+    select: { id: true, name: true, nameRu: true, nameEn: true, price: true, priceOnRequest: true, stock: true },
   });
   const hasNext = products.length > take;
   const keyboard = products.slice(0, take).map((p) => {
     const name = (session.locale === "ru" ? p.nameRu : session.locale === "en" ? p.nameEn : p.name) || p.name;
-    const label = `${name.slice(0, 40)} · ${money(p.price)}`;
+    const label = `${name.slice(0, 40)} · ${priceText(p, session.locale)}`;
     return [{ text: label.slice(0, 62), callback_data: `product:${p.id}` }];
   });
   const nav = [];
@@ -155,11 +159,11 @@ async function showProducts(chatId: number, session: Session, categoryId: string
 }
 
 async function showProduct(chatId: number, session: Session, productId: string) {
-  const p = await prisma.product.findFirst({ where: { id: productId, isActive: true }, select: { id: true, slug: true, name: true, nameRu: true, nameEn: true, description: true, descriptionRu: true, descriptionEn: true, brand: true, sku: true, price: true, stock: true, imageUrl: true } });
+  const p = await prisma.product.findFirst({ where: { id: productId, isActive: true }, select: { id: true, slug: true, name: true, nameRu: true, nameEn: true, description: true, descriptionRu: true, descriptionEn: true, brand: true, sku: true, price: true, priceOnRequest: true, stock: true, imageUrl: true } });
   if (!p) return sendMessage(chatId, tr(session.locale, "Mahsulot topilmadi.", "Товар не найден.", "Product not found."));
   const name = (session.locale === "ru" ? p.nameRu : session.locale === "en" ? p.nameEn : p.name) || p.name;
   const description = (session.locale === "ru" ? p.descriptionRu : session.locale === "en" ? p.descriptionEn : p.description) || "";
-  const text = `<b>${html(name)}</b>\n${p.sku ? `${tr(session.locale, "Artikul", "Артикул", "SKU")}: ${html(p.sku)}\n` : ""}${p.brand ? `${tr(session.locale, "Brend", "Бренд", "Brand")}: ${html(p.brand)}\n` : ""}<b>${money(p.price)}</b>\n${tr(session.locale, "Omborda", "На складе", "In stock")}: ${p.stock}\n\n${html(description.slice(0, 1800))}`;
+  const text = `<b>${html(name)}</b>\n${p.sku ? `${tr(session.locale, "Artikul", "Артикул", "SKU")}: ${html(p.sku)}\n` : ""}${p.brand ? `${tr(session.locale, "Brend", "Бренд", "Brand")}: ${html(p.brand)}\n` : ""}<b>${priceText(p, session.locale)}</b>\n${tr(session.locale, "Omborda", "На складе", "In stock")}: ${p.stock}\n\n${html(description.slice(0, 1800))}`;
   const reply_markup = { inline_keyboard: [
     [{ text: tr(session.locale, "➕ Savatga qo'shish", "➕ Добавить в корзину", "➕ Add to cart"), callback_data: `add:${p.id}` }],
     [{ text: tr(session.locale, "🛒 Savatni ko'rish", "🛒 Открыть корзину", "🛒 View cart"), callback_data: "cart" }, { text: tr(session.locale, "← Katalog", "← Каталог", "← Catalog"), callback_data: "catalog:0" }],
@@ -179,7 +183,7 @@ async function showProduct(chatId: number, session: Session, productId: string) 
 
 async function showCart(chatId: number, session: Session) {
   const ids = session.cart.map((l) => l.productId);
-  const products = ids.length ? await prisma.product.findMany({ where: { id: { in: ids }, isActive: true }, select: { id: true, name: true, nameRu: true, nameEn: true, price: true } }) : [];
+  const products = ids.length ? await prisma.product.findMany({ where: { id: { in: ids }, isActive: true }, select: { id: true, name: true, nameRu: true, nameEn: true, price: true, priceOnRequest: true } }) : [];
   const byId = new Map(products.map((p) => [p.id, p]));
   const valid = session.cart.filter((l) => byId.has(l.productId));
   session.cart = valid;
@@ -188,9 +192,9 @@ async function showCart(chatId: number, session: Session) {
   let total = 0;
   const lines = valid.map((line) => {
     const p = byId.get(line.productId)!;
-    total += p.price * line.quantity;
+    total += linePrice(p) * line.quantity;
     const name = (session.locale === "ru" ? p.nameRu : session.locale === "en" ? p.nameEn : p.name) || p.name;
-    return `• ${html(name)} × ${line.quantity} — ${money(p.price * line.quantity)}`;
+    return `• ${html(name)} × ${line.quantity} — ${p.priceOnRequest ? priceText(p, session.locale) : money(p.price * line.quantity)}`;
   });
   const keyboard: { text: string; callback_data: string }[][] = valid.map((l) => [{ text: `− ${byId.get(l.productId)!.name.slice(0, 24)}`, callback_data: `remove:${l.productId}` }, { text: `+ ${byId.get(l.productId)!.name.slice(0, 24)}`, callback_data: `add:${l.productId}` }]);
   keyboard.push([{ text: tr(session.locale, "✅ Buyurtma berish", "✅ Оформить заказ", "✅ Place order"), callback_data: "checkout" }]);
@@ -238,7 +242,7 @@ async function createBotOrder(chatId: number, from: TelegramUser, session: Sessi
     if (line.quantity > available) throw new Error(`${product.name}: only ${available} available.`);
     return { product, quantity: line.quantity };
   });
-  const total = validLines.reduce((sum, line) => sum + line.product.price * line.quantity, 0);
+  const total = validLines.reduce((sum, line) => sum + linePrice(line.product) * line.quantity, 0);
   const phone = normalizePhone(session.phone);
   const customerName = session.name.trim().slice(0, 160);
   const username = from.username ? `@${from.username}` : `Telegram ID ${from.id}`;
@@ -253,7 +257,7 @@ async function createBotOrder(chatId: number, from: TelegramUser, session: Sessi
         total,
         note: `Telegram bot order (${username}; chat ${chatId})`,
         createdBy: "Telegram bot",
-        lines: { create: validLines.map(({ product, quantity }) => ({ productId: product.id, quantity, price: product.price, costPrice: product.costPrice })) },
+        lines: { create: validLines.map(({ product, quantity }) => ({ productId: product.id, quantity, price: linePrice(product), costPrice: product.costPrice })) },
       },
       select: { id: true, number: true, total: true },
     });
@@ -291,10 +295,10 @@ async function handleMessage(message: TelegramMessage) {
     const products = await prisma.product.findMany({
       where: { isActive: true, OR: [ { name: { contains: text.slice(0, 80), mode: "insensitive" } }, { nameRu: { contains: text.slice(0, 80), mode: "insensitive" } }, { sku: { contains: text.slice(0, 80), mode: "insensitive" } }, { brand: { contains: text.slice(0, 80), mode: "insensitive" } } ] },
       orderBy: [{ isFeatured: "desc" }, { name: "asc" }], take: 12,
-      select: { id: true, name: true, nameRu: true, nameEn: true, price: true },
+      select: { id: true, name: true, nameRu: true, nameEn: true, price: true, priceOnRequest: true },
     });
     if (!products.length) return sendMessage(chatId, tr(session.locale, "Hech narsa topilmadi. Boshqa so'z bilan qidiring.", "Ничего не найдено. Попробуйте другой запрос.", "No products found. Try a different search."));
-    return sendMessage(chatId, tr(session.locale, "Natijani tanlang:", "Выберите результат:", "Choose a result:"), { reply_markup: { inline_keyboard: products.map((p) => [{ text: `${((session.locale === "ru" ? p.nameRu : session.locale === "en" ? p.nameEn : p.name) || p.name).slice(0, 40)} · ${money(p.price)}`.slice(0, 62), callback_data: `product:${p.id}` }]) } });
+    return sendMessage(chatId, tr(session.locale, "Natijani tanlang:", "Выберите результат:", "Choose a result:"), { reply_markup: { inline_keyboard: products.map((p) => [{ text: `${((session.locale === "ru" ? p.nameRu : session.locale === "en" ? p.nameEn : p.name) || p.name).slice(0, 40)} · ${priceText(p, session.locale)}`.slice(0, 62), callback_data: `product:${p.id}` }]) } });
   }
   if (session.stage === "name" && text) {
     session.name = text.slice(0, 160);

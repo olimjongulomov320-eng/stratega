@@ -70,7 +70,7 @@ export default async function KabinetPage(props: PageProps<"/[locale]/kabinet">)
                       {r.items.map((i) => (
                         <li key={i.id} className="flex justify-between gap-4">
                           <span>{localName(i.product, locale)} × {i.quantity}</span>
-                          <span className="shrink-0">{formatSum(i.priceAtQuote * i.quantity, locale)}</span>
+                          <span className="shrink-0">{i.priceAtQuote > 0 ? formatSum(i.priceAtQuote * i.quantity, locale) : t.product.priceOnRequest}</span>
                         </li>
                       ))}
                     </ul>

@@ -154,7 +154,7 @@ export function SearchBox({ mobile = false }: { mobile?: boolean }) {
                           )}
                         </div>
                         <span className="flex-1 truncate text-slate-700">{p.name}</span>
-                        <span className="shrink-0 font-semibold text-slate-900">{formatSum(p.price, locale)}</span>
+                        <span className="shrink-0 font-semibold text-slate-900">{p.price > 0 ? formatSum(p.price, locale) : t.product.priceOnRequest}</span>
                       </Link>
                     );
                   })}

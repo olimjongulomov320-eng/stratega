@@ -85,7 +85,7 @@ export async function submitRfq(
   for (const item of items) {
     const product = byId.get(item.productId);
     if (!product) return { ok: false, error: t.cart.errorGone };
-    lines.push({ productId: product.id, quantity: Math.min(10000, Math.max(1, Math.floor(item.quantity))), priceAtQuote: product.price });
+    lines.push({ productId: product.id, quantity: Math.min(10000, Math.max(1, Math.floor(item.quantity))), priceAtQuote: product.priceOnRequest ? 0 : product.price });
   }
 
   const user = await getCurrentUser();
