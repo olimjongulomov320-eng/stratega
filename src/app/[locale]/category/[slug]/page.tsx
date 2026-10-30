@@ -20,6 +20,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import { SPEC_FILTERS } from "@/lib/product-specs";
 import { directionOfCategory } from "@/lib/focus";
 import { getBuyerPrices } from "@/lib/customer-price";
+import { CATEGORY_SEO } from "@/config/category-seo";
 
 const getCategory = cache(async (slug: string) => {
   const category = await prisma.category.findUnique({ where: { slug } });
@@ -40,13 +41,14 @@ export async function generateMetadata(props: PageProps<"/[locale]/category/[slu
   const t = getDictionary(locale);
   const name = localName(data.category, locale);
   const own = localDescription(data.category, locale);
+  const seo = CATEGORY_SEO[slug]?.[locale];
   return pageMetadata({
     locale,
     path: `/category/${slug}`,
-    title: fmt(t.meta.categoryTitle, { name }),
-    description: own
-      ? excerpt(own)
-      : fmt(t.meta.categoryDescription, { name, count: data.count, from: formatNumber(data.minPrice) }),
+    title: seo?.title ?? fmt(t.meta.categoryTitle, { name }),
+    description:
+      seo?.description ??
+      (own ? excerpt(own) : fmt(t.meta.categoryDescription, { name, count: data.count, from: formatNumber(data.minPrice) })),
     image: data.category.imageUrl,
     // An empty category should not be indexed until it has products on sale.
     ...(data.count === 0 && { noindex: true }),
