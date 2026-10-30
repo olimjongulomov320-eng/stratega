@@ -130,7 +130,7 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
           aria-live="polite"
           className="mt-3 w-full rounded-full bg-indigo-600 py-3 text-base font-semibold text-white transition hover:bg-indigo-700"
         >
-          {added ? t.product.added : outOfStock || product.priceOnRequest ? t.product.requestPrice : t.product.addToCart}
+          {added ? t.product.added : product.priceOnRequest ? t.product.requestPrice : t.product.addToCart}
         </button>
       </div>
     </div>
