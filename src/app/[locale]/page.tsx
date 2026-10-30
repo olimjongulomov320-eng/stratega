@@ -19,6 +19,7 @@ import { isLocale, localePath, LOCALE_TAGS } from "@/i18n/config";
 import { toCard, sortToOrderBy } from "@/lib/products";
 import { pageMetadata, absoluteUrl, jsonLd } from "@/lib/seo";
 import { COMPANY, CLAIMS, SITE_URL } from "@/lib/site";
+import { ProductImage } from "@/components/product-image";
 
 export async function generateMetadata(
   props: PageProps<"/[locale]">,
@@ -249,12 +250,9 @@ export default async function Home(props: PageProps<"/[locale]">) {
                 >
                   <div className="flex w-28 shrink-0 items-center justify-center bg-slate-50">
                     {cover ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={cover}
-                        alt={d.name}
-                        className="h-24 w-24 object-contain p-2 transition duration-300 group-hover:scale-105"
-                      />
+                      <span className="block h-24 w-24 p-2">
+                        <ProductImage src={cover} alt={d.name} sizes="96px" className="transition duration-300 group-hover:scale-105" />
+                      </span>
                     ) : (
                       <span className="text-4xl" aria-hidden="true">
                         {d.icon}
@@ -300,12 +298,9 @@ export default async function Home(props: PageProps<"/[locale]">) {
                 >
                   <div className="flex aspect-[4/3] items-center justify-center overflow-hidden bg-slate-100">
                     {cover ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={cover}
-                        alt={cat.name}
-                        className="h-full w-full object-contain p-6 transition duration-300 group-hover:scale-105"
-                      />
+                      <span className="block h-full w-full p-6">
+                        <ProductImage src={cover} alt={cat.name} sizes="(min-width: 1024px) 25vw, 50vw" className="transition duration-300 group-hover:scale-105" />
+                      </span>
                     ) : (
                       <span className="text-6xl" aria-hidden="true">
                         {cat.icon ?? "📦"}

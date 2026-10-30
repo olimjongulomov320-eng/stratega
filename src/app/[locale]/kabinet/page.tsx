@@ -1,6 +1,5 @@
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import type { Metadata } from "next";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatSum, formatDate } from "@/lib/format";
@@ -8,9 +7,9 @@ import { LogoutButton } from "@/components/logout-button";
 import { getDictionary } from "@/i18n";
 import { isLocale, localePath } from "@/i18n/config";
 import { localName } from "@/lib/localize";
-import { NOINDEX } from "../noindex";
+import { privatePageMetadata } from "../noindex";
 
-export const metadata: Metadata = NOINDEX;
+export const generateMetadata = privatePageMetadata("cabinet");
 
 const STATUS_CLASS: Record<string, string> = {
   NEW: "bg-blue-50 text-blue-700",

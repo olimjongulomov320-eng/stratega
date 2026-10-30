@@ -1,14 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { formatSum, daysAgo } from "@/lib/format";
 import { getDictionary } from "@/i18n";
 import { isLocale, localePath } from "@/i18n/config";
 import { localName } from "@/lib/localize";
-import { NOINDEX } from "../noindex";
+import { privatePageMetadata } from "../noindex";
 
-export const metadata: Metadata = NOINDEX;
+export const generateMetadata = privatePageMetadata("sent");
 
 export default async function SentPage(props: PageProps<"/[locale]/korzina-yuborildi">) {
   const { locale } = await props.params;

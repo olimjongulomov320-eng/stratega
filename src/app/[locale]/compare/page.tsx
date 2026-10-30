@@ -7,6 +7,7 @@ import { useRfq } from "@/lib/rfq-context";
 import { formatSum } from "@/lib/format";
 import { useI18n } from "@/i18n/client";
 import { fmt } from "@/i18n";
+import { ProductImage } from "@/components/product-image";
 
 type CompareProduct = {
   id: string;
@@ -86,8 +87,7 @@ export default function ComparePage() {
                     </button>
                     <div className="flex h-28 w-28 items-center justify-center rounded-xl bg-slate-50 p-2">
                       {p.imageUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={p.imageUrl} alt={p.name} className="h-full w-full object-contain" />
+                        <ProductImage src={p.imageUrl} alt={p.name} sizes="112px" />
                       ) : (
                         <span className="text-3xl">📦</span>
                       )}

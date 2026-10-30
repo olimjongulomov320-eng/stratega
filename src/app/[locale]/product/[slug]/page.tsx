@@ -16,6 +16,7 @@ import { pageMetadata, absoluteUrl, jsonLd } from "@/lib/seo";
 import { CLAIMS, COMPANY } from "@/lib/site";
 import { SPEC_FILTERS, parseSpecRows, specLabel, youTubeId } from "@/lib/product-specs";
 import { getBuyerPriceList, getBuyerPrices } from "@/lib/customer-price";
+import { ProductImage } from "@/components/product-image";
 
 const getProduct = cache(async (slug: string) =>
   prisma.product.findUnique({
@@ -89,7 +90,7 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
         url,
         priceCurrency: "UZS",
         price: product.price,
-        availability: product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/BackOrder",
+        availability: product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
         itemCondition: "https://schema.org/NewCondition",
         seller: { "@type": "Organization", name: COMPANY.brand },
       },
@@ -171,8 +172,7 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
               </span>
             )}
             {images[0] ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={images[0]} alt={name} className="h-full w-full object-contain" />
+              <ProductImage src={images[0]} alt={name} sizes="(min-width: 1024px) 50vw, 100vw" eager />
             ) : (
               <span className="text-6xl" role="img" aria-label={name}>
                 📦
@@ -183,8 +183,7 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
             <div className="grid grid-cols-4 gap-2">
               {images.slice(1, 9).map((src, i) => (
                 <a key={src} href={src} target="_blank" rel="noopener" className="flex aspect-square items-center justify-center rounded-xl bg-slate-50 p-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={src} alt={`${name} — ${i + 2}`} loading="lazy" className="h-full w-full object-contain" />
+                  <ProductImage src={src} alt={`${name} — ${i + 2}`} sizes="120px" />
                 </a>
               ))}
             </div>

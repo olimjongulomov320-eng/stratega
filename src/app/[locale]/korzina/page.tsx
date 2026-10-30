@@ -7,6 +7,7 @@ import { useRfq } from "@/lib/rfq-context";
 import { formatSum } from "@/lib/format";
 import { useI18n } from "@/i18n/client";
 import { submitRfq } from "../actions";
+import { ProductImage } from "@/components/product-image";
 
 const input = "w-full rounded-xl border border-slate-200 px-4 py-2.5 outline-none focus:border-indigo-400";
 
@@ -62,8 +63,7 @@ export default function KorzinaPage() {
           <li key={item.productId} className="flex flex-wrap items-center gap-4 p-4">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-50 p-1.5">
               {item.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={item.imageUrl} alt="" className="h-full w-full object-contain" />
+                <ProductImage src={item.imageUrl} alt={item.name} sizes="64px" />
               ) : (
                 <span className="text-2xl">📦</span>
               )}

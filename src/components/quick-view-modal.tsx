@@ -7,6 +7,7 @@ import { useRfq } from "@/lib/rfq-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import { formatSum } from "@/lib/format";
 import { useI18n } from "@/i18n/client";
+import { ProductImage } from "@/components/product-image";
 
 type QuickViewProduct = {
   id: string;
@@ -94,12 +95,7 @@ export function QuickViewModal() {
           <div className="grid gap-6 sm:grid-cols-2">
             <div className="flex aspect-square items-center justify-center rounded-xl bg-slate-50 p-6">
               {product.imageUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={product.imageUrl}
-                  alt={product.name}
-                  className="h-full w-full object-contain"
-                />
+                <ProductImage src={product.imageUrl} alt={product.name} sizes="(min-width: 640px) 320px, 90vw" />
               ) : (
                 <span className="text-5xl">📦</span>
               )}

@@ -25,7 +25,7 @@ export function proxy(request: NextRequest) {
   if (pathname === "/uz" || pathname.startsWith("/uz/")) {
     const url = request.nextUrl.clone();
     url.pathname = pathname.slice(3) || "/";
-    return NextResponse.redirect(url, 308);
+    return NextResponse.redirect(url, 301);
   }
   const first = pathname.split("/")[1];
   if (PREFIXED.includes(first)) return NextResponse.next();

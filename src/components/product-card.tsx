@@ -10,6 +10,7 @@ import { formatSum } from "@/lib/format";
 import { useI18n } from "@/i18n/client";
 import { fmt } from "@/i18n";
 import type { ProductCardData } from "@/lib/products";
+import { ProductImage } from "@/components/product-image";
 
 export type { ProductCardData };
 
@@ -44,12 +45,12 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
           )}
           <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-slate-50 p-8">
             {product.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
+              <ProductImage
                 src={product.imageUrl}
                 alt={product.name}
-                loading={priority ? "eager" : "lazy"}
-                className="relative h-full w-full object-contain transition-transform duration-500 ease-out group-hover:scale-110"
+                sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+                eager={priority}
+                className="transition-transform duration-500 ease-out group-hover:scale-110"
               />
             ) : (
               <span className="relative text-4xl" role="img" aria-label={product.name}>

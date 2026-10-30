@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { formatSum } from "@/lib/format";
 import { useI18n } from "@/i18n/client";
 import { fmt } from "@/i18n";
+import { ProductImage } from "@/components/product-image";
 
 type Suggestion = {
   products: { id: string; slug: string; name: string; price: number; imageUrl: string | null }[];
@@ -147,8 +148,7 @@ export function SearchBox({ mobile = false }: { mobile?: boolean }) {
                       >
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-50 p-0.5">
                           {p.imageUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={p.imageUrl} alt="" className="h-full w-full object-contain" />
+                            <ProductImage src={p.imageUrl} alt={p.name} sizes="40px" />
                           ) : (
                             <span className="text-lg">📦</span>
                           )}
