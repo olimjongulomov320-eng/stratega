@@ -49,6 +49,44 @@ export async function submitQuickRfq(
   return { ok: true };
 }
 
+// ───────────── Callback / one-click order ─────────────
+
+/** "Request a call" (no product) or "Buy in 1 click" (one product): only a phone number is required. */
+export async function submitQuickOrder(
+  input: { name: string; phone: string; productId?: string; quantity?: number },
+  locale: string
+): Promise<SimpleResult> {
+  const t = getDictionary(loc(locale));
+  if (!rateLimit(await ipKey("rfq"), 5, 10 * 60 * 1000)) return { ok: false, error: t.quickRfq.errorRate };
+  const name = clip(input.name ?? "", 160);
+  const phone = clip(input.phone ?? "", 30);
+  if (phone.replace(/\D/g, "").length < 9) return { ok: false, error: t.quickOrder.errorPhone };
+
+  const product = input.productId
+    ? await prisma.product.findFirst({ where: { id: input.productId, isActive: true }, select: { id: true, price: true, priceOnRequest: true } })
+    : null;
+  if (input.productId && !product) return { ok: false, error: t.cart.errorGone };
+
+  const user = await getCurrentUser();
+  const request = await prisma.rfqRequest.create({
+    data: {
+      companyName: name || "—",
+      contactName: name || "—",
+      phone,
+      requestType: product ? t.quickOrder.typeOneClick : t.quickOrder.typeCallback,
+      locale: loc(locale),
+      ...(user && { userId: user.id }),
+      ...(product && {
+        items: {
+          create: [{ productId: product.id, quantity: Math.min(10000, Math.max(1, Math.floor(input.quantity ?? 1))), priceAtQuote: product.priceOnRequest ? 0 : product.price }],
+        },
+      }),
+    },
+  });
+  await notifyRfqCreated(request.id);
+  return { ok: true };
+}
+
 // ───────────── Cart RFQ ─────────────
 
 export type RfqResult = { ok: true; requestId: string } | { ok: false; error: string };

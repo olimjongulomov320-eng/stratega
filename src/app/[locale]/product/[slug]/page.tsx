@@ -17,6 +17,7 @@ import { CLAIMS, COMPANY } from "@/lib/site";
 import { SPEC_FILTERS, parseSpecRows, specLabel, youTubeId } from "@/lib/product-specs";
 import { getBuyerPriceList, getBuyerPrices } from "@/lib/customer-price";
 import { ProductImage } from "@/components/product-image";
+import { QuickOrder } from "@/components/quick-order";
 
 const getProduct = cache(async (slug: string) =>
   prisma.product.findUnique({
@@ -229,6 +230,11 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
           </div>
 
           <AddToCart product={buyerPrice ? { ...card, price: buyerPrice } : card} />
+          <QuickOrder
+            productId={product.id}
+            productName={name}
+            className="w-full rounded-full border-2 border-indigo-600 py-3 font-semibold text-indigo-700 transition hover:bg-indigo-50"
+          />
 
           <div className="rounded-xl border border-slate-200 px-4 py-3">
             <p className="text-sm text-slate-600">{t.product.askManager}</p>

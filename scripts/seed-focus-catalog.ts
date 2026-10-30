@@ -103,6 +103,46 @@ export const FOCUS_CATEGORIES: Record<string, Cat> = {
     uz: "Gidravlik va elektr ko'tarish stollari 150–2000 kg — ishlab chiqarish liniyalari, omborlar va yuk ortish uchun.",
     ru: "Гидравлические и электрические подъёмные столы 150–2000 кг — для производственных линий, складов и погрузки.",
   },
+  avtokotargichlar: {
+    name: "Avtoko'targichlar", nameRu: "Автоподъёмники", nameEn: "Car lifts", icon: "🚗",
+    uz: "Ikki ustunli (4,2–5,5 t), to'rt ustunli va qaychi avtoko'targichlar — avtoservis, shinomontaj va razval-sxojdenie uchun. Avtoko'targich narxi QQS bilan.",
+    ru: "Двухстоечные (4,2–5,5 т), четырёхстоечные и ножничные автоподъёмники для автосервиса, шиномонтажа и развал-схождения. Цена подъёмника с НДС.",
+  },
+  "shinomontaj-stanoklari": {
+    name: "Shinomontaj stanoklari", nameRu: "Шиномонтажные станки", nameEn: "Tyre changers", icon: "🛞",
+    uz: "Yengil avtomobillar va yuk mashinalari uchun shinomontaj stanoklari — 10–21\" disklar uchun yarim avtomat modellar va 56\" gacha og'ir texnika stanoklari.",
+    ru: "Шиномонтажные станки для легковых и грузовых авто — полуавтоматы для дисков 10–21\" и станки для спецтехники до 56\".",
+  },
+  "balansirovka-stanoklari": {
+    name: "Balansirovka stanoklari", nameRu: "Балансировочные станки", nameEn: "Wheel balancers", icon: "⚖️",
+    uz: "Yengil va yuk g'ildiraklari uchun balansirovka stanoklari, aniqlik ±1 g. Balansirovka stanogi narxi QQS bilan.",
+    ru: "Балансировочные станки для легковых и грузовых колёс, точность ±1 г. Цена балансировочного станка с НДС.",
+  },
+  "razval-sxojdenie-stendlari": {
+    name: "Razval-sxojdenie stendlari", nameRu: "Стенды развал-схождения", nameEn: "Wheel aligners", icon: "🎯",
+    uz: "3D razval-sxojdenie stendlari — 30 000 dan ortiq avtomobil bazasi, bitta va ikki ekranli, avtomatik ko'tariladigan modellar.",
+    ru: "3D-стенды развал-схождения: база более 30 000 автомобилей, модели с одним и двумя экранами, с автоподъёмом камер.",
+  },
+  "avtokonditsioner-uskunalari": {
+    name: "Avtokonditsioner zapravka uskunalari", nameRu: "Заправка автокондиционеров", nameEn: "A/C service stations", icon: "❄️",
+    uz: "Avtokonditsionerlarni zapravka qilish stansiyalari (R134a, R1234yf), qo'lda, yarim avtomat va to'liq avtomat, hamda tizimni yuvish uskunalari.",
+    ru: "Станции заправки автокондиционеров (R134a, R1234yf) — ручные, полуавтоматы и автоматы, а также установки промывки системы.",
+  },
+  "moy-almashtirish-uskunalari": {
+    name: "Moy va suyuqlik almashtirish uskunalari", nameRu: "Замена масла и техжидкостей", nameEn: "Fluid exchangers", icon: "🛢️",
+    uz: "Avtomat uzatmalar qutisi (AKPP) moyini almashtirish, tormoz suyuqligi va antifrizni almashtirish, dvigatelni yuvish va quruq muz bilan tozalash uskunalari.",
+    ru: "Установки для замены масла в АКПП, тормозной жидкости и антифриза, промывки двигателя и чистки сухим льдом.",
+  },
+  "kuzov-tamirlash-uskunalari": {
+    name: "Kuzov ta'mirlash uskunalari", nameRu: "Кузовной ремонт: стапели и споттеры", nameEn: "Body repair equipment", icon: "🔨",
+    uz: "Kuzov stapellari (statsionar va ko'chma), spotterlar, alyuminiy kuzov uchun uskunalar va payvandlash apparatlari.",
+    ru: "Стапели (стационарные и передвижные), споттеры, оборудование для алюминиевого кузова и сварочные аппараты.",
+  },
+  "boyash-kameralari": {
+    name: "Bo'yash kameralari", nameRu: "Покрасочные камеры", nameEn: "Spray booths", icon: "🎨",
+    uz: "Avtomobil bo'yash kameralari, ichki o'lcham 6900 × 3900 mm — platformali va platformasiz.",
+    ru: "Покрасочные камеры для автомобилей, внутренние размеры 6900 × 3900 мм — с платформой и без.",
+  },
   "motoblok-va-kultivatorlar": {
     name: "Motobloklar va kultivatorlar", nameRu: "Мотоблоки и культиваторы", nameEn: "Tillers & cultivators", icon: "🚜",
     uz: "Benzinli va dizel kultivatorlar 7–15 ot kuchi, ishlov berish kengligi 950–1350 mm, hamda o'tirib boshqariladigan motobloklar. Kultivator narxi QQS bilan.",

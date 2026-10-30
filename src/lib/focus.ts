@@ -122,6 +122,36 @@ export const FOCUS: FocusDirection[] = [
     categories: ["qol-zanjirli-tallar", "richagli-tallar", "elektr-tallar", "tal-aravachalari", "stroplar", "kotarish-stollari"],
   },
   {
+    slug: "avtoservis-uskunalari",
+    icon: "🔧",
+    name: { uz: "Avtoservis uskunalari", ru: "Автосервисное оборудование", en: "Car service equipment" },
+    tagline: {
+      uz: "Avtoko'targichlar, shinomontaj, balansirovka, razval-sxojdenie",
+      ru: "Автоподъёмники, шиномонтаж, балансировка, развал-схождение",
+      en: "Car lifts, tyre changers, wheel balancers, wheel aligners",
+    },
+    intro: {
+      uz:
+        "Avtoservis va shinomontaj uchun uskunalar: ikki ustunli, to'rt ustunli va qaychi avtoko'targichlar, shinomontaj va balansirovka stanoklari, 3D razval-sxojdenie stendlari, avtokonditsioner zapravka stansiyalari, moy almashtirish uskunalari, kuzov stapellari, spotterlar va bo'yash kameralari.\n\n" +
+        "Karjoys zavodidan to'g'ridan-to'g'ri import — narxlar ochiq, QQS bilan. Avtoservis ochish yoki kengaytirish uchun to'liq uskuna to'plamini menejer bilan birga tanlang.",
+      ru:
+        "Оборудование для автосервиса и шиномонтажа: двухстоечные, четырёхстоечные и ножничные автоподъёмники, шиномонтажные и балансировочные станки, 3D-стенды развал-схождения, установки для заправки автокондиционеров, оборудование для замены масла, стапели, споттеры и покрасочные камеры.\n\n" +
+        "Прямой импорт с завода Karjoys — цены открыты, с НДС. Подберём с менеджером полный комплект оборудования для открытия или расширения СТО.",
+      en:
+        "Car-service and tyre-shop equipment: two-post, four-post and scissor lifts, tyre changers, wheel balancers, 3D wheel aligners, A/C service stations, fluid exchangers, frame machines, spotters and spray booths. Imported directly from Karjoys.",
+    },
+    categories: [
+      "avtokotargichlar",
+      "shinomontaj-stanoklari",
+      "balansirovka-stanoklari",
+      "razval-sxojdenie-stendlari",
+      "avtokonditsioner-uskunalari",
+      "moy-almashtirish-uskunalari",
+      "kuzov-tamirlash-uskunalari",
+      "boyash-kameralari",
+    ],
+  },
+  {
     slug: "kultivator-va-trimmerlar",
     icon: "🌱",
     name: { uz: "Kultivator va trimmerlar", ru: "Культиваторы и триммеры", en: "Cultivators & trimmers" },

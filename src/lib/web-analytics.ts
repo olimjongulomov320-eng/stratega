@@ -9,7 +9,9 @@ export type Goal =
   | "phone_click"
   | "telegram_click"
   | "whatsapp_click"
-  | "chat_open";
+  | "chat_open"
+  | "callback_sent" // "Request a call" form sent
+  | "one_click_sent"; // "Buy in 1 click" form sent
 
 // Validated so the IDs can be placed in an inline script safely.
 const rawYm = process.env.NEXT_PUBLIC_YM_ID ?? "";

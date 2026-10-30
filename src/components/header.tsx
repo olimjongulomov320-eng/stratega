@@ -10,6 +10,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { useI18n } from "@/i18n/client";
 import { COMPANY } from "@/lib/site";
 import type { HeaderCategory, MenuDirection } from "@/lib/categories";
+import { QuickOrder } from "@/components/quick-order";
 
 export type HeaderUser = { phone: string; companyName: string | null } | null;
 
@@ -51,6 +52,7 @@ export function Header({
             <a href={`tel:${COMPANY.phoneHref}`} className="whitespace-nowrap font-semibold text-white">
               {COMPANY.phone}
             </a>
+            <QuickOrder className="hidden whitespace-nowrap rounded-full bg-indigo-600 px-3 py-1 text-xs font-semibold text-white hover:bg-indigo-500 sm:inline" />
           </div>
         </div>
       </div>

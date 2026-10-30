@@ -22,6 +22,7 @@ import { SPEC_FILTERS } from "@/lib/product-specs";
 import { directionOfCategory } from "@/lib/focus";
 import { getBuyerPrices } from "@/lib/customer-price";
 import { CATEGORY_SEO } from "@/config/category-seo";
+import { categoryFaq, faqJsonLd } from "@/lib/category-faq";
 
 const getCategory = cache(async (slug: string) => {
   const category = await prisma.category.findUnique({ where: { slug } });
@@ -123,7 +124,9 @@ export default async function CategoryPage(props: PageProps<"/[locale]/category/
   const name = localName(category, locale);
   const intro = localDescription(category, locale);
   const pageUrl = absoluteUrl(lp(`/category/${slug}`));
+  const faq = categoryFaq(locale, name, data.count, data.minPrice);
   const structuredData = [
+    faqJsonLd(faq),
     {
       "@context": "https://schema.org",
       "@type": "BreadcrumbList",
@@ -212,6 +215,21 @@ export default async function CategoryPage(props: PageProps<"/[locale]/category/
           <CatalogPagination pathname={localePath(locale, `/category/${slug}`)} page={page} pageSize={pageSize} total={total} params={sp} labels={{ previous: t.catalog.previous, next: t.catalog.next, page: t.catalog.page }} />
         </div>
       </div>
+
+      <section className="mt-12 max-w-3xl border-t border-slate-200 pt-8">
+        <h2 className="text-xl font-bold text-slate-800">{t.common.faqTitle}</h2>
+        <div className="mt-4 divide-y divide-slate-100 rounded-2xl border border-slate-200">
+          {faq.map((f) => (
+            <details key={f.q} className="group px-5 py-4">
+              <summary className="cursor-pointer list-none font-medium text-slate-800 marker:hidden">
+                {f.q}
+                <span className="float-right text-slate-400 group-open:rotate-45" aria-hidden="true">+</span>
+              </summary>
+              <p className="mt-2 text-sm text-slate-600">{f.a}</p>
+            </details>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
