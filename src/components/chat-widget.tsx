@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useI18n } from "@/i18n/client";
+import { trackGoal } from "@/lib/web-analytics";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -51,7 +52,10 @@ export function ChatWidget() {
   return (
     <>
       <button
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          if (!open) trackGoal("chat_open");
+          setOpen((v) => !v);
+        }}
         aria-label={open ? t.common.close : t.chat.open}
         className="fixed bottom-20 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition hover:scale-105 hover:bg-indigo-500 active:scale-95 sm:bottom-5 sm:right-5"
       >

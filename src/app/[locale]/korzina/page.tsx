@@ -8,6 +8,7 @@ import { formatSum } from "@/lib/format";
 import { useI18n } from "@/i18n/client";
 import { submitRfq } from "../actions";
 import { ProductImage } from "@/components/product-image";
+import { trackGoal } from "@/lib/web-analytics";
 
 const input = "w-full rounded-xl border border-slate-200 px-4 py-2.5 outline-none focus:border-indigo-400";
 
@@ -69,6 +70,7 @@ export default function KorzinaPage() {
       setError(result.error);
       return;
     }
+    trackGoal("cart_rfq_sent", { items: items.length });
     clear();
     router.push(`${href("/korzina-yuborildi")}?id=${result.requestId}`);
   }

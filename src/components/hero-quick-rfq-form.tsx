@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { submitQuickRfq } from "@/app/[locale]/actions";
+import { trackGoal } from "@/lib/web-analytics";
 import { useI18n } from "@/i18n/client";
 
 export function HeroQuickRfqForm() {
@@ -28,6 +29,7 @@ export function HeroQuickRfqForm() {
       return;
     }
 
+    trackGoal("quick_rfq_sent");
     setSent(true);
     setCompanyName("");
     setPhone("");

@@ -13,6 +13,8 @@ import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { getHeaderCategories, getSparePartCategories, directionsFrom } from "@/lib/categories";
 import { getCurrentUser } from "@/lib/auth";
 import { SITE_URL } from "@/lib/site";
+import { Analytics } from "@/components/web-analytics";
+import { Suspense } from "react";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -49,6 +51,9 @@ export default async function LocaleLayout(props: LayoutProps<"/[locale]">) {
               <ChatWidget />
               <MobileTabBar user={headerUser} />
             </Providers>
+            <Suspense fallback={null}>
+              <Analytics />
+            </Suspense>
           </div>
         </I18nProvider>
       </body>

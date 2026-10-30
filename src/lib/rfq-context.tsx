@@ -8,6 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
+import { trackGoal } from "@/lib/web-analytics";
 
 export type RfqItem = {
   productId: string;
@@ -60,6 +61,7 @@ export function RfqProvider({ children }: { children: React.ReactNode }) {
 
   const addItem = useCallback(
     (item: Omit<RfqItem, "quantity">, quantity = 1) => {
+      trackGoal("add_to_cart", { sku: item.slug });
       setItems((prev) => {
         const existing = prev.find((i) => i.productId === item.productId);
         if (existing) {
