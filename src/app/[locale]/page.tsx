@@ -18,7 +18,7 @@ import { getDictionary, fmt } from "@/i18n";
 import { isLocale, localePath, LOCALE_TAGS } from "@/i18n/config";
 import { toCard, sortToOrderBy } from "@/lib/products";
 import { pageMetadata, absoluteUrl, jsonLd } from "@/lib/seo";
-import { COMPANY, CLAIMS, SITE_URL } from "@/lib/site";
+import { COMPANY, CLAIMS, TRUST_BADGES, SITE_URL } from "@/lib/site";
 import { ProductImage } from "@/components/product-image";
 
 export async function generateMetadata(
@@ -201,6 +201,15 @@ export default async function Home(props: PageProps<"/[locale]">) {
                 </div>
               ) : null}
             </div>
+            {TRUST_BADGES.some((b) => b.on) && (
+              <ul className="mt-6 flex flex-wrap gap-2">
+                {TRUST_BADGES.filter((b) => b.on).map((b) => (
+                  <li key={b.icon} className="rounded-full bg-white/10 px-3 py-1 text-sm text-slate-200">
+                    <span aria-hidden="true">{b.icon}</span> {b.text[locale]}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
           <div className="flex items-center">
             <HeroQuickRfqForm />

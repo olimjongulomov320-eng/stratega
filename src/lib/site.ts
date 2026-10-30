@@ -1,6 +1,4 @@
-// Company facts and marketing claims in ONE place.
-// Every claim below is shown on the site only when it is switched on (true).
-// Switch a claim on only when it is true and you can prove it.
+// Company facts in ONE place. Marketing claims are in src/config/site-claims.ts.
 
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.stratega.uz").replace(/\/$/, "");
 
@@ -38,25 +36,5 @@ export const COMPANY = {
   },
 };
 
-export const CLAIMS = {
-  /** "Rasmiy yetkazib beruvchi / official supplier" — true: STRATEGA imports directly from factories. */
-  officialSupplier: true,
-  /** VAT invoices and full document package for legal entities. */
-  vatDocuments: true,
-  /** Delivery across Uzbekistan. */
-  deliveryUzbekistan: true,
-  /** Show the number of units sold. Set to a real number (e.g. 350) to enable, or null to hide. */
-  unitsSold: null as number | null,
-  /** CE certificate — enable only if you hold the certificates for the products shown. */
-  ceCertificate: false,
-  /** Own service centre in Tashkent. */
-  serviceCenter: false,
-  /** Spare parts kept in stock. */
-  sparePartsInStock: false,
-  /** Payment deferral for regular customers, in days. null = hidden. */
-  paymentTermsDays: null as number | null,
-  /** Default warranty in months shown when a product has no own value. null = hidden. */
-  defaultWarrantyMonths: null as number | null,
-  /** Instalment payments ("muddatli to'lov"). Switch on only if you really offer them. */
-  installments: false,
-};
+// Marketing claims live in src/config/site-claims.ts (all off until proven).
+export { CLAIMS, TRUST_BADGES } from "@/config/site-claims";
