@@ -53,8 +53,10 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
                 className="transition-transform duration-500 ease-out group-hover:scale-110"
               />
             ) : (
-              <span className="relative text-4xl" role="img" aria-label={product.name}>
-                📦
+              // No photo yet: show the brand instead of an empty box.
+              <span className="relative flex flex-col items-center gap-1 text-center" role="img" aria-label={product.name}>
+                <span className="text-2xl font-black tracking-wide text-slate-300">{product.brand ?? "STRATEGA"}</span>
+                {product.sku && <span className="text-xs font-medium text-slate-400">{product.sku}</span>}
               </span>
             )}
           </div>
