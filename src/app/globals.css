@@ -1,0 +1,131 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+
+  /* Brand color: red, matching the real STRATEGA logo/catalog identity. */
+  --color-indigo-50: #fef2f2;
+  --color-indigo-100: #fee2e2;
+  --color-indigo-200: #fecaca;
+  --color-indigo-300: #fca5a5;
+  --color-indigo-400: #f87171;
+  --color-indigo-500: #ef4444;
+  --color-indigo-600: #dc2626;
+  --color-indigo-700: #b91c1c;
+  --color-indigo-800: #991b1b;
+  --color-indigo-900: #7f1d1d;
+  --color-indigo-950: #450a0a;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Keep keyboard focus easy to see across storefront and admin controls. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid #f87171;
+  outline-offset: 3px;
+}
+
+::selection {
+  background: #fecaca;
+  color: #450a0a;
+}
+
+tbody tr {
+  transition: background-color 140ms ease;
+}
+
+tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.35s ease-out both;
+}
+
+.product-grid > * {
+  animation: fade-in-up 0.3s ease-out both;
+}
+
+.product-grid > *:nth-child(1) { animation-delay: 0ms; }
+.product-grid > *:nth-child(2) { animation-delay: 30ms; }
+.product-grid > *:nth-child(3) { animation-delay: 60ms; }
+.product-grid > *:nth-child(4) { animation-delay: 90ms; }
+.product-grid > *:nth-child(5) { animation-delay: 120ms; }
+.product-grid > *:nth-child(6) { animation-delay: 150ms; }
+.product-grid > *:nth-child(n + 7) { animation-delay: 170ms; }
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-modal-in {
+  animation: modal-in 0.18s ease-out both;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.brand-marquee {
+  animation: marquee 22s linear infinite;
+}
+
+.brand-marquee:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up,
+  .animate-modal-in,
+  .brand-marquee,
+  .product-grid > * {
+    animation: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

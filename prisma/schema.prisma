@@ -1,0 +1,625 @@
+// STRATEGA — stratega.uz
+// Public catalogue (uz / ru / en) + admin ERP: stock, warehouses, sales, finance, staff.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ───────────────────────────── Catalogue ─────────────────────────────
+
+model Category {
+  id            String    @id @default(cuid())
+  slug          String    @unique
+  name          String // Uzbek (default language)
+  nameRu        String?
+  nameEn        String?
+  description   String? // SEO intro text shown on the category page
+  descriptionRu String?
+  descriptionEn String?
+  icon          String?
+  imageUrl      String?
+  sortOrder     Int       @default(0)
+  isActive      Boolean   @default(true)
+  isSparePart   Boolean   @default(false) // shown under "Ehtiyot qismlar", not in the main machine menu
+  olxCategory   String? // OLX category path used in the OLX export, e.g. "Бизнес и услуги / Оборудование"
+  products      Product[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+enum Unit {
+  PIECE
+  SET
+  KG
+  METER
+  LITER
+  PALLET
+  BOX
+}
+
+model Product {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  name            String // Uzbek (default language)
+  nameRu          String?
+  nameEn          String?
+  description     String   @default("")
+  descriptionRu   String?
+  descriptionEn   String?
+  brand           String?
+  sku             String?  @unique
+  barcode         String?
+  compatibleWith  String? // spare parts: machine models / SKUs this part fits, comma separated
+  unit            Unit     @default(PIECE)
+  price           Int // retail price, so'm, VAT included
+  oldPrice        Int? // price before discount
+  costPrice       Int? // landed cost, so'm — never shown publicly
+  imageUrl        String?
+  images          String[] @default([]) // extra photos
+  warrantyMonths  Int?
+  freeDelivery    Boolean  @default(false)
+  stock           Int      @default(0) // cached sum of StockLevel.quantity
+  minimumStock    Int      @default(0) // "low stock" threshold
+  reorderPoint    Int?
+  reorderQuantity Int?
+  weightKg        Float?
+  // Filterable specs (catalogue filters) — fill only what applies to the product.
+  capacityKg      Float? // load capacity, kg
+  liftHeightMm    Int? // lift height, mm
+  workingWidthMm  Int? // working / cleaning width, mm
+  powerKw         Float? // engine / motor power, kW
+  specs           Json? // spec table rows: [{ "uz": "Akkumulyator", "ru": "Аккумулятор", "en": "Battery", "value": "24 V 100 Ah" }]
+  datasheetUrl    String? // PDF datasheet / passport
+  videoUrl        String? // YouTube or other video link
+  leadTimeDays    Int? // delivery time in days when not in stock
+  isActive        Boolean  @default(true)
+  isFeatured      Boolean  @default(false)
+  category        Category @relation(fields: [categoryId], references: [id])
+  categoryId      String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  rfqItems        RfqItem[]
+  stockLevels     StockLevel[]
+  stockMoves      StockMove[]
+  documentLines   StockDocumentLine[]
+  orderLines      OrderLine[]
+  quotationLines  QuotationLine[]
+  shipmentLines   ShipmentLine[]
+  priceListItems  PriceListItem[]
+  suppliers       ProductSupplier[]
+  priceChanges    PriceChange[]
+  reviews         Review[]
+
+  @@index([categoryId, isActive])
+}
+
+model PriceChange {
+  id        String   @id @default(cuid())
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId String
+  oldPrice  Int
+  newPrice  Int
+  actor     String?
+  createdAt DateTime @default(now())
+
+  @@index([productId, createdAt])
+}
+
+// Real customer reviews only. Ratings are shown publicly only when approved reviews exist.
+model Review {
+  id         String   @id @default(cuid())
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId  String
+  authorName String
+  company    String?
+  rating     Int // 1..5
+  comment    String
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([productId, isApproved])
+}
+
+// ───────────────────────────── Inventory ─────────────────────────────
+
+model Warehouse {
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @unique
+  address   String?
+  note      String?
+  isActive  Boolean  @default(true)
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  stockLevels     StockLevel[]
+  stockMoves      StockMove[]
+  documents       StockDocument[] @relation("DocWarehouse")
+  transferTargets StockDocument[] @relation("DocTargetWarehouse")
+  orders          Order[]
+  shipments       Shipment[]
+}
+
+model StockLevel {
+  id          String    @id @default(cuid())
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   String
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  warehouseId String
+  quantity    Int       @default(0)
+  reserved    Int       @default(0) // reserved by confirmed orders, not yet shipped
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([productId, warehouseId])
+}
+
+enum StockMoveReason {
+  OPENING // opening balance / manual adjustment
+  ADJUSTMENT
+  CSV_IMPORT
+  RECEIPT
+  ISSUE
+  RETURN
+  TRANSFER_IN
+  TRANSFER_OUT
+  WRITE_OFF
+  INVENTORY
+  SHIPMENT
+}
+
+// Immutable ledger: every change of stock is one row.
+model StockMove {
+  id           String          @id @default(cuid())
+  product      Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId    String
+  warehouse    Warehouse       @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  warehouseId  String
+  delta        Int
+  balanceAfter Int
+  reason       StockMoveReason
+  note         String?
+  document     StockDocument?  @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  documentId   String?
+  shipment     Shipment?       @relation(fields: [shipmentId], references: [id], onDelete: SetNull)
+  shipmentId   String?
+  actor        String?
+  createdAt    DateTime        @default(now())
+
+  @@index([productId, createdAt])
+  @@index([warehouseId, createdAt])
+  @@index([createdAt])
+}
+
+enum StockDocumentType {
+  RECEIPT // kirim
+  ISSUE // chiqim
+  TRANSFER // ko'chirish
+  WRITE_OFF // hisobdan chiqarish
+  INVENTORY // inventarizatsiya (counted quantity)
+  RETURN // qaytarish (from customer)
+}
+
+enum DocumentStatus {
+  DRAFT
+  POSTED
+  CANCELLED
+}
+
+model StockDocument {
+  id                String              @id @default(cuid())
+  number            String              @unique
+  type              StockDocumentType
+  status            DocumentStatus      @default(DRAFT)
+  warehouse         Warehouse           @relation("DocWarehouse", fields: [warehouseId], references: [id])
+  warehouseId       String
+  targetWarehouse   Warehouse?          @relation("DocTargetWarehouse", fields: [targetWarehouseId], references: [id])
+  targetWarehouseId String?
+  supplier          Supplier?           @relation(fields: [supplierId], references: [id])
+  supplierId        String?
+  note              String?
+  lines             StockDocumentLine[]
+  moves             StockMove[]
+  createdBy         String?
+  postedAt          DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+}
+
+model StockDocumentLine {
+  id         String        @id @default(cuid())
+  document   StockDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String
+  product    Product       @relation(fields: [productId], references: [id])
+  productId  String
+  quantity   Int // for INVENTORY: counted quantity
+  unitCost   Int? // receipt cost per unit, so'm
+}
+
+// ───────────────────────────── Purchasing ─────────────────────────────
+
+model Supplier {
+  id          String            @id @default(cuid())
+  name        String
+  legalName   String?
+  inn         String?
+  contactName String?
+  phone       String?
+  email       String?
+  address     String?
+  country     String?
+  note        String?
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  products    ProductSupplier[]
+  documents   StockDocument[]
+}
+
+model ProductSupplier {
+  id           String   @id @default(cuid())
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId    String
+  supplier     Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  supplierId   String
+  supplierSku  String?
+  priceUsd     Float? // purchase price in USD (FOB)
+  leadTimeDays Int?
+
+  @@unique([productId, supplierId])
+}
+
+// ───────────────────────────── Sales ─────────────────────────────
+
+model PriceList {
+  id        String          @id @default(cuid())
+  name      String
+  code      String          @unique
+  note      String?
+  isActive  Boolean         @default(true)
+  items     PriceListItem[]
+  customers Customer[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
+
+model PriceListItem {
+  id          String    @id @default(cuid())
+  priceList   PriceList @relation(fields: [priceListId], references: [id], onDelete: Cascade)
+  priceListId String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId   String
+  price       Int
+
+  @@unique([priceListId, productId])
+}
+
+model Customer {
+  id          String      @id @default(cuid())
+  companyName String
+  contactName String?
+  phone       String?
+  email       String?
+  inn         String?
+  address     String?
+  priceList   PriceList?  @relation(fields: [priceListId], references: [id], onDelete: SetNull)
+  priceListId String?
+  creditLimit Int?
+  note        String?
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  orders      Order[]
+  quotations  Quotation[]
+}
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
+
+model Quotation {
+  id           String          @id @default(cuid())
+  number       String          @unique
+  customer     Customer?       @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerId   String?
+  rfqRequest   RfqRequest?     @relation(fields: [rfqRequestId], references: [id], onDelete: SetNull)
+  rfqRequestId String?
+  status       QuotationStatus @default(DRAFT)
+  validUntil   DateTime?
+  note         String?
+  total        Int             @default(0)
+  lines        QuotationLine[]
+  order        Order?
+  createdBy    String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+}
+
+model QuotationLine {
+  id          String    @id @default(cuid())
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  quotationId String
+  product     Product   @relation(fields: [productId], references: [id])
+  productId   String
+  quantity    Int
+  price       Int
+}
+
+enum OrderStatus {
+  DRAFT
+  CONFIRMED // stock reserved
+  SHIPPED // fully shipped
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PARTIAL
+  PAID
+  REFUNDED
+}
+
+model Order {
+  id            String        @id @default(cuid())
+  number        String        @unique
+  customer      Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerId    String?
+  warehouse     Warehouse     @relation(fields: [warehouseId], references: [id])
+  warehouseId   String
+  quotation     Quotation?    @relation(fields: [quotationId], references: [id], onDelete: SetNull)
+  quotationId   String?       @unique
+  status        OrderStatus   @default(DRAFT)
+  paymentStatus PaymentStatus @default(UNPAID)
+  total         Int           @default(0)
+  paidAmount    Int           @default(0)
+  note          String?
+  lines         OrderLine[]
+  shipments     Shipment[]
+  payments      Payment[]
+  createdBy     String?
+  confirmedAt   DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([createdAt])
+}
+
+model OrderLine {
+  id        String  @id @default(cuid())
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+  product   Product @relation(fields: [productId], references: [id])
+  productId String
+  quantity  Int
+  price     Int // sale price per unit, so'm
+  costPrice Int? // cost per unit at time of sale (for margin)
+}
+
+enum ShipmentStatus {
+  DRAFT
+  READY
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+model Shipment {
+  id          String         @id @default(cuid())
+  number      String         @unique
+  order       Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId     String
+  warehouse   Warehouse      @relation(fields: [warehouseId], references: [id])
+  warehouseId String
+  status      ShipmentStatus @default(DRAFT)
+  assignee    String?
+  address     String?
+  note        String?
+  lines       ShipmentLine[]
+  moves       StockMove[]
+  shippedAt   DateTime?
+  deliveredAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+}
+
+model ShipmentLine {
+  id         String   @id @default(cuid())
+  shipment   Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  shipmentId String
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  String
+  quantity   Int
+}
+
+// ───────────────────────────── Finance ─────────────────────────────
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  CARD
+  OTHER
+}
+
+enum PaymentRecordStatus {
+  PENDING // recorded, not yet confirmed
+  CONFIRMED
+  REFUNDED
+}
+
+model Payment {
+  id        String              @id @default(cuid())
+  order     Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId   String
+  amount    Int // so'm; refunds are separate rows with status REFUNDED
+  method    PaymentMethod       @default(BANK_TRANSFER)
+  status    PaymentRecordStatus @default(CONFIRMED)
+  reference String? // payment order number etc.
+  note      String?
+  paidAt    DateTime            @default(now())
+  createdBy String?
+  createdAt DateTime            @default(now())
+
+  @@index([paidAt])
+}
+
+// ───────────────────────────── Website customers & RFQ ─────────────────────────────
+
+model User {
+  id          String       @id @default(cuid())
+  phone       String       @unique
+  companyName String?
+  contactName String?
+  createdAt   DateTime     @default(now())
+  requests    RfqRequest[]
+  sessions    Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model OtpCode {
+  id        String    @id @default(cuid())
+  phone     String
+  code      String
+  ip        String?
+  attempts  Int       @default(0)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([phone, createdAt])
+  @@index([ip, createdAt])
+  @@index([createdAt])
+}
+
+enum RfqStatus {
+  NEW
+  IN_REVIEW
+  QUOTED
+  CONFIRMED
+  CANCELLED
+}
+
+model RfqRequest {
+  id          String      @id @default(cuid())
+  companyName String
+  contactName String
+  phone       String
+  requestType String
+  comment     String?
+  locale      String      @default("uz")
+  status      RfqStatus   @default(NEW)
+  items       RfqItem[]
+  quotations  Quotation[]
+  user        User?       @relation(fields: [userId], references: [id])
+  userId      String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model RfqItem {
+  id           String     @id @default(cuid())
+  request      RfqRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  requestId    String
+  product      Product    @relation(fields: [productId], references: [id])
+  productId    String
+  quantity     Int
+  priceAtQuote Int
+}
+
+// ───────────────────────────── Staff & system ─────────────────────────────
+
+enum Role {
+  OWNER
+  ADMIN
+  MANAGER
+  WAREHOUSE
+  ACCOUNTANT
+  VIEWER
+}
+
+model Employee {
+  id           String    @id @default(cuid())
+  name         String
+  email        String    @unique
+  phone        String?
+  role         Role      @default(VIEWER)
+  passwordHash String
+  isActive     Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  action     String
+  actor      String // employee name / "admin"
+  actorId    String?
+  entityType String?
+  entityId   String?
+  details    Json?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+enum AlertSeverity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+model Alert {
+  id         String        @id @default(cuid())
+  key        String        @unique // dedupe key, e.g. "low-stock:<productId>"
+  type       String
+  severity   AlertSeverity @default(WARNING)
+  message    String
+  entityType String?
+  entityId   String?
+  isRead     Boolean       @default(false)
+  resolvedAt DateTime?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+}
+
+model Setting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model TelegramSession {
+  chatId    String   @id
+  state     Json
+  updatedAt DateTime @updatedAt
+}
+
+model TelegramUpdate {
+  updateId   Int      @id
+  processedAt DateTime @default(now())
+}
+
+// Document number counters (ORD-2026-0001 …)
+model Counter {
+  key   String @id
+  value Int    @default(0)
+}

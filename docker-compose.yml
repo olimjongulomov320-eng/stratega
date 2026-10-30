@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: stratega
+      POSTGRES_PASSWORD: stratega
+      POSTGRES_DB: stratega
+    ports:
+      - "5432:5432"
+    volumes:
+      - stratega-db:/var/lib/postgresql/data
+volumes:
+  stratega-db:
