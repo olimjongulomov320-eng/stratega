@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRfq } from "@/lib/rfq-context";
@@ -22,6 +22,26 @@ export default function KorzinaPage() {
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Names are stored in the language the item was added in; show them in the page language.
+  const [localNames, setLocalNames] = useState<Record<string, string>>({});
+  const ids = items.map((i) => i.productId).join(",");
+  useEffect(() => {
+    if (!ids) return;
+    let cancelled = false;
+    fetch("/api/products-by-ids", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: ids.split(","), locale }),
+    })
+      .then((r) => r.json())
+      .then((d: { products?: { id: string; name: string }[] }) => {
+        if (!cancelled) setLocalNames(Object.fromEntries((d.products ?? []).map((p) => [p.id, p.name])));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [ids, locale]);
 
   if (items.length === 0) {
     return (
@@ -63,14 +83,14 @@ export default function KorzinaPage() {
           <li key={item.productId} className="flex flex-wrap items-center gap-4 p-4">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-slate-50 p-1.5">
               {item.imageUrl ? (
-                <ProductImage src={item.imageUrl} alt={item.name} sizes="64px" />
+                <ProductImage src={item.imageUrl} alt={localNames[item.productId] ?? item.name} sizes="64px" />
               ) : (
                 <span className="text-2xl">📦</span>
               )}
             </div>
             <div className="min-w-[10rem] flex-1">
               <Link href={href(`/product/${item.slug}`)} className="font-medium text-slate-800 hover:text-indigo-700">
-                {item.name}
+                {localNames[item.productId] ?? item.name}
               </Link>
               <p className="text-sm text-slate-500">{formatSum(item.price, locale)}</p>
             </div>
