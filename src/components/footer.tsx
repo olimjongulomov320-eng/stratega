@@ -109,6 +109,9 @@ export function Footer({ categories, locale }: { categories: HeaderCategory[]; l
               </li>
             )}
             <li>
+              {t.trust.shop}: {COMPANY.shop[locale]}
+            </li>
+            <li>
               {t.footer.address}: {COMPANY.address[locale]}
             </li>
             <li>

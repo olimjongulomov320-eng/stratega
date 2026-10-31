@@ -15,6 +15,20 @@ export const COMPANY = {
     ru: "г. Ташкент, Сергелийский р-н, МФЙ Номданак, ул. Номданак, 3-тор кучаси, дом 29-Б",
     en: "29-B, 3-tor ko'chasi, Nomdanak St., Nomdanak MFY, Sergeli district, Tashkent",
   },
+  // Shop where customers can see the equipment.
+  shop: {
+    uz: "Toshkent, INDEX bozori, G1 blok, G1-1-1022 do'kon",
+    ru: "Ташкент, рынок INDEX, блок G1, магазин G1-1-1022",
+    en: "Tashkent, INDEX market, block G1, shop G1-1-1022",
+  },
+  shopMapUrl: "https://yandex.uz/maps/?text=" + encodeURIComponent("Ташкент рынок INDEX"),
+  // Seller shown on every product page. Put a person's name here to show it instead of the department.
+  seller: {
+    name: { uz: "Sotuv bo'limi", ru: "Отдел продаж", en: "Sales department" },
+    phone: "+998 99 301 11 70",
+    phoneHref: "+998993011170",
+    telegram: "https://t.me/stratega_uz",
+  },
   city: "Tashkent",
   country: "UZ",
   bank: "AKB «Kapitalbank»",

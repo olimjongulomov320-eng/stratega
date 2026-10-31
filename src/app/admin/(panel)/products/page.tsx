@@ -21,6 +21,7 @@ export default async function ProductsPage(props: PageProps<"/admin/products">) 
   if (status === "noru") conditions.push({ OR: [{ nameRu: null }, { descriptionRu: null }] });
   if (status === "noimage") conditions.push({ imageUrl: null });
   if (status === "onrequest") conditions.push({ priceOnRequest: true });
+  if (status === "bestseller") conditions.push({ isBestseller: true });
   const where: Prisma.ProductWhereInput = conditions.length ? { AND: conditions } : {};
   const [products, categories, total, allTotal] = await Promise.all([
     prisma.product.findMany({ where, include: { category: true }, orderBy: [{ category: { sortOrder: "asc" } }, { name: "asc" }], take: pageSize, skip: (page - 1) * pageSize }),
@@ -59,6 +60,7 @@ export default async function ProductsPage(props: PageProps<"/admin/products">) 
           <option value="noru">Ruscha tarjima yo&apos;q</option>
           <option value="noimage">Rasmsiz</option>
           <option value="onrequest">Narxi so&apos;rov bo&apos;yicha</option>
+          <option value="bestseller">Xit savdo</option>
         </select>
         <button className={btn("secondary")}>Qidirish</button>
       </Filters>
@@ -97,7 +99,9 @@ export default async function ProductsPage(props: PageProps<"/admin/products">) 
               <Td right>
                 <span className={p.stock <= 0 ? "text-red-600" : p.stock <= p.minimumStock ? "text-amber-600" : ""}>{p.stock}</span>
               </Td>
-              <Td>{p.isActive ? <Badge tone="green">Faol</Badge> : <Badge>Yashirin</Badge>}</Td>
+              <Td>
+                {p.isActive ? <Badge tone="green">Faol</Badge> : <Badge>Yashirin</Badge>} {p.isBestseller && <Badge tone="amber">Xit</Badge>}
+              </Td>
               <Td right>
                 <div className="flex justify-end gap-2 text-xs">
                   <Link href={`/admin/products/${p.id}/overview`} className="text-indigo-600">Ko&apos;rish</Link>

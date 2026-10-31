@@ -139,7 +139,11 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
   const terms: string[] = [warranty ? fmt(f.warrantyLine, { n: warranty }) : f.warrantyContract, f.payBank, f.payCash];
   if (CLAIMS.paymentTermsDays) terms.push(fmt(f.deferral, { n: CLAIMS.paymentTermsDays }));
   if (CLAIMS.installments) terms.push(f.installments);
+  if (CLAIMS.tashkentSameDay) terms.push(t.trust.sameDay);
+  if (CLAIMS.freeTashkentFrom) terms.push(fmt(t.trust.freeFrom, { amount: formatNumber(CLAIMS.freeTashkentFrom) }));
   if (CLAIMS.deliveryUzbekistan) terms.push(f.deliveryLine);
+  if (CLAIMS.didox) terms.push(t.trust.didox);
+  terms.push(`${t.trust.shop}: ${COMPANY.shop[locale]}`);
 
   const facts: [string, string][] = [];
   if (product.sku) facts.push([t.product.sku, product.sku]);
@@ -237,13 +241,23 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
           />
 
           <div className="rounded-xl border border-slate-200 px-4 py-3">
-            <p className="text-sm text-slate-600">{t.product.askManager}</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              <a href={`tel:${COMPANY.phoneHref}`} className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
-                📞 {t.product.call}: {COMPANY.phone}
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-700" aria-hidden="true">
+                {COMPANY.seller.name[locale].charAt(0)}
+              </span>
+              <div className="min-w-0">
+                <p className="font-semibold text-slate-800">{COMPANY.seller.name[locale]}</p>
+                <p className="text-xs text-slate-500">
+                  {t.trust.seller} · STRATEGA · {t.product.askManager}
+                </p>
+              </div>
+            </div>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <a href={`tel:${COMPANY.seller.phoneHref}`} className="rounded-full bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-700">
+                📞 {COMPANY.seller.phone}
               </a>
-              {COMPANY.messengers.telegram && (
-                <a href={COMPANY.messengers.telegram} target="_blank" rel="noopener" className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400">
+              {COMPANY.seller.telegram && (
+                <a href={COMPANY.seller.telegram} target="_blank" rel="noopener" className="rounded-full bg-sky-500 px-4 py-2 text-sm font-semibold text-white hover:bg-sky-400">
                   {t.focus.writeTelegram}
                 </a>
               )}

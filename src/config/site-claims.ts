@@ -10,6 +10,12 @@ export const CLAIMS = {
   vatDocuments: true,
   /** Delivery across Uzbekistan. */
   deliveryUzbekistan: true,
+  /** Same-day delivery within Tashkent. */
+  tashkentSameDay: true,
+  /** Free delivery within Tashkent for orders from this amount, so'm. null = hidden. */
+  freeTashkentFrom: 2_000_000 as number | null,
+  /** Electronic documents and VAT invoices (ESF) through Didox. */
+  didox: true,
   /** "2000+ units sold": set to a real, provable number (e.g. 2000) to show "2000+", or null to hide. */
   unitsSold: null as number | null,
   /** CE certificate — enable only if you hold the certificates for the products shown. */

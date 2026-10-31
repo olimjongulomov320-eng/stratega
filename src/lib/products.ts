@@ -15,6 +15,7 @@ export type ProductCardData = {
   priceOnRequest: boolean;
   sku: string | null;
   brand: string | null;
+  isBestseller: boolean;
   /** Logged-in buyer's own price (from their price list), when lower or different from the list price. */
   buyerPrice?: number | null;
 };
@@ -35,6 +36,7 @@ export function toCard(p: Product, locale: Locale, buyerPrice?: number | null): 
     priceOnRequest: false,
     sku: p.sku,
     brand: p.brand,
+    isBestseller: p.isBestseller,
     buyerPrice: buyerPrice && buyerPrice !== p.price ? buyerPrice : null,
   };
 }
@@ -56,7 +58,7 @@ export function sortToOrderBy(sort: SortOption): Prisma.ProductOrderByWithRelati
       return [{ createdAt: "desc" }];
     default:
       // Featured first, then priced items, then items with a photo (no photo = last), then in-stock, then by name.
-      return [{ isFeatured: "desc" }, { priceOnRequest: "asc" }, { imageUrl: { sort: "asc", nulls: "last" } }, { stock: "desc" }, { name: "asc" }];
+      return [{ isFeatured: "desc" }, { isBestseller: "desc" }, { priceOnRequest: "asc" }, { imageUrl: { sort: "asc", nulls: "last" } }, { stock: "desc" }, { name: "asc" }];
   }
 }
 

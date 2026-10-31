@@ -38,9 +38,10 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
     <div className="group relative flex flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white transition duration-300 hover:-translate-y-1 hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-100">
       <div className="relative">
         <Link href={url} className="relative block" tabIndex={-1} aria-hidden="true">
-          {discount !== null && discount > 0 && (
-            <span className="absolute left-3 top-3 z-10 rounded-md bg-rose-500 px-2 py-0.5 text-xs font-bold text-white">
-              {fmt(t.product.discount, { n: discount })}
+          {(product.isBestseller || (discount !== null && discount > 0)) && (
+            <span className="absolute left-3 top-3 z-10 flex flex-col items-start gap-1">
+              {product.isBestseller && <span className="rounded-md bg-amber-400 px-2 py-0.5 text-xs font-bold text-slate-900">🔥 {t.trust.bestseller}</span>}
+              {discount !== null && discount > 0 && <span className="rounded-md bg-rose-500 px-2 py-0.5 text-xs font-bold text-white">{fmt(t.product.discount, { n: discount })}</span>}
             </span>
           )}
           <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-slate-50 p-8">

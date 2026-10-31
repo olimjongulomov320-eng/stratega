@@ -28,6 +28,10 @@ export default async function ContactsPage(props: PageProps<"/[locale]/contacts"
           <ul className="mt-3 space-y-2 text-sm text-slate-600">
             <li>{t.footer.phone}: <a className="font-medium text-indigo-600" href={`tel:${COMPANY.phoneHref}`}>{COMPANY.phone}</a></li>
             <li>Email: <a className="font-medium text-indigo-600" href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a></li>
+            <li>
+              {t.trust.shop}: <span className="font-medium text-slate-800">{COMPANY.shop[locale]}</span> ·{" "}
+              <a className="text-indigo-600" href={COMPANY.shopMapUrl} target="_blank" rel="noopener">{t.trust.onMap}</a>
+            </li>
             <li>{t.footer.address}: {COMPANY.address[locale]}</li>
             <li>{t.footer.hours}: {COMPANY.hours[locale]}</li>
             <li>Telegram: <a className="font-medium text-indigo-600" href={COMPANY.socials.telegram}>@stratega_uz</a></li>

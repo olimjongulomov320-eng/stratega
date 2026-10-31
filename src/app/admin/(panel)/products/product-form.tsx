@@ -43,6 +43,7 @@ export type ProductFormValues = {
   leadTimeDays?: number | null;
   isActive?: boolean;
   isFeatured?: boolean;
+  isBestseller?: boolean;
   categoryId?: string;
 };
 
@@ -269,6 +270,9 @@ export function ProductForm({
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" name="isFeatured" defaultChecked={values.isFeatured ?? false} /> Tavsiya etilgan (bosh sahifada)
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="isBestseller" defaultChecked={values.isBestseller ?? false} /> Xit savdo (belgi; birinchisi bosh sahifa bannerida)
           </label>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" name="freeDelivery" defaultChecked={values.freeDelivery ?? false} /> Bepul yetkazib berish

@@ -80,6 +80,7 @@ model Product {
   leadTimeDays    Int? // delivery time in days when not in stock
   isActive        Boolean  @default(true)
   isFeatured      Boolean  @default(false)
+  isBestseller    Boolean  @default(false) // "Xit savdo / Хит продаж" badge; the first one is shown in the home page hero
   category        Category @relation(fields: [categoryId], references: [id])
   categoryId      String
   createdAt       DateTime @default(now())

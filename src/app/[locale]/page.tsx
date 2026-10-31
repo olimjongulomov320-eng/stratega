@@ -20,6 +20,9 @@ import { toCard, sortToOrderBy } from "@/lib/products";
 import { pageMetadata, absoluteUrl, jsonLd } from "@/lib/seo";
 import { COMPANY, CLAIMS, TRUST_BADGES, SITE_URL } from "@/lib/site";
 import { ProductImage } from "@/components/product-image";
+import { localName } from "@/lib/localize";
+import { formatSum } from "@/lib/format";
+import { TrustStrip, ShopBlock } from "@/components/trust-strip";
 
 export async function generateMetadata(
   props: PageProps<"/[locale]">,
@@ -68,7 +71,7 @@ export default async function Home(props: PageProps<"/[locale]">) {
   const t = getDictionary(locale);
   const lp = (p: string) => localePath(locale, p);
 
-  const [categories, featured, inStockModels, covers] = await Promise.all([
+  const [categories, featured, inStockModels, covers, bestseller] = await Promise.all([
     getHeaderCategories(locale),
     prisma.product.findMany({
       where: { isActive: true },
@@ -82,6 +85,7 @@ export default async function Home(props: PageProps<"/[locale]">) {
       select: { categoryId: true, imageUrl: true },
       orderBy: [{ isFeatured: "desc" }, { priceOnRequest: "asc" }, { price: "desc" }],
     }),
+    prisma.product.findFirst({ where: { isActive: true, isBestseller: true }, orderBy: { updatedAt: "desc" } }),
   ]);
   const directions = directionsFrom(categories, locale);
   // Categories inside a direction are reached through the direction cards; list only the rest.
@@ -112,6 +116,12 @@ export default async function Home(props: PageProps<"/[locale]">) {
         addressCountry: COMPANY.country,
       },
       sameAs: Object.values(COMPANY.socials),
+      department: {
+        "@type": "Store",
+        name: `${COMPANY.brand} — INDEX`,
+        telephone: COMPANY.phone,
+        address: { "@type": "PostalAddress", streetAddress: COMPANY.shop[locale], addressLocality: COMPANY.city, addressCountry: COMPANY.country },
+      },
     },
     {
       "@context": "https://schema.org",
@@ -212,11 +222,34 @@ export default async function Home(props: PageProps<"/[locale]">) {
               </ul>
             )}
           </div>
-          <div className="flex items-center">
+          <div className="flex flex-col justify-center gap-4">
+            {bestseller && (
+              <Link
+                href={lp(`/product/${bestseller.slug}`)}
+                className="group flex items-center gap-4 rounded-2xl bg-white p-4 text-slate-900 shadow-lg ring-1 ring-white/10 transition hover:-translate-y-0.5"
+              >
+                <span className="relative block h-24 w-24 shrink-0 overflow-hidden rounded-xl bg-slate-50">
+                  {bestseller.imageUrl ? (
+                    <ProductImage src={bestseller.imageUrl} alt={localName(bestseller, locale)} sizes="96px" eager />
+                  ) : (
+                    <span className="flex h-full items-center justify-center text-sm font-black text-slate-300">{bestseller.brand ?? "STRATEGA"}</span>
+                  )}
+                </span>
+                <span className="min-w-0">
+                  <span className="inline-block rounded-md bg-amber-400 px-2 py-0.5 text-xs font-bold">🔥 {t.trust.bestseller}</span>
+                  <span className="mt-1 line-clamp-2 block font-semibold group-hover:text-indigo-700">{localName(bestseller, locale)}</span>
+                  <span className="mt-1 block text-lg font-black">
+                    {bestseller.priceOnRequest ? t.product.priceOnRequest : formatSum(bestseller.price, locale)}
+                  </span>
+                </span>
+              </Link>
+            )}
             <HeroQuickRfqForm />
           </div>
         </div>
       </section>
+
+      <TrustStrip locale={locale} />
 
       <div className="bg-indigo-600">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-px sm:grid-cols-4">
@@ -390,6 +423,8 @@ export default async function Home(props: PageProps<"/[locale]">) {
       </section>
 
       <OrderFlowShowcase />
+
+      <ShopBlock locale={locale} />
 
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <RecentlyViewedSection />

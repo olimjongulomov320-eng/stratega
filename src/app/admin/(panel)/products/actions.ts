@@ -78,6 +78,7 @@ function readProduct(form: FormData) {
     leadTimeDays: nonNeg(int(form, "leadTimeDays")),
     isActive: bool(form, "isActive"),
     isFeatured: bool(form, "isFeatured"),
+    isBestseller: bool(form, "isBestseller"),
     categoryId,
   };
 }

@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Product" ADD COLUMN     "isBestseller" BOOLEAN NOT NULL DEFAULT false;
