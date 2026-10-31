@@ -46,12 +46,12 @@ export function Stat({ label, value, hint, href, tone = "default" }: { label: st
   const toneClass = { default: "text-slate-900", warn: "text-amber-600", bad: "text-red-600", good: "text-emerald-600" }[tone];
   const inner = (
     <>
-      <div className={`break-words text-lg font-bold leading-6 sm:text-xl ${toneClass}`}>{value}</div>
+      <div className={`text-lg font-bold leading-6 [overflow-wrap:anywhere] sm:text-xl [&_span]:whitespace-normal ${toneClass}`}>{value}</div>
       <p className="mt-1 text-sm text-slate-500">{label}</p>
       {hint && <p className="mt-0.5 text-xs text-slate-400">{hint}</p>}
     </>
   );
-  const cls = "block rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2";
+  const cls = "block min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2";
   return href ? (
     <Link href={href} className={`${cls} hover:border-indigo-300`}>
       {inner}

@@ -3,7 +3,7 @@ import { Field, inputCls } from "@/components/admin/ui";
 import { ROLE_LABELS } from "@/lib/permissions";
 import { saveEmployee } from "./actions";
 
-type V = { id?: string; name?: string; email?: string; phone?: string | null; role?: string; isActive?: boolean };
+type V = { id?: string; name?: string; email?: string; phone?: string | null; telegramId?: string | null; role?: string; isActive?: boolean };
 
 export function EmployeeForm({ values = {} }: { values?: V }) {
   return (
@@ -12,6 +12,9 @@ export function EmployeeForm({ values = {} }: { values?: V }) {
       <Field label="Ism *"><input name="name" required defaultValue={values.name} className={inputCls} /></Field>
       <Field label="Email (login) *"><input name="email" type="email" required defaultValue={values.email} className={inputCls} /></Field>
       <Field label="Telefon"><input name="phone" defaultValue={values.phone ?? ""} className={inputCls} /></Field>
+      <Field label="Telegram ID" hint="Botga /id yozing — u raqamni ko'rsatadi. Shu xodim Telegramda admin panelni ochadi va tezkor amallarni bajaradi.">
+        <input name="telegramId" inputMode="numeric" defaultValue={values.telegramId ?? ""} className={inputCls} />
+      </Field>
       <Field label="Rol">
         <select name="role" defaultValue={values.role ?? "MANAGER"} className={inputCls}>
           {Object.entries(ROLE_LABELS).map(([k, v]) => <option key={k} value={k}>{v.name}</option>)}

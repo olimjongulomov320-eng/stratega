@@ -20,6 +20,9 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Telegram Mini App entry pages are not localised.
+  if (pathname === "/tg" || pathname.startsWith("/tg/")) return NextResponse.next();
+
   // ── Public site i18n ──
   // /uz and /uz/* duplicate the default language → permanent redirect to the unprefixed URL.
   if (pathname === "/uz" || pathname.startsWith("/uz/")) {

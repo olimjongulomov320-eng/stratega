@@ -61,13 +61,15 @@ export function verifySharedAdminPassword(password: string): boolean {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-export async function createAdminSession(data: Omit<AdminSession, "expiresAt">) {
+/** `embedded`: the admin runs inside Telegram, where Telegram Web loads it in an iframe — the cookie must be SameSite=None. */
+export async function createAdminSession(data: Omit<AdminSession, "expiresAt">, opts: { embedded?: boolean } = {}) {
   const expiresAt = Date.now() + SESSION_HOURS * 60 * 60 * 1000;
   const cookieStore = await cookies();
+  const production = process.env.NODE_ENV === "production";
   cookieStore.set(ADMIN_COOKIE, encode({ ...data, expiresAt }), {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: production,
+    sameSite: opts.embedded && production ? "none" : "lax",
     path: "/",
     expires: new Date(expiresAt),
   });

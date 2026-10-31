@@ -9,6 +9,14 @@ import type { Role } from "@/generated/prisma/client";
 
 const ROLES: Role[] = ["OWNER", "ADMIN", "MANAGER", "WAREHOUSE", "ACCOUNTANT", "VIEWER"];
 
+/** Telegram user IDs are whole numbers; empty = not linked. */
+function telegramIdOf(form: FormData): string | null {
+  const v = optStr(form, "telegramId");
+  if (!v) return null;
+  if (!/^\d{5,15}$/.test(v)) throw new Error("Telegram ID faqat raqamlardan iborat bo'lishi kerak (botda /id buyrug'i ko'rsatadi).");
+  return v;
+}
+
 export async function saveEmployee(_: ActionState, form: FormData): Promise<ActionState> {
   const id = str(form, "id");
   const res = await safe(async () => {
@@ -28,11 +36,11 @@ export async function saveEmployee(_: ActionState, form: FormData): Promise<Acti
       }
       await prisma.employee.update({
         where: { id },
-        data: { name, email, role, phone: optStr(form, "phone"), isActive, ...(password ? { passwordHash: hashPassword(password) } : {}) },
+        data: { name, email, role, phone: optStr(form, "phone"), telegramId: telegramIdOf(form), isActive, ...(password ? { passwordHash: hashPassword(password) } : {}) },
       });
     } else {
       if (!password) throw new Error("Yangi xodim uchun parol kiriting.");
-      await prisma.employee.create({ data: { name, email, role, phone: optStr(form, "phone"), isActive, passwordHash: hashPassword(password) } });
+      await prisma.employee.create({ data: { name, email, role, phone: optStr(form, "phone"), telegramId: telegramIdOf(form), isActive, passwordHash: hashPassword(password) } });
     }
     await audit(session, id ? "Xodim tahrirlandi" : "Xodim yaratildi", "Employee", id || undefined, { email, role });
   });

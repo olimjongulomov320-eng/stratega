@@ -7,6 +7,8 @@ import { prisma } from "@/lib/prisma";
 import { nextNumber } from "@/lib/admin";
 import { normalizePhone } from "@/lib/auth";
 import { UPLOAD_DIR } from "@/lib/storage";
+import { api, sendMessage, notifySeller, token, siteUrl, html, money, webAppUrl } from "@/lib/telegram-api";
+import { handleStaffCommand, handleStaffCallback, staffFor, staffMenuRows, rfqButtons, requestText } from "@/lib/telegram-admin";
 
 type Locale = "uz" | "ru" | "en";
 type CartLine = { productId: string; quantity: number };
@@ -28,11 +30,7 @@ type TelegramMessage = {
 type TelegramCallback = { id: string; from: TelegramUser; data?: string; message?: TelegramMessage };
 export type TelegramUpdatePayload = { update_id: number; message?: TelegramMessage; callback_query?: TelegramCallback };
 
-const token = () => process.env.TELEGRAM_BOT_TOKEN?.trim();
-const siteUrl = () => (process.env.NEXT_PUBLIC_SITE_URL || "https://www.stratega.uz").replace(/\/$/, "");
 const tr = (locale: Locale, uz: string, ru: string, en: string) => locale === "ru" ? ru : locale === "en" ? en : uz;
-const html = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
-const money = (n: number) => `${new Intl.NumberFormat("uz-UZ").format(n)} so'm`;
 /** Unconfirmed ("price on request") products count as 0 until a manager quotes them. */
 const linePrice = (p: { price: number; priceOnRequest: boolean }) => (p.priceOnRequest ? 0 : p.price);
 const priceText = (p: { price: number; priceOnRequest: boolean }, locale: Locale) =>
@@ -43,24 +41,7 @@ function localeFor(user?: TelegramUser): Locale {
   return lang.startsWith("ru") ? "ru" : lang.startsWith("en") ? "en" : "uz";
 }
 
-async function api<T = unknown>(method: string, payload: Record<string, unknown>): Promise<T> {
-  const botToken = token();
-  if (!botToken) throw new Error("Telegram bot is not configured.");
-  const response = await fetch(`https://api.telegram.org/bot${botToken}/${method}`, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(payload),
-    cache: "no-store",
-    signal: AbortSignal.timeout(12_000),
-  });
-  const result = await response.json() as { ok?: boolean; description?: string; result?: T };
-  if (!response.ok || !result.ok) throw new Error(`Telegram ${method} failed: ${result.description ?? response.status}`);
-  return result.result as T;
-}
 
-async function sendMessage(chatId: number | string, text: string, options: Record<string, unknown> = {}) {
-  return api("sendMessage", { chat_id: chatId, text, ...options });
-}
 
 async function sendLocalPhoto(chatId: number, imageUrl: string, caption: string, replyMarkup: Record<string, unknown>) {
   const filename = path.basename(imageUrl.slice("/uploads/".length));
@@ -99,14 +80,18 @@ async function saveSession(chatId: string, state: Session) {
   });
 }
 
-async function showHome(chatId: number, session: Session, name?: string) {
+async function showHome(chatId: number, session: Session, name?: string, telegramUserId?: number) {
+  const shop = webAppUrl("/tg/shop");
+  const staff = telegramUserId ? await staffFor(telegramUserId) : null;
   await sendMessage(chatId,
     tr(session.locale, `Assalomu alaykum${name ? `, ${name}` : ""}! Stratega katalogidan mahsulot tanlang yoki qidiruvdan foydalaning.`,
       `Здравствуйте${name ? `, ${name}` : ""}! Выберите товар в каталоге Stratega или воспользуйтесь поиском.`,
       `Hello${name ? `, ${name}` : ""}! Browse the Stratega catalog or search for a product.`),
     { reply_markup: { inline_keyboard: [
+      ...(shop ? [[{ text: tr(session.locale, "🛒 Do'konni ochish", "🛒 Открыть магазин", "🛒 Open the shop"), web_app: { url: shop } }]] : []),
       [{ text: tr(session.locale, "🗂 Katalog", "🗂 Каталог", "🗂 Browse catalog"), callback_data: "catalog:0" }],
-      [{ text: tr(session.locale, "🔎 Qidirish", "🔎 Поиск", "🔎 Search"), callback_data: "search" }, { text: tr(session.locale, "🛒 Savat", "🛒 Корзина", "🛒 Cart"), callback_data: "cart" }],
+      [{ text: tr(session.locale, "🔎 Qidirish", "🔎 Поиск", "🔎 Search"), callback_data: "search" }, { text: tr(session.locale, "🧺 Savat", "🧺 Корзина", "🧺 Cart"), callback_data: "cart" }],
+      ...(staff ? staffMenuRows() : []),
     ] } });
 }
 
@@ -202,19 +187,12 @@ async function showCart(chatId: number, session: Session) {
   await sendMessage(chatId, `<b>${tr(session.locale, "Savat", "Корзина", "Your cart")}</b>\n${lines.join("\n")}\n\n<b>${tr(session.locale, "Jami", "Итого", "Total")}: ${money(total)}</b>`, { parse_mode: "HTML", reply_markup: { inline_keyboard: keyboard } });
 }
 
-async function notifySeller(text: string) {
-  const chatId = process.env.TELEGRAM_SELLER_CHAT_ID?.trim();
-  if (!chatId || !token()) return;
-  try { await sendMessage(chatId, text, { parse_mode: "HTML", disable_web_page_preview: true }); }
-  catch (error) { console.error("Telegram seller notification failed", error instanceof Error ? error.message : "unknown error"); }
-}
 
 export async function notifyRfqCreated(requestId: string) {
   try {
     const request = await prisma.rfqRequest.findUnique({ where: { id: requestId }, include: { items: { include: { product: { select: { name: true, sku: true } } } } } });
     if (!request) return;
-    const items = request.items.map((i) => `• ${html(i.product.name)}${i.product.sku ? ` (${html(i.product.sku)})` : ""} × ${i.quantity}`).join("\n");
-    await notifySeller(`<b>Yangi sayt so'rovi</b>\n${html(request.requestType)}${items ? `\n${items}` : ""}\n<a href="${siteUrl()}/admin/requests">Admin panelda ochish</a>`);
+    await notifySeller(`🆕 <b>Yangi so'rov</b>\n${requestText(request)}`, { reply_markup: rfqButtons(request.id) });
   } catch (error) { console.error("Could not prepare Telegram RFQ notification", error instanceof Error ? error.message : "unknown error"); }
 }
 
@@ -276,6 +254,8 @@ async function handleMessage(message: TelegramMessage) {
   if (message.text?.trim().split(/\s+/)[0] === "/chatid") {
     return sendMessage(chatId, `Chat ID: <code>${chatId}</code>`, { parse_mode: "HTML" });
   }
+  // Staff commands (/admin, /hisobot, /narx, /qoldiq, /sorovlar, /id) work in private chats and in the sales group.
+  if (message.from && message.text?.startsWith("/") && await handleStaffCommand(chatId, message.from, message.text)) return;
   if (message.chat.type !== "private" || !message.from) {
     return sendMessage(chatId, "Buyurtma berish uchun bot bilan shaxsiy chatda yozishing.");
   }
@@ -285,7 +265,7 @@ async function handleMessage(message: TelegramMessage) {
   if (text.startsWith("/start") || text === "/menu") {
     session.stage = undefined;
     await saveSession(key, session);
-    return showHome(chatId, session, message.from.first_name);
+    return showHome(chatId, session, message.from.first_name, message.from.id);
   }
   if (text === "/catalog" || text === "/products") return showCategories(chatId, session);
   if (text === "/cart") return showCart(chatId, session);
@@ -317,10 +297,11 @@ async function handleMessage(message: TelegramMessage) {
     return sendMessage(chatId, tr(session.locale, `Buyurtmani tasdiqlaysizmi? Ism: <b>${html(session.name ?? "")}</b>. Telefon: <b>${html(phone)}</b>.`, `Подтвердить заказ? Имя: <b>${html(session.name ?? "")}</b>. Телефон: <b>${html(phone)}</b>.`, `Confirm this order? Name: <b>${html(session.name ?? "")}</b>. Phone: <b>${html(phone)}</b>.`), { parse_mode: "HTML", reply_markup: { remove_keyboard: true, inline_keyboard: [[{ text: tr(session.locale, "✅ Tasdiqlash", "✅ Подтвердить", "✅ Confirm"), callback_data: "confirm" }, { text: tr(session.locale, "Bekor qilish", "Отмена", "Cancel"), callback_data: "cancel" }]] } });
   }
   if (session.stage === "confirm" && text) return sendMessage(chatId, tr(session.locale, "Buyurtmani tugatish uchun Tasdiqlash tugmasini bosing.", "Нажмите «Подтвердить», чтобы завершить заказ.", "Tap Confirm to finish your order."));
-  return showHome(chatId, session, message.from.first_name);
+  return showHome(chatId, session, message.from.first_name, message.from.id);
 }
 
 async function handleCallback(callback: TelegramCallback) {
+  if (await handleStaffCallback(callback)) return;
   const chatId = callback.message?.chat.id;
   if (!chatId) return;
   await api("answerCallbackQuery", { callback_query_id: callback.id });
@@ -328,7 +309,7 @@ async function handleCallback(callback: TelegramCallback) {
   const session = await loadSession(key, callback.from);
   const [action, first = "", second = "0"] = (callback.data ?? "").split(":");
   switch (action) {
-    case "home": return showHome(chatId, session, callback.from.first_name);
+    case "home": return showHome(chatId, session, callback.from.first_name, callback.from.id);
     case "catalog": return showCategories(chatId, session, Math.max(0, Number(first) || 0));
     case "category": return showProducts(chatId, session, first, Math.max(0, Number(second) || 0));
     case "product": return showProduct(chatId, session, first);
@@ -364,7 +345,7 @@ async function handleCallback(callback: TelegramCallback) {
       session.stage = undefined; session.name = undefined; session.phone = undefined;
       await saveSession(key, session);
       return sendMessage(chatId, tr(session.locale, "Buyurtma bekor qilindi. Savatingiz saqlanib qoldi.", "Оформление отменено. Корзина сохранена.", "Checkout cancelled. Your cart is still saved."), { reply_markup: { inline_keyboard: [[{ text: tr(session.locale, "Savat", "Корзина", "Cart"), callback_data: "cart" }]] } });
-    default: return showHome(chatId, session, callback.from.first_name);
+    default: return showHome(chatId, session, callback.from.first_name, callback.from.id);
   }
 }
 
