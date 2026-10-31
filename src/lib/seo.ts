@@ -44,6 +44,11 @@ export function pageMetadata(opts: {
   };
 }
 
+/** First title that fits in what search engines show (~70 chars); the last one is used if none fits. */
+export function fitTitle(...candidates: string[]): string {
+  return candidates.find((t) => t.length <= 70) ?? candidates[candidates.length - 1];
+}
+
 /** Render JSON-LD safely (escapes "<" so content can't close the script tag). */
 export function jsonLd(data: unknown): { __html: string } {
   return { __html: JSON.stringify(data).replace(/</g, "\\u003c") };

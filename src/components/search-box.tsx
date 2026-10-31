@@ -109,7 +109,7 @@ export function SearchBox({ mobile = false }: { mobile?: boolean }) {
       </form>
 
       {open && query.trim().length >= 2 && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-96 overflow-y-auto rounded-xl border border-slate-100 bg-white py-2 shadow-xl">
+        <div className="absolute left-0 right-0 top-full z-50 mt-2 max-h-96 overflow-y-auto rounded-xl sm:right-auto sm:w-[30rem] border border-slate-100 bg-white py-2 shadow-xl">
           {!suggestions ? (
             <p className="px-4 py-3 text-sm text-slate-400">{t.common.searching}</p>
           ) : flat.length === 0 ? (
@@ -153,7 +153,7 @@ export function SearchBox({ mobile = false }: { mobile?: boolean }) {
                             <span className="text-lg">📦</span>
                           )}
                         </div>
-                        <span className="flex-1 truncate text-slate-700">{p.name}</span>
+                        <span className="line-clamp-2 min-w-0 flex-1 leading-snug text-slate-700">{p.name}</span>
                         <span className="shrink-0 font-semibold text-slate-900">{p.price > 0 ? formatSum(p.price, locale) : t.product.priceOnRequest}</span>
                       </Link>
                     );

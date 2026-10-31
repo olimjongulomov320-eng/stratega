@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { nextNumber } from "@/lib/admin";
 import { normalizePhone } from "@/lib/auth";
 import { UPLOAD_DIR } from "@/lib/storage";
-import { api, sendMessage, notifySeller, token, siteUrl, html, money, webAppUrl } from "@/lib/telegram-api";
+import { api, sendMessage, notifySeller, token, siteUrl, html, webAppUrl, telegramApiBase } from "@/lib/telegram-api";
 import { handleStaffCommand, handleStaffCallback, staffFor, staffMenuRows, rfqButtons, requestText } from "@/lib/telegram-admin";
 
 type Locale = "uz" | "ru" | "en";
@@ -30,11 +30,14 @@ type TelegramMessage = {
 type TelegramCallback = { id: string; from: TelegramUser; data?: string; message?: TelegramMessage };
 export type TelegramUpdatePayload = { update_id: number; message?: TelegramMessage; callback_query?: TelegramCallback };
 
+/** Price in the customer's language: "so'm" / "сум" / "UZS"; staff messages keep Uzbek. */
+const money = (n: number, locale: Locale = "uz") =>
+  `${new Intl.NumberFormat("uz-UZ").format(n)} ${locale === "ru" ? "сум" : locale === "en" ? "UZS" : "so'm"}`;
 const tr = (locale: Locale, uz: string, ru: string, en: string) => locale === "ru" ? ru : locale === "en" ? en : uz;
 /** Unconfirmed ("price on request") products count as 0 until a manager quotes them. */
 const linePrice = (p: { price: number; priceOnRequest: boolean }) => (p.priceOnRequest ? 0 : p.price);
 const priceText = (p: { price: number; priceOnRequest: boolean }, locale: Locale) =>
-  p.priceOnRequest ? tr(locale, "Narxi so'rov bo'yicha", "Цена по запросу", "Price on request") : money(p.price);
+  p.priceOnRequest ? tr(locale, "Narxi so'rov bo'yicha", "Цена по запросу", "Price on request") : money(p.price, locale);
 
 function localeFor(user?: TelegramUser): Locale {
   const lang = user?.language_code?.toLowerCase() ?? "uz";
@@ -58,7 +61,7 @@ async function sendLocalPhoto(chatId: number, imageUrl: string, caption: string,
   body.set("reply_markup", JSON.stringify(replyMarkup));
   const botToken = token();
   if (!botToken) throw new Error("Telegram bot is not configured.");
-  const response = await fetch(`https://api.telegram.org/bot${botToken}/sendPhoto`, { method: "POST", body, cache: "no-store", signal: AbortSignal.timeout(12_000) });
+  const response = await fetch(`${telegramApiBase()}/bot${botToken}/sendPhoto`, { method: "POST", body, cache: "no-store", signal: AbortSignal.timeout(12_000) });
   const result = await response.json() as { ok?: boolean; description?: string };
   if (!response.ok || !result.ok) throw new Error(result.description ?? `Telegram returned ${response.status}.`);
 }
@@ -179,12 +182,13 @@ async function showCart(chatId: number, session: Session) {
     const p = byId.get(line.productId)!;
     total += linePrice(p) * line.quantity;
     const name = (session.locale === "ru" ? p.nameRu : session.locale === "en" ? p.nameEn : p.name) || p.name;
-    return `• ${html(name)} × ${line.quantity} — ${p.priceOnRequest ? priceText(p, session.locale) : money(p.price * line.quantity)}`;
+    return `• ${html(name)} × ${line.quantity} — ${p.priceOnRequest ? priceText(p, session.locale) : money(p.price * line.quantity, session.locale)}`;
   });
-  const keyboard: { text: string; callback_data: string }[][] = valid.map((l) => [{ text: `− ${byId.get(l.productId)!.name.slice(0, 24)}`, callback_data: `remove:${l.productId}` }, { text: `+ ${byId.get(l.productId)!.name.slice(0, 24)}`, callback_data: `add:${l.productId}` }]);
+  const shortName = (id: string) => { const p = byId.get(id)!; return ((session.locale === "ru" ? p.nameRu : session.locale === "en" ? p.nameEn : p.name) || p.name).slice(0, 24); };
+  const keyboard: { text: string; callback_data: string }[][] = valid.map((l) => [{ text: `− ${shortName(l.productId)}`, callback_data: `remove:${l.productId}` }, { text: `+ ${shortName(l.productId)}`, callback_data: `add:${l.productId}` }]);
   keyboard.push([{ text: tr(session.locale, "✅ Buyurtma berish", "✅ Оформить заказ", "✅ Place order"), callback_data: "checkout" }]);
   keyboard.push([{ text: tr(session.locale, "Katalogni davom ettirish", "Продолжить покупки", "Continue shopping"), callback_data: "catalog:0" }]);
-  await sendMessage(chatId, `<b>${tr(session.locale, "Savat", "Корзина", "Your cart")}</b>\n${lines.join("\n")}\n\n<b>${tr(session.locale, "Jami", "Итого", "Total")}: ${money(total)}</b>`, { parse_mode: "HTML", reply_markup: { inline_keyboard: keyboard } });
+  await sendMessage(chatId, `<b>${tr(session.locale, "Savat", "Корзина", "Your cart")}</b>\n${lines.join("\n")}\n\n<b>${tr(session.locale, "Jami", "Итого", "Total")}: ${money(total, session.locale)}</b>`, { parse_mode: "HTML", reply_markup: { inline_keyboard: keyboard } });
 }
 
 
@@ -246,7 +250,7 @@ async function createBotOrder(chatId: number, from: TelegramUser, session: Sessi
   session.name = undefined;
   session.phone = undefined;
   await saveSession(String(chatId), session);
-  await sendMessage(chatId, tr(session.locale, `Buyurtmangiz qabul qilindi: <b>${html(order.number)}</b>. Jami: <b>${money(order.total)}</b>. Menejerimiz siz bilan bog'lanadi.`, `Ваш заказ принят: <b>${html(order.number)}</b>. Итого: <b>${money(order.total)}</b>. Наш менеджер свяжется с вами.`, `Your order <b>${html(order.number)}</b> has been received. Total: <b>${money(order.total)}</b>. Our team will contact you.`), { parse_mode: "HTML", reply_markup: { remove_keyboard: true, inline_keyboard: [[{ text: tr(session.locale, "Katalogga qaytish", "Вернуться в каталог", "Back to catalog"), callback_data: "catalog:0" }]] } });
+  await sendMessage(chatId, tr(session.locale, `Buyurtmangiz qabul qilindi: <b>${html(order.number)}</b>. Jami: <b>${money(order.total, "uz")}</b>. Menejerimiz siz bilan bog'lanadi.`, `Ваш заказ принят: <b>${html(order.number)}</b>. Итого: <b>${money(order.total, "ru")}</b>. Наш менеджер свяжется с вами.`, `Your order <b>${html(order.number)}</b> has been received. Total: <b>${money(order.total, "en")}</b>. Our team will contact you.`), { parse_mode: "HTML", reply_markup: { remove_keyboard: true, inline_keyboard: [[{ text: tr(session.locale, "Katalogga qaytish", "Вернуться в каталог", "Back to catalog"), callback_data: "catalog:0" }]] } });
 }
 
 async function handleMessage(message: TelegramMessage) {
@@ -269,7 +273,8 @@ async function handleMessage(message: TelegramMessage) {
   }
   if (text === "/catalog" || text === "/products") return showCategories(chatId, session);
   if (text === "/cart") return showCart(chatId, session);
-  if (session.stage === "search" && text) {
+  // Typed text outside checkout is treated as a search, so customers don't need to press "Search" first.
+  if (text && !text.startsWith("/") && (session.stage === "search" || !session.stage)) {
     session.stage = undefined;
     await saveSession(key, session);
     const products = await prisma.product.findMany({

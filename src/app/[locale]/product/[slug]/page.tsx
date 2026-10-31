@@ -12,7 +12,7 @@ import { getDictionary, fmt } from "@/i18n";
 import { isLocale, localePath, type Locale } from "@/i18n/config";
 import { localName, localDescription, excerpt } from "@/lib/localize";
 import { toCard, modelTokens, sparePartsWhere } from "@/lib/products";
-import { pageMetadata, absoluteUrl, jsonLd } from "@/lib/seo";
+import { pageMetadata, absoluteUrl, jsonLd, fitTitle } from "@/lib/seo";
 import { CLAIMS, COMPANY } from "@/lib/site";
 import { SPEC_FILTERS, parseSpecRows, specLabel, youTubeId } from "@/lib/product-specs";
 import { getBuyerPriceList, getBuyerPrices } from "@/lib/customer-price";
@@ -37,8 +37,12 @@ export async function generateMetadata(props: PageProps<"/[locale]/product/[slug
     locale,
     path: `/product/${slug}`,
     title: product.priceOnRequest
-      ? fmt(t.meta.productTitleNoPrice, { name })
-      : fmt(t.meta.productTitle, { name, price: formatNumber(product.price) }),
+      ? fitTitle(fmt(t.meta.productTitleNoPrice, { name }), `${name} | Stratega`)
+      : fitTitle(
+          fmt(t.meta.productTitle, { name, price: formatNumber(product.price) }),
+          fmt(t.meta.productTitleShort, { name, price: formatNumber(product.price) }),
+          `${name} | Stratega`
+        ),
     description: excerpt(localDescription(product, locale) || name),
     image: product.imageUrl,
   });

@@ -3,6 +3,8 @@ import "server-only";
 // Low-level Telegram Bot API helpers shared by the customer bot (telegram.ts) and the staff tools (telegram-admin.ts).
 
 export const token = () => process.env.TELEGRAM_BOT_TOKEN?.trim();
+/** Bot API address; TELEGRAM_API_URL points it at a local mock server in tests. */
+export const telegramApiBase = () => (process.env.TELEGRAM_API_URL?.trim() || "https://api.telegram.org").replace(/\/$/, "");
 export const siteUrl = () => (process.env.NEXT_PUBLIC_SITE_URL || "https://www.stratega.uz").replace(/\/$/, "");
 export const html = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 export const money = (n: number) => `${new Intl.NumberFormat("uz-UZ").format(n)} so'm`;
@@ -12,7 +14,7 @@ export const webAppUrl = (path: string) => (siteUrl().startsWith("https://") ? `
 export async function api<T = unknown>(method: string, payload: Record<string, unknown>): Promise<T> {
   const botToken = token();
   if (!botToken) throw new Error("Telegram bot is not configured.");
-  const response = await fetch(`https://api.telegram.org/bot${botToken}/${method}`, {
+  const response = await fetch(`${telegramApiBase()}/bot${botToken}/${method}`, {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify(payload),

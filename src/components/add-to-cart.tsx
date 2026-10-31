@@ -51,7 +51,7 @@ export function AddToCart({ product }: { product: ProductCardData }) {
           }}
           className="flex-1 rounded-full bg-indigo-600 py-3 font-semibold text-white transition hover:bg-indigo-700"
         >
-          {t.product.requestPrice}
+          {product.priceOnRequest ? t.product.requestPrice : t.product.orderNow}
         </button>
       </div>
     </div>

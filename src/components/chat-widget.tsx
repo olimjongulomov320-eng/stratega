@@ -143,7 +143,7 @@ export function ChatWidget() {
             type="submit"
             disabled={loading || !input.trim()}
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-600 text-white transition hover:bg-indigo-500 disabled:opacity-40"
-            aria-label={t.common.sending}
+            aria-label={loading ? t.common.sending : t.quickOrder.send}
           >
             <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor">
               <path d="M2 21l21-9L2 3v7l15 2-15 2v7z" />

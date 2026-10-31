@@ -16,7 +16,7 @@ import { getDictionary, fmt } from "@/i18n";
 import { isLocale, localePath } from "@/i18n/config";
 import { localName, localDescription, excerpt } from "@/lib/localize";
 import { formatNumber } from "@/lib/format";
-import { pageMetadata, absoluteUrl, jsonLd } from "@/lib/seo";
+import { pageMetadata, absoluteUrl, jsonLd, fitTitle } from "@/lib/seo";
 import type { Prisma } from "@/generated/prisma/client";
 import { SPEC_FILTERS } from "@/lib/product-specs";
 import { directionOfCategory } from "@/lib/focus";
@@ -46,9 +46,9 @@ export async function generateMetadata(props: PageProps<"/[locale]/category/[slu
   return pageMetadata({
     locale,
     path: `/category/${slug}`,
-    title: seo?.title ?? fmt(t.meta.categoryTitle, { name }),
+    title: seo?.title ?? fitTitle(fmt(t.meta.categoryTitle, { name }), `${name} | Stratega`),
     description:
-      seo?.description ??
+      (seo?.description && excerpt(seo.description, 165)) ??
       (own
         ? excerpt(own)
         : data.minPrice !== null

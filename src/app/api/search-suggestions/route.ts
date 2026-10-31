@@ -14,7 +14,8 @@ export async function GET(request: NextRequest) {
     prisma.product.findMany({
       where: { isActive: true, ...searchWhere(q) },
       take: 6,
-      orderBy: [{ isFeatured: "desc" }, { stock: "desc" }],
+      // Machines before spare parts, priced before "price on request".
+      orderBy: [{ category: { isSparePart: "asc" } }, { isFeatured: "desc" }, { priceOnRequest: "asc" }, { stock: "desc" }],
     }),
     prisma.category.findMany({
       where: {
