@@ -71,7 +71,7 @@ export default async function Home(props: PageProps<"/[locale]">) {
   const t = getDictionary(locale);
   const lp = (p: string) => localePath(locale, p);
 
-  const [categories, featured, inStockModels, covers, bestseller] = await Promise.all([
+  const [categories, featured, inStockModels, covers, bestsellers] = await Promise.all([
     getHeaderCategories(locale),
     prisma.product.findMany({
       where: { isActive: true },
@@ -85,8 +85,9 @@ export default async function Home(props: PageProps<"/[locale]">) {
       select: { categoryId: true, imageUrl: true },
       orderBy: [{ isFeatured: "desc" }, { priceOnRequest: "asc" }, { price: "desc" }],
     }),
-    prisma.product.findFirst({ where: { isActive: true, isBestseller: true }, orderBy: { updatedAt: "desc" } }),
+    prisma.product.findMany({ where: { isActive: true, isBestseller: true }, orderBy: { updatedAt: "desc" }, take: 8 }),
   ]);
+  const bestseller = bestsellers[0] ?? null;
   const directions = directionsFrom(categories, locale);
   // Categories inside a direction are reached through the direction cards; list only the rest.
   const otherCategories = categories.filter(
@@ -359,6 +360,22 @@ export default async function Home(props: PageProps<"/[locale]">) {
                 </Link>
               );
             })}
+          </div>
+        </section>
+      )}
+
+      {bestsellers.length > 0 && (
+        <section className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+          <div className="mb-5 flex items-center justify-between">
+            <h2 className="text-xl font-bold text-slate-800">🔥 {t.trust.bestseller}</h2>
+            <Link href={lp("/search")} className="text-sm font-medium text-indigo-600 hover:underline">
+              {t.common.viewAll}
+            </Link>
+          </div>
+          <div className="product-grid grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+            {bestsellers.map((p, i) => (
+              <ProductCard key={p.id} product={toCard(p, locale)} priority={i < 4} />
+            ))}
           </div>
         </section>
       )}
