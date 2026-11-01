@@ -6,6 +6,7 @@ import { can, type Permission } from "@/lib/permissions";
 import { RFQ_STATUS } from "@/lib/labels";
 import { parseNumber } from "@/lib/csv";
 import { api, sendMessage, notifySeller, siteUrl, html, money, webAppUrl } from "@/lib/telegram-api";
+import { Prisma } from "@/generated/prisma/client";
 import type { Employee, RfqStatus } from "@/generated/prisma/client";
 
 // Staff tools in the Telegram bot: who is staff, quick commands, request-status buttons, the daily report.
@@ -265,4 +266,44 @@ export async function buildReport(): Promise<string> {
 /** Evening report to the sales chat. */
 export async function sendDailyReport() {
   await notifySeller(await buildReport());
+}
+
+type StaffBotUpdate = {
+  update_id: number;
+  message?: { chat: { id: number; type: string }; from?: From; text?: string };
+  callback_query?: { id: string; from: From; data?: string; message?: { message_id: number; chat: { id: number } } };
+};
+
+/**
+ * Update from the staff bot (TELEGRAM_ADMIN_BOT_TOKEN). Staff-only: commands, status buttons and the admin Mini App.
+ * Update ids are stored negated so they never collide with the customer bot's own sequence.
+ */
+export async function processStaffBotUpdate(update: StaffBotUpdate) {
+  try {
+    await prisma.telegramUpdate.create({ data: { updateId: -update.update_id } });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return;
+    throw error;
+  }
+  try {
+    if (update.callback_query) {
+      const handled = await handleStaffCallback(update.callback_query);
+      if (!handled) await api("answerCallbackQuery", { callback_query_id: update.callback_query.id });
+      return;
+    }
+    const message = update.message;
+    if (!message?.from || !message.text) return;
+    const chatId = message.chat.id;
+    const text = message.text.trim();
+    if (text.startsWith("/") && !text.toLowerCase().startsWith("/start") && await handleStaffCommand(chatId, message.from, text)) return;
+    const staff = await staffFor(message.from.id);
+    if (!staff) {
+      await sendMessage(chatId, `Bu bot faqat xodimlar uchun. Telegram ID: <code>${message.from.id}</code> — uni Admin → Xodimlar bo'limida xodimga ulang.`, { parse_mode: "HTML" });
+      return;
+    }
+    await sendMessage(chatId, `Salom, <b>${html(staff.name)}</b>!\n\n${HELP}`, { parse_mode: "HTML", reply_markup: { inline_keyboard: staffMenuRows() } });
+  } catch (error) {
+    await prisma.telegramUpdate.deleteMany({ where: { updateId: -update.update_id } }).catch(() => undefined);
+    throw error;
+  }
 }

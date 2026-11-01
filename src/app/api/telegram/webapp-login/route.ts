@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { createAdminSession } from "@/lib/admin-auth";
 import { verifyWebAppInitData } from "@/lib/telegram-webapp";
+import { adminToken } from "@/lib/telegram-api";
 import { rateLimit, getRequestIp } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
@@ -16,7 +17,7 @@ export async function POST(req: Request) {
   } catch {
     return Response.json({ error: "Noto'g'ri so'rov." }, { status: 400 });
   }
-  const user = verifyWebAppInitData(initData);
+  const user = verifyWebAppInitData(initData) ?? verifyWebAppInitData(initData, adminToken());
   if (!user) return Response.json({ error: "Telegram tasdig'i noto'g'ri. Admin panelni botdagi tugma orqali oching." }, { status: 401 });
 
   const employee = await prisma.employee.findUnique({ where: { telegramId: String(user.id) } });

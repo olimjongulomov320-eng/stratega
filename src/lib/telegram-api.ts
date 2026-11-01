@@ -1,8 +1,14 @@
 import "server-only";
+import { AsyncLocalStorage } from "node:async_hooks";
 
 // Low-level Telegram Bot API helpers shared by the customer bot (telegram.ts) and the staff tools (telegram-admin.ts).
 
-export const token = () => process.env.TELEGRAM_BOT_TOKEN?.trim();
+// Two bots share this code: the customer bot (TELEGRAM_BOT_TOKEN) and the staff bot (TELEGRAM_ADMIN_BOT_TOKEN).
+// A webhook runs its handler inside withBot(), so every API call in that request uses the right bot.
+const botContext = new AsyncLocalStorage<string>();
+export const adminToken = () => process.env.TELEGRAM_ADMIN_BOT_TOKEN?.trim();
+export const token = () => botContext.getStore() ?? process.env.TELEGRAM_BOT_TOKEN?.trim();
+export const withBot = <T>(botToken: string, fn: () => Promise<T>) => botContext.run(botToken, fn);
 /** Bot API address; TELEGRAM_API_URL points it at a local mock server in tests. */
 export const telegramApiBase = () => (process.env.TELEGRAM_API_URL?.trim() || "https://api.telegram.org").replace(/\/$/, "");
 export const siteUrl = () => (process.env.NEXT_PUBLIC_SITE_URL || "https://www.stratega.uz").replace(/\/$/, "");
@@ -30,10 +36,11 @@ export async function sendMessage(chatId: number | string, text: string, options
   return api("sendMessage", { chat_id: chatId, text, ...options });
 }
 
-/** Message to the sales chat (TELEGRAM_SELLER_CHAT_ID); never throws. */
+/** Message to the sales chat (TELEGRAM_SELLER_CHAT_ID), sent by the staff bot when it is configured; never throws. */
 export async function notifySeller(text: string, options: Record<string, unknown> = {}) {
   const chatId = process.env.TELEGRAM_SELLER_CHAT_ID?.trim();
-  if (!chatId || !token()) return;
-  try { await sendMessage(chatId, text, { parse_mode: "HTML", disable_web_page_preview: true, ...options }); }
+  const sender = adminToken() ?? token();
+  if (!chatId || !sender) return;
+  try { await withBot(sender, () => sendMessage(chatId, text, { parse_mode: "HTML", disable_web_page_preview: true, ...options })); }
   catch (error) { console.error("Telegram seller notification failed", error instanceof Error ? error.message : "unknown error"); }
 }
