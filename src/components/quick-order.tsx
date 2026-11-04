@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useI18n } from "@/i18n/client";
+import { fmt } from "@/i18n";
+import { COMPANY } from "@/lib/site";
 import { submitQuickOrder } from "@/app/[locale]/actions";
 import { trackGoal } from "@/lib/web-analytics";
 
@@ -30,7 +32,14 @@ export function QuickOrder({ productId, productName, className, label }: { produ
     e.preventDefault();
     setError(null);
     setState("sending");
-    const result = await submitQuickOrder({ name, phone, productId }, locale);
+    let result: Awaited<ReturnType<typeof submitQuickOrder>>;
+    try {
+      result = await submitQuickOrder({ name, phone, productId }, locale);
+    } catch {
+      setError(fmt(t.common.sendFailed, { phone: COMPANY.phone }));
+      setState("idle");
+      return;
+    }
     if (!result.ok) {
       setError(result.error);
       setState("idle");

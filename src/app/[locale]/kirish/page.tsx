@@ -5,15 +5,16 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { LogoMark } from "@/components/logo-mark";
 import { useI18n } from "@/i18n/client";
 import { fmt } from "@/i18n";
+import { COMPANY } from "@/lib/site";
+import { safeLocalPath } from "@/lib/safe-redirect";
 import { sendOtp, verifyOtp } from "../actions";
 
 function LoginForm() {
   const { t, href, locale } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const requested = searchParams.get("redirect");
   // Only allow local redirects.
-  const redirectTo = requested && requested.startsWith("/") && !requested.startsWith("//") ? requested : href("/kabinet");
+  const redirectTo = safeLocalPath(searchParams.get("redirect"), href("/kabinet"));
 
   const [step, setStep] = useState<"phone" | "code">("phone");
   const [phone, setPhone] = useState("+998");
@@ -26,22 +27,32 @@ function LoginForm() {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
-    const result = await sendOtp(phone, locale);
-    setSubmitting(false);
-    if (!result.ok) return setError(result.error);
-    setDevCode(result.devCode ?? null);
-    setStep("code");
+    try {
+      const result = await sendOtp(phone, locale);
+      if (!result.ok) return setError(result.error);
+      setDevCode(result.devCode ?? null);
+      setStep("code");
+    } catch {
+      setError(fmt(t.common.sendFailed, { phone: COMPANY.phone }));
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function onVerify(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
-    const result = await verifyOtp(phone, code, locale);
-    setSubmitting(false);
-    if (!result.ok) return setError(result.error);
-    router.push(redirectTo);
-    router.refresh();
+    try {
+      const result = await verifyOtp(phone, code, locale);
+      if (!result.ok) return setError(result.error);
+      router.push(redirectTo);
+      router.refresh();
+    } catch {
+      setError(fmt(t.common.sendFailed, { phone: COMPANY.phone }));
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   const btn = "rounded-full bg-indigo-600 py-3 font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-300";
