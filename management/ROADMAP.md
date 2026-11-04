@@ -26,9 +26,9 @@ Ranked by business impact, then user experience, technical importance, effort (S
 
 | # | Item | Effort |
 | --- | --- | --- |
-| 10 | Cache public pages, with on-demand refresh after admin edits | L |
+| 10 | **Done on branch `claude/optimistic-ptolemy-64bcdc`, needs deploy (owner approval).** Cache public pages, with on-demand refresh after edits. After deploy, measure time to first byte: the locale rewrite in `src/proxy.ts` still runs on every page, so if cached pages stay far from the sitemap's time, move it to `next.config` rewrites | L |
 | 11 | Run functions in the same region as the database, after confirming where it is (owner approval) | S |
-| 12 | Loading skeletons on catalogue pages, after #10 (see D-8) | S |
+| 12 | Loading skeletons on catalogue pages: **tested and declined** (see D-8) | — |
 
 ## P3 — backlog
 

@@ -10,6 +10,7 @@
 - Owner decided to keep the repository public, so these documents were reduced to summaries (D-14).
 - Started two follow-up sessions at the owner's request: page caching and a reliability batch.
 - Owner approved merging. PR #1 merged and deployed to production; live checks passed (see QA_REPORT). The owner confirmed the Telegram Mini Apps and the barcode camera work.
+- Page caching (ROADMAP #10, #12) built and verified on a local production build, not deployed. Loading skeletons tested and declined (D-8).
 
 ## 2026-11-08
 - Compared with irtemstroymarket.uz: they answer about 4× faster (server in Uzbekistan); we lead on prices, filters and SEO basics.

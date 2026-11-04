@@ -1,5 +1,41 @@
 # QA Report
 
+## 2026-11-04 — public page caching (branch `claude/optimistic-ptolemy-64bcdc`, NOT deployed)
+
+Environment: macOS, Node 23.10, Next.js 16.4.4 production build (`next start`), a throwaway copy of the local database with 957 products. Telegram went to a local mock. Nothing touched production.
+
+| Check | Result |
+| --- | --- |
+| `npm run typecheck`, `npm run lint`, `npm test`, `npm run build` | PASS, 55 tests (17 new) |
+| Guard test against a missed write path | Fails when a path stops clearing the cache, and when a new write path appears (both tried) |
+| `next build` route table | Storefront routes static or ISR; per request only `/filtered`, `/kabinet`, `/korzina-yuborildi` and the catch-all 404 |
+
+| Area | Result |
+| --- | --- |
+| Cache headers on 19 URLs (uz/ru/en home, info, cart, product, category, direction, catalogue) | HIT, `s-maxage=3600`; sitemap HIT |
+| Filters, sorting, paging, search | `private, no-store`, correct results; clicked through in a browser from a cached page, query kept across a language switch, no hydration errors |
+| Ad tags on a category URL | Cached page |
+| Missing product, category, direction, unknown URL (uz/ru/en) | HTTP 404 with `noindex`, also when served from cache |
+| Logged-in buyers | Each sees only their own price and company in the browser; buyer without a price list, guest, invalid session and hint cookie alone get nothing; API sends `private, no-store` |
+| Per-user data in cached HTML | None: buyers A and B receive byte-identical HTML to a guest |
+| Cart | Takes the buyer's price from product page and card; one API call per page; none for guests |
+| Login and logout | Real `verifyOtp` and `logout` actions set and clear both cookies; a session from before this change gets its hint without logging in again; switching buyer without a reload drops the old prices |
+| "Price on request" | Stored price absent from the HTML and page data; stays out of the buyer route |
+| Write paths against already-cached pages (82 checks) | All page types refreshed and the new value shown: product create, save, hide, delete; price change on another product's page; stock adjustment; category create, rename, delete; price-list saves; stock document created and posted; shipment shipped (READY rightly leaves pages cached); CSV import; review add and delete; photo upload; `/narx` and `/qoldiq` on both bots |
+| Sitemap | Gains and loses products at once after a save |
+| Database outage | Cached pages keep serving. Info page: HTTP 200 without menus, `s-maxage=60`, menus back after the minute. Uncached data page: HTTP 500 with the branded error page and Retry |
+| Cached HTML | Real content inline, no skeleton (see D-8) |
+| Phone width | Tab bar shows "Kirish" for guests and "Shaxsiy kabinet" when logged in; no sideways scroll |
+| Time to first byte, local | Cached ≈ 2 ms; per-request search ≈ 22 ms. Local numbers say nothing about production |
+
+### Not verified
+
+- **Anything on Vercel:** the edge cache, purging through Vercel's cache and real time to first byte. Measure on a preview or after deploy; the 0.72 s and 0.43 s figures in CEO_AUDIT are still the baseline.
+- The hourly time limit itself: on-demand refresh and the one-minute limit were tested, the full hour was not waited out.
+- Admin saves were sent as the same server-action requests the forms send, not clicked through in the admin UI.
+- A real SMS login: the code was inserted in the test database.
+- Real Telegram delivery; photo upload to Vercel Blob.
+
 ## 2026-11-04 — live checks after deployment (merge commit c31b729)
 
 Read-only requests and a browser on https://www.stratega.uz. No forms were submitted.
