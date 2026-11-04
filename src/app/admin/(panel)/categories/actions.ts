@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateStorefront } from "@/lib/storefront-cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAction, audit, safe, str, optStr, int, bool, type ActionState } from "@/lib/admin";
@@ -41,7 +41,7 @@ export async function saveCategory(_: ActionState, form: FormData): Promise<Acti
     }
   });
   if (res?.error) return res;
-  revalidatePath("/", "layout");
+  revalidateStorefront();
   if (id) return { ok: true, message: "Saqlandi." };
   redirect("/admin/categories");
 }
@@ -56,6 +56,6 @@ export async function deleteCategory(_: ActionState, form: FormData): Promise<Ac
     await audit(session, "Kategoriya o'chirildi", "Category", id);
   });
   if (res?.error) return res;
-  revalidatePath("/", "layout");
+  revalidateStorefront();
   redirect("/admin/categories");
 }

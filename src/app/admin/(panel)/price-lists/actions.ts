@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateStorefront } from "@/lib/storefront-cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAction, audit, safe, str, optStr, bool, type ActionState } from "@/lib/admin";
@@ -19,6 +20,7 @@ export async function savePriceList(_: ActionState, form: FormData): Promise<Act
     await audit(session, id ? "Narx ro'yxati tahrirlandi" : "Narx ro'yxati yaratildi", "PriceList", savedId);
   });
   if (res?.error) return res;
+  revalidateStorefront();
   redirect(`/admin/price-lists/${savedId}`);
 }
 
@@ -43,6 +45,7 @@ export async function savePrices(_: ActionState, form: FormData): Promise<Action
     }
     await audit(session, "Narx ro'yxati narxlari saqlandi", "PriceList", priceListId, { changed });
     revalidatePath(`/admin/price-lists/${priceListId}`);
+    revalidateStorefront();
     return { ok: true, message: "Narxlar saqlandi." };
   });
 }

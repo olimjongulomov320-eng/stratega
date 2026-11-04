@@ -7,21 +7,24 @@ import { RecentlyViewedProvider } from "@/lib/recently-viewed-context";
 import { CompareBar } from "@/components/compare-bar";
 import { QuickViewProvider } from "@/lib/quick-view-context";
 import { QuickViewModal } from "@/components/quick-view-modal";
+import { BuyerPricesProvider } from "@/lib/buyer-prices-context";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <RfqProvider>
-      <WishlistProvider>
-        <CompareProvider>
-          <RecentlyViewedProvider>
-            <QuickViewProvider>
-              {children}
-              <CompareBar />
-              <QuickViewModal />
-            </QuickViewProvider>
-          </RecentlyViewedProvider>
-        </CompareProvider>
-      </WishlistProvider>
-    </RfqProvider>
+    <BuyerPricesProvider>
+      <RfqProvider>
+        <WishlistProvider>
+          <CompareProvider>
+            <RecentlyViewedProvider>
+              <QuickViewProvider>
+                {children}
+                <CompareBar />
+                <QuickViewModal />
+              </QuickViewProvider>
+            </RecentlyViewedProvider>
+          </CompareProvider>
+        </WishlistProvider>
+      </RfqProvider>
+    </BuyerPricesProvider>
   );
 }

@@ -1,4 +1,4 @@
-import { revalidatePath } from "next/cache";
+import { revalidateStorefront } from "@/lib/storefront-cache";
 import { getAdminSession } from "@/lib/admin-auth";
 import { can } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     await prisma.auditLog.create({
       data: { action: asExtra ? "Qo'shimcha rasm yuklandi" : "Asosiy rasm yuklandi", actor: session.name, actorId: session.employeeId, entityType: "Product", entityId: product.id, details: { file: file.name, url } },
     });
-    revalidatePath("/", "layout");
+    revalidateStorefront();
     return Response.json({ ok: true, product: product.name, sku: product.sku, url, as: asExtra ? "extra" : "main" });
   } catch (err) {
     return Response.json({ error: err instanceof Error ? err.message : String(err) }, { status: 400 });

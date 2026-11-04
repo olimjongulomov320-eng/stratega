@@ -16,13 +16,11 @@ export type ProductCardData = {
   sku: string | null;
   brand: string | null;
   isBestseller: boolean;
-  /** Logged-in buyer's own price (from their price list), when lower or different from the list price. */
-  buyerPrice?: number | null;
 };
 
-export function toCard(p: Product, locale: Locale, buyerPrice?: number | null): ProductCardData {
+export function toCard(p: Product, locale: Locale): ProductCardData {
   if (p.priceOnRequest) {
-    return { ...toCard({ ...p, priceOnRequest: false }, locale), price: 0, oldPrice: null, buyerPrice: null, priceOnRequest: true };
+    return { ...toCard({ ...p, priceOnRequest: false }, locale), price: 0, oldPrice: null, priceOnRequest: true };
   }
   return {
     id: p.id,
@@ -37,7 +35,6 @@ export function toCard(p: Product, locale: Locale, buyerPrice?: number | null): 
     sku: p.sku,
     brand: p.brand,
     isBestseller: p.isBestseller,
-    buyerPrice: buyerPrice && buyerPrice !== p.price ? buyerPrice : null,
   };
 }
 

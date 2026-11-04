@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useRfq } from "@/lib/rfq-context";
 import { useWishlist } from "@/lib/wishlist-context";
-import type { HeaderUser } from "@/components/header";
+import { useLoginHint } from "@/lib/buyer-prices-context";
 import { useI18n } from "@/i18n/client";
 import { stripLocale } from "@/i18n/config";
 
@@ -53,11 +53,12 @@ function UserIcon({ className }: { className?: string }) {
   );
 }
 
-export function MobileTabBar({ user }: { user: HeaderUser }) {
+export function MobileTabBar() {
   const { t, href } = useI18n();
   const pathname = stripLocale(usePathname());
   const { totalItems } = useRfq();
   const { count: wishlistCount } = useWishlist();
+  const loggedIn = useLoginHint() !== null;
 
   const tabs = [
     { href: "/", label: t.common.home, icon: "home" as const, match: (p: string) => p === "/" },
@@ -65,8 +66,8 @@ export function MobileTabBar({ user }: { user: HeaderUser }) {
     { href: "/korzina", label: t.common.cart, icon: "cart" as const, match: (p: string) => p.startsWith("/korzina"), badge: totalItems },
     { href: "/wishlist", label: t.common.wishlist, icon: "heart" as const, match: (p: string) => p.startsWith("/wishlist"), badge: wishlistCount },
     {
-      href: user ? "/kabinet" : "/kirish",
-      label: user ? t.common.cabinet : t.common.login,
+      href: loggedIn ? "/kabinet" : "/kirish",
+      label: loggedIn ? t.common.cabinet : t.common.login,
       icon: "user" as const,
       match: (p: string) => p.startsWith("/kabinet") || p.startsWith("/kirish"),
     },

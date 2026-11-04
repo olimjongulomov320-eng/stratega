@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateStorefront } from "@/lib/storefront-cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAction, audit, safe, str, optStr, int, num, bool, type ActionState } from "@/lib/admin";
@@ -100,8 +100,9 @@ export async function createProduct(_: ActionState, form: FormData): Promise<Act
     }
     await audit(session, "Mahsulot yaratildi", "Product", created.id, { name: data.name, price: data.price });
   });
+  // Before the error check: when only the opening stock fails, the product already exists.
+  revalidateStorefront();
   if (res?.error) return res;
-  revalidatePath("/", "layout");
   redirect(`/admin/products/${id}/overview`);
 }
 
@@ -120,7 +121,7 @@ export async function updateProduct(_: ActionState, form: FormData): Promise<Act
       }
     });
     await audit(session, "Mahsulot tahrirlandi", "Product", id, before.price !== data.price ? { oldPrice: before.price, newPrice: data.price } : undefined);
-    revalidatePath("/", "layout");
+    revalidateStorefront();
     return { ok: true, message: "Saqlandi." };
   });
 }
@@ -132,7 +133,7 @@ export async function setProductActive(_: ActionState, form: FormData): Promise<
     const isActive = str(form, "active") === "1";
     await prisma.product.update({ where: { id }, data: { isActive } });
     await audit(session, isActive ? "Mahsulot faollashtirildi" : "Mahsulot yashirildi", "Product", id);
-    revalidatePath("/", "layout");
+    revalidateStorefront();
   });
 }
 
@@ -151,7 +152,7 @@ export async function deleteProduct(_: ActionState, form: FormData): Promise<Act
     await audit(session, "Mahsulot o'chirildi", "Product", id, { name: used.name });
   });
   if (res?.error) return res;
-  revalidatePath("/", "layout");
+  revalidateStorefront();
   redirect("/admin/products");
 }
 
@@ -172,7 +173,7 @@ export async function adjustStock(_: ActionState, form: FormData): Promise<Actio
       await moveStock(tx, { productId, warehouseId, delta, reason: "ADJUSTMENT", note: note ?? "Qo'lda tuzatish", actor: session.name, allowNegative });
     });
     await audit(session, "Qoldiq tuzatildi", "Product", productId, { warehouseId, mode, value });
-    revalidatePath("/", "layout");
+    revalidateStorefront();
     return { ok: true, message: "Qoldiq yangilandi." };
   });
 }
@@ -190,7 +191,7 @@ export async function importProductsCsv(_: ActionState, form: FormData): Promise
     const { created, updated, skipped, errors } = await importProductRows(await readTableFile(file), { usdRate, createMissing, actor: session.name });
 
     await audit(session, "CSV import (mahsulotlar)", "Product", undefined, { created, updated, skipped: skipped.slice(0, 50), errors: errors.slice(0, 50), usdRate });
-    revalidatePath("/", "layout");
+    revalidateStorefront();
     const parts = [`${created} ta yangi mahsulot qo'shildi, ${updated} ta yangilandi.`];
     if (skipped.length) parts.push(`Topilmadi (o'tkazib yuborildi): ${skipped.slice(0, 10).join(", ")}${skipped.length > 10 ? "…" : ""}`);
     if (errors.length) parts.push(`Xatolar: ${errors.slice(0, 5).join("; ")}${errors.length > 5 ? ` va yana ${errors.length - 5} ta` : ""}`);
