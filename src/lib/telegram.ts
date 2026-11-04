@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { nextNumber } from "@/lib/admin";
 import { normalizePhone } from "@/lib/auth";
 import { UPLOAD_DIR } from "@/lib/storage";
-import { api, sendMessage, notifySeller, token, siteUrl, html, webAppUrl, telegramApiBase } from "@/lib/telegram-api";
+import { api, sendMessage, notifySeller, token, siteUrl, html, webAppUrl, telegramApiBase, itemLines } from "@/lib/telegram-api";
 import { handleStaffCommand, handleStaffCallback, staffFor, staffMenuRows, rfqButtons, requestText } from "@/lib/telegram-admin";
 
 type Locale = "uz" | "ru" | "en";
@@ -204,7 +204,7 @@ export async function notifyOrderCreated(orderId: string) {
   try {
     const order = await prisma.order.findUnique({ where: { id: orderId }, include: { lines: { include: { product: { select: { name: true, sku: true } } } } } });
     if (!order) return;
-    const items = order.lines.map((i) => `• ${html(i.product.name)}${i.product.sku ? ` (${html(i.product.sku)})` : ""} × ${i.quantity}`).join("\n");
+    const items = itemLines(order.lines.map((i) => `• ${html(i.product.name)}${i.product.sku ? ` (${html(i.product.sku)})` : ""} × ${i.quantity}`));
     await notifySeller(`<b>Yangi buyurtma ${html(order.number)}</b>\n${items}\n<b>Jami: ${money(order.total)}</b>\n<a href="${siteUrl()}/admin/orders/${order.id}">Admin panelda ochish</a>`);
   } catch (error) { console.error("Could not prepare Telegram order notification", error instanceof Error ? error.message : "unknown error"); }
 }

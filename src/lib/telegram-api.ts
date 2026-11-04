@@ -14,6 +14,12 @@ export const telegramApiBase = () => (process.env.TELEGRAM_API_URL?.trim() || "h
 export const siteUrl = () => (process.env.NEXT_PUBLIC_SITE_URL || "https://www.stratega.uz").replace(/\/$/, "");
 export const html = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 export const money = (n: number) => `${new Intl.NumberFormat("uz-UZ").format(n)} so'm`;
+/**
+ * Item lines of a request or order for a staff message. Telegram drops messages over 4096 characters, so a big
+ * cart would never reach the sales chat; after `max` lines the rest is summarised (the full list is in the admin panel).
+ */
+export const itemLines = (lines: string[], max = 20) =>
+  (lines.length > max ? [...lines.slice(0, max), `… va yana ${lines.length - max} ta pozitsiya`] : lines).join("\n");
 /** Mini App (web_app) buttons need an https address, so they are left out in local development. */
 export const webAppUrl = (path: string) => (siteUrl().startsWith("https://") ? `${siteUrl()}${path}` : null);
 
