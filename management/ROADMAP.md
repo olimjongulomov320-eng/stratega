@@ -7,7 +7,7 @@ Ranked by business impact, then user experience, technical importance, effort (S
 
 | # | Item | Effort | Who |
 | --- | --- | --- | --- |
-| 1 | Deploy the audit fixes, then test the Telegram Mini Apps and the admin barcode camera | S | Owner approves |
+| 1 | Audit fixes deployed 2026-11-04. Still to do: test the Telegram Mini Apps and the admin barcode camera | S | Owner |
 | 2 | Import the full catalogue on production and upload photos through the admin panel. Do this **after** #1, with a database backup first | M | Owner |
 | 3 | Switch on Yandex Metrica (and GA4 if wanted), verify Yandex Webmaster and Google Search Console, submit the sitemap, set the region to Tashkent | S | Owner |
 

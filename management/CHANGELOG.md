@@ -2,7 +2,7 @@
 
 Local changes until deployed. "Deployed" is stated explicitly when it happens.
 
-## 2026-11-04 — audit fixes (NOT deployed)
+## 2026-11-04 — audit fixes (deployed to production, merge commit c31b729)
 
 ### Security and dependencies
 - Next.js 16.2.10 → 16.4.4; semver-compatible `npm audit fix`.

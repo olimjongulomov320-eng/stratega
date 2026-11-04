@@ -9,3 +9,4 @@
 - Implemented and verified the safe fixes (see CHANGELOG, QA_REPORT). Independent review found 8 problems in the new code; all fixed and retested.
 - Owner decided to keep the repository public, so these documents were reduced to summaries (D-14).
 - Started two follow-up sessions at the owner's request: page caching and a reliability batch.
+- Owner approved merging. PR #1 merged and deployed to production; live checks passed (see QA_REPORT). Telegram Mini Apps and the barcode camera are still to be tested by the owner.

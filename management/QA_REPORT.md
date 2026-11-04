@@ -1,5 +1,26 @@
 # QA Report
 
+## 2026-11-04 — live checks after deployment (merge commit c31b729)
+
+Read-only requests and a browser on https://www.stratega.uz. No forms were submitted.
+
+| Check | Result |
+| --- | --- |
+| Response headers on storefront, admin login and Mini App pages | Present; `X-Powered-By` gone; admin pages `noindex` |
+| Out-of-range catalogue and search parameters (6 URLs) | HTTP 200 |
+| Missing and unknown pages (5 URLs across languages) | HTTP 404 with `noindex`; branded page with header and footer in the browser |
+| Price list and price filter | "Price on request" handled as designed |
+| Structured data on 2 products | Valid for the on-request and the priced product |
+| All 96 sitemap URLs, utility pages in 3 languages, static files | 118 checks, 0 failures |
+| Guest access to the cabinet and admin | Redirected to login |
+| Phone at 360 px | 8 cards: prices and buttons on one line, no cut titles, no sideways scroll; compare bar clear of all 5 tabs |
+| Tablet at 768 px, desktop at 1024 px | No sideways scroll; top bar on one line; no broken images on the home page |
+| Browser console | Only the 404 requested on purpose |
+
+Timing could not be compared fairly: the connection from the test machine was slower that day (one request timed out), and readings varied from 0.85 to 1.9 s to first byte. Re-measure on a normal day.
+
+**Not verified on live:** Telegram Mini Apps, admin barcode camera, admin panel, real form submissions, Telegram alerts, SMS, AI chat, photo uploads, a real iPhone.
+
 ## 2026-11-04 — local verification of the audit fixes
 
 Environment: macOS, Node 23.10, Next.js 16.4.4 production build (`next start`), local Postgres with 957 products. The live site was only read, never changed.
