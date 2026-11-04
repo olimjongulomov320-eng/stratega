@@ -19,7 +19,9 @@ Read-only requests and a browser on https://www.stratega.uz. No forms were submi
 
 Timing could not be compared fairly: the connection from the test machine was slower that day (one request timed out), and readings varied from 0.85 to 1.9 s to first byte. Re-measure on a normal day.
 
-**Not verified on live:** Telegram Mini Apps, admin barcode camera, admin panel, real form submissions, Telegram alerts, SMS, AI chat, photo uploads, a real iPhone.
+**Confirmed by the owner on live:** Telegram Mini Apps and the admin barcode camera work.
+
+**Not verified on live:** admin panel pages in a browser, real form submissions, Telegram alerts, SMS, AI chat, photo uploads, a real iPhone.
 
 ## 2026-11-04 — local verification of the audit fixes
 
