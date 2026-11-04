@@ -5,10 +5,10 @@ export type SpecRow = { uz?: string; ru?: string; en?: string; value: string };
 
 /** The four filterable spec fields, with URL params and labels. */
 export const SPEC_FILTERS = [
-  { field: "capacityKg", min: "capMin", max: "capMax", unit: { uz: "kg", ru: "кг", en: "kg" }, label: { uz: "Yuk ko'tarish quvvati", ru: "Грузоподъёмность", en: "Capacity" } },
-  { field: "liftHeightMm", min: "liftMin", max: "liftMax", unit: { uz: "mm", ru: "мм", en: "mm" }, label: { uz: "Ko'tarish balandligi", ru: "Высота подъёма", en: "Lift height" } },
-  { field: "workingWidthMm", min: "widthMin", max: "widthMax", unit: { uz: "mm", ru: "мм", en: "mm" }, label: { uz: "Ishchi kenglik", ru: "Ширина уборки / обработки", en: "Working width" } },
-  { field: "powerKw", min: "powMin", max: "powMax", unit: { uz: "kVt", ru: "кВт", en: "kW" }, label: { uz: "Quvvat", ru: "Мощность", en: "Power" } },
+  { field: "capacityKg", int: false, min: "capMin", max: "capMax", unit: { uz: "kg", ru: "кг", en: "kg" }, label: { uz: "Yuk ko'tarish quvvati", ru: "Грузоподъёмность", en: "Capacity" } },
+  { field: "liftHeightMm", int: true, min: "liftMin", max: "liftMax", unit: { uz: "mm", ru: "мм", en: "mm" }, label: { uz: "Ko'tarish balandligi", ru: "Высота подъёма", en: "Lift height" } },
+  { field: "workingWidthMm", int: true, min: "widthMin", max: "widthMax", unit: { uz: "mm", ru: "мм", en: "mm" }, label: { uz: "Ishchi kenglik", ru: "Ширина уборки / обработки", en: "Working width" } },
+  { field: "powerKw", int: false, min: "powMin", max: "powMax", unit: { uz: "kVt", ru: "кВт", en: "kW" }, label: { uz: "Quvvat", ru: "Мощность", en: "Power" } },
 ] as const;
 
 export type SpecField = (typeof SPEC_FILTERS)[number]["field"];
