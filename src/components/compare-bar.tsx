@@ -12,12 +12,13 @@ export function CompareBar() {
   if (count === 0) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 z-50 border-t border-slate-200 bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.08)]">
+    // On phones the bar sits above the tab bar (it used to cover it, so navigation could not be tapped) and is one row tall.
+    <div className="fixed inset-x-0 bottom-[calc(3.6rem+env(safe-area-inset-bottom))] z-50 border-t border-slate-200 bg-white shadow-[0_-4px_16px_rgba(0,0,0,0.08)] sm:bottom-0">
       <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-3 px-4 py-3 sm:px-6">
         <span className="text-sm font-semibold text-slate-700">
           {fmt(t.compare.bar, { n: count, max: MAX_COMPARE })}
         </span>
-        <div className="flex flex-1 flex-wrap gap-2">
+        <div className="hidden flex-1 flex-wrap gap-2 sm:flex">
           {items.map((item) => (
             <span
               key={item.id}
@@ -27,7 +28,7 @@ export function CompareBar() {
               <button
                 onClick={() => remove(item.id)}
                 aria-label={t.common.remove}
-                className="flex h-4 w-4 items-center justify-center rounded-full hover:bg-slate-200"
+                className="flex h-6 w-6 items-center justify-center rounded-full hover:bg-slate-200"
               >
                 ✕
               </button>
@@ -36,7 +37,7 @@ export function CompareBar() {
         </div>
         <button
           onClick={clear}
-          className="text-sm text-slate-500 hover:text-slate-700"
+          className="ml-auto text-sm text-slate-500 hover:text-slate-700 sm:ml-0"
         >
           {t.common.clear}
         </button>

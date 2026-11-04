@@ -35,17 +35,18 @@ export function Header({
       <div className="hidden bg-slate-950 text-slate-300 sm:block">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-2 text-xs sm:px-6">
           <span className="rounded bg-indigo-600 px-2 py-0.5 font-bold text-white">{t.common.b2bBadge}</span>
-          <span>{t.common.b2bPlatform}</span>
-          <span className="hidden text-slate-600 md:inline">|</span>
-          <span className="hidden md:inline">{t.common.acrossUzbekistan}</span>
+          <span className="whitespace-nowrap">{t.common.b2bPlatform}</span>
+          {/* Below xl the bar has no room for a second slogan: it would wrap at 1024px and scroll the page sideways at 768px. */}
+          <span className="hidden text-slate-600 xl:inline">|</span>
+          <span className="hidden whitespace-nowrap xl:inline">{t.common.acrossUzbekistan}</span>
           <div className="ml-auto flex items-center gap-4">
-            <Link href={href("/yuridik-shaxslar")} className="hidden hover:text-white lg:inline">
+            <Link href={href("/yuridik-shaxslar")} className="hidden whitespace-nowrap hover:text-white lg:inline">
               {t.focus.b2bNav}
             </Link>
-            <Link href={href("/payment")} className="hidden hover:text-white lg:inline">
+            <Link href={href("/payment")} className="hidden whitespace-nowrap hover:text-white lg:inline">
               {t.common.documentsVat}
             </Link>
-            <Link href={href("/faq")} className="hidden hover:text-white lg:inline">
+            <Link href={href("/faq")} className="hidden whitespace-nowrap hover:text-white lg:inline">
               {t.common.help}
             </Link>
             <span className="hidden text-slate-600 lg:inline">|</span>
@@ -66,10 +67,21 @@ export function Header({
             </span>
           </Link>
 
-          <div className="relative hidden shrink-0 sm:block">
+          <div
+            className="relative hidden shrink-0 sm:block"
+            onBlur={(e) => {
+              // Close only when focus leaves the whole menu, so keyboard users can Tab into the list.
+              if (!e.currentTarget.contains(e.relatedTarget)) setTimeout(() => setMenuOpen(false), 150);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Escape" && menuOpen) {
+                setMenuOpen(false);
+                e.currentTarget.querySelector("button")?.focus();
+              }
+            }}
+          >
             <button
               onClick={() => setMenuOpen((v) => !v)}
-              onBlur={() => setTimeout(() => setMenuOpen(false), 150)}
               aria-expanded={menuOpen}
               className="flex items-center gap-2 rounded-full bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
             >
@@ -81,7 +93,7 @@ export function Header({
               {t.common.catalog}
             </button>
             {menuOpen && (
-              <div className="absolute left-0 top-full z-50 mt-2 w-72 rounded-xl border border-slate-100 bg-white py-2 shadow-lg">
+              <div onClick={() => setMenuOpen(false)} className="absolute left-0 top-full z-50 mt-2 w-72 rounded-xl border border-slate-100 bg-white py-2 shadow-lg">
                 {directions.map((d) => (
                   <Link
                     key={d.slug}

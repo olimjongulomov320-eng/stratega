@@ -3,9 +3,10 @@ import type { Locale } from "@/i18n/config";
 const CURRENCY: Record<Locale, string> = { uz: "so'm", ru: "сум", en: "UZS" };
 
 export function formatNumber(value: number): string {
+  // Non-breaking spaces: on a narrow card "37 500 000" must not wrap in the middle of the number.
   return Math.round(value)
     .toString()
-    .replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+    .replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0");
 }
 
 /** "1 920 000 so'm" / "1 920 000 сум" / "1 920 000 UZS" */
