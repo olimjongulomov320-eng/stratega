@@ -35,6 +35,15 @@ body {
   outline-offset: 3px;
 }
 
+/* iOS Safari zooms the whole page when a form control under 16px gets focus. */
+@media (max-width: 639px) {
+  input.text-sm,
+  select.text-sm,
+  textarea.text-sm {
+    font-size: 16px;
+  }
+}
+
 ::selection {
   background: #fecaca;
   color: #450a0a;

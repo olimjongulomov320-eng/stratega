@@ -14,15 +14,17 @@ export const dynamic = "force-dynamic";
 /**
  * Public price list (.xlsx) of all products on sale, focus directions first.
  * A logged-in buyer with their own price list also gets a "your price" column.
+ * "Price on request" products are listed with that text — their stored price is unconfirmed and stays hidden.
  */
 export async function GET(req: Request) {
   if (!rateLimit(`price-list:${getRequestIp(req)}`, 20, 60 * 60 * 1000)) return new Response("Too many requests", { status: 429 });
   const lang = new URL(req.url).searchParams.get("lang") ?? "uz";
   const locale: Locale = isLocale(lang) ? lang : "uz";
-  const f = getDictionary(locale).focus;
+  const dict = getDictionary(locale);
+  const f = dict.focus;
 
   const products = await prisma.product.findMany({
-    where: { isActive: true, price: { gt: 0 }, category: { isActive: true } },
+    where: { isActive: true, OR: [{ price: { gt: 0 } }, { priceOnRequest: true }], category: { isActive: true } },
     include: { category: true },
   });
   const rank = (slug: string) => {
@@ -35,10 +37,12 @@ export async function GET(req: Request) {
       rank(a.category.slug) - rank(b.category.slug) ||
       a.category.sortOrder - b.category.sortOrder ||
       localName(a.category, locale).localeCompare(localName(b.category, locale)) ||
-      a.price - b.price
+      Number(a.priceOnRequest) - Number(b.priceOnRequest) ||
+      (a.priceOnRequest ? 0 : a.price - b.price)
   );
   const [list, buyerPrices] = await Promise.all([getBuyerPriceList(), getBuyerPrices(products.map((p) => p.id))]);
 
+  const onRequest = { value: dict.product.priceOnRequest };
   const date = new Date().toISOString().slice(0, 10);
   const head = [f.sheetCategory, f.sheetName, f.sheetSku, f.sheetBrand, f.sheetPrice, ...(list ? [f.yourPrice] : []), f.sheetStock, "URL"];
   const data = [
@@ -50,8 +54,8 @@ export async function GET(req: Request) {
       { value: localName(p, locale) },
       { value: p.sku ?? "" },
       { value: p.brand ?? "" },
-      { value: p.price, format: "#,##0" },
-      ...(list ? [{ value: buyerPrices.get(p.id) ?? p.price, format: "#,##0" }] : []),
+      p.priceOnRequest ? onRequest : { value: p.price, format: "#,##0" },
+      ...(list ? [buyerPrices.has(p.id) ? { value: buyerPrices.get(p.id)!, format: "#,##0" } : p.priceOnRequest ? onRequest : { value: p.price, format: "#,##0" }] : []),
       { value: p.stock > 0 ? f.sheetInStock : f.sheetOnOrder },
       { value: `${SITE_URL}${localePath(locale, `/product/${p.slug}`)}` },
     ]),

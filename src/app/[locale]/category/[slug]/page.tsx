@@ -12,6 +12,7 @@ import { CatalogToolbar } from "@/components/catalog-toolbar";
 import { CatalogFilters } from "@/components/catalog-filters";
 import { CatalogPagination } from "@/components/catalog-pagination";
 import { parseSort, sortToOrderBy, toCard } from "@/lib/products";
+import { numParam, pageParam, rangeFilter } from "@/lib/query-params";
 import { getDictionary, fmt } from "@/i18n";
 import { isLocale, localePath } from "@/i18n/config";
 import { localName, localDescription, excerpt } from "@/lib/localize";
@@ -38,7 +39,7 @@ export async function generateMetadata(props: PageProps<"/[locale]/category/[slu
   const { locale, slug } = await props.params;
   if (!isLocale(locale)) return {};
   const data = await getCategory(slug);
-  if (!data) return {};
+  if (!data) return { title: getDictionary(locale).notFound.title, robots: { index: false } };
   const t = getDictionary(locale);
   const name = localName(data.category, locale);
   const own = localDescription(data.category, locale);
@@ -60,12 +61,6 @@ export async function generateMetadata(props: PageProps<"/[locale]/category/[slu
   });
 }
 
-function num(value: string | string[] | undefined): number | undefined {
-  if (typeof value !== "string") return undefined;
-  const n = Number(value);
-  return Number.isFinite(n) && n >= 0 ? n : undefined;
-}
-
 export default async function CategoryPage(props: PageProps<"/[locale]/category/[slug]">) {
   const { locale, slug } = await props.params;
   if (!isLocale(locale)) notFound();
@@ -78,11 +73,10 @@ export default async function CategoryPage(props: PageProps<"/[locale]/category/
   const { category } = data;
 
   const sort = parseSort(sp.sort);
-  const minPrice = num(sp.minPrice);
-  const maxPrice = num(sp.maxPrice);
+  const priceRange = rangeFilter(numParam(sp.minPrice), numParam(sp.maxPrice), true);
   const brand = typeof sp.brand === "string" ? sp.brand.trim().slice(0, 80) : "";
   const inStock = sp.inStock === "1";
-  const page = Math.max(1, Math.floor(num(sp.page) ?? 1));
+  const page = pageParam(sp.page);
   const pageSize = 24;
   // Spec filters: shown only when products in this category have at least two different values.
   const specRange = await prisma.product.aggregate({
@@ -96,17 +90,14 @@ export default async function CategoryPage(props: PageProps<"/[locale]/category/
     return lo !== null && hi !== null && hi > lo;
   });
   const specWhere: Prisma.ProductWhereInput[] = specFilters.flatMap((sf) => {
-    const lo = num(sp[sf.min]);
-    const hi = num(sp[sf.max]);
-    if (lo === undefined && hi === undefined) return [];
-    return [{ [sf.field]: { ...(lo !== undefined ? { gte: lo } : {}), ...(hi !== undefined ? { lte: hi } : {}) } }];
+    const range = rangeFilter(numParam(sp[sf.min]), numParam(sp[sf.max]), sf.int);
+    return range ? [{ [sf.field]: range }] : [];
   });
   const where: Prisma.ProductWhereInput = {
     isActive: true,
     categoryId: category.id,
-    ...(minPrice !== undefined || maxPrice !== undefined
-      ? { price: { ...(minPrice !== undefined ? { gte: minPrice } : {}), ...(maxPrice !== undefined ? { lte: maxPrice } : {}) } }
-      : {}),
+    // "Price on request" items have no public price, so a price filter skips them.
+    ...(priceRange ? { price: priceRange, priceOnRequest: false } : {}),
     ...(brand ? { brand } : {}),
     ...(inStock ? { stock: { gt: 0 } } : {}),
     ...(specWhere.length ? { AND: specWhere } : {}),
@@ -170,9 +161,10 @@ export default async function CategoryPage(props: PageProps<"/[locale]/category/
         </span>
       </nav>
 
-      <h1 className="text-2xl font-bold text-slate-800">
-        <span aria-hidden="true">{category.icon}</span> {name}
-      </h1>
+      <div className="flex items-center gap-2">
+        <span aria-hidden="true" className="text-2xl">{category.icon}</span>
+        <h1 className="text-2xl font-bold text-slate-800">{name}</h1>
+      </div>
       {intro && <p className="mt-2 max-w-3xl whitespace-pre-line text-slate-600">{intro}</p>}
 
       <div className="mt-6 grid gap-8 md:grid-cols-[220px_1fr]">
@@ -206,7 +198,7 @@ export default async function CategoryPage(props: PageProps<"/[locale]/category/
           {products.length === 0 ? (
             <p className="mt-8 text-slate-500">{t.catalog.noResults}</p>
           ) : (
-            <div className="product-grid mt-6 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="product-grid mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
               {products.map((p, i) => (
                 <ProductCard key={p.id} product={toCard(p, locale, buyer.get(p.id))} priority={i < 4} />
               ))}

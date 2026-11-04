@@ -1,10 +1,15 @@
 // Seeds the new database with the catalogue copied from the live stratega.uz (28.10.2026).
-// Safe to re-run: everything is upserted by slug / sku / code.
+// LOCAL databases only: re-running overwrites names, prices and photos of the seeded products and categories.
 //   npm run db:seed
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../src/generated/prisma/client";
 import { hashPassword } from "../src/lib/password";
+
+if (!/@(localhost|127\.0\.0\.1|\[::1\])(:\d+)?\//.test(process.env.DATABASE_URL ?? "")) {
+  console.error("Refusing to seed: DATABASE_URL does not point to a local database. Seeding would overwrite real catalogue data.");
+  process.exit(1);
+}
 
 const prisma = new PrismaClient({ adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }) });
 

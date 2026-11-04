@@ -11,6 +11,7 @@ import { CatalogToolbar } from "@/components/catalog-toolbar";
 import { CatalogFilters } from "@/components/catalog-filters";
 import { CatalogPagination } from "@/components/catalog-pagination";
 import { parseSort, sortToOrderBy, searchWhere, toCard } from "@/lib/products";
+import { numParam, pageParam, rangeFilter } from "@/lib/query-params";
 import { getDictionary, fmt } from "@/i18n";
 import { isLocale, localePath } from "@/i18n/config";
 import { pageMetadata } from "@/lib/seo";
@@ -26,12 +27,6 @@ export async function generateMetadata(props: PageProps<"/[locale]/search">): Pr
   return pageMetadata({ locale, path: "/search", title: t.meta.searchTitle, description: t.meta.searchDescription, noindex: hasQuery });
 }
 
-function num(v: string | string[] | undefined) {
-  if (typeof v !== "string") return undefined;
-  const n = Number(v);
-  return Number.isFinite(n) && n >= 0 ? n : undefined;
-}
-
 export default async function SearchPage(props: PageProps<"/[locale]/search">) {
   const { locale } = await props.params;
   if (!isLocale(locale)) notFound();
@@ -39,11 +34,10 @@ export default async function SearchPage(props: PageProps<"/[locale]/search">) {
   const t = getDictionary(locale);
   const q = typeof sp.q === "string" ? sp.q.trim().slice(0, 100) : "";
   const sort = parseSort(sp.sort);
-  const minPrice = num(sp.minPrice);
-  const maxPrice = num(sp.maxPrice);
+  const priceRange = rangeFilter(numParam(sp.minPrice), numParam(sp.maxPrice), true);
   const brand = typeof sp.brand === "string" ? sp.brand.trim().slice(0, 80) : "";
   const inStock = sp.inStock === "1";
-  const page = Math.max(1, Math.floor(num(sp.page) ?? 1));
+  const page = pageParam(sp.page);
   const pageSize = 24;
 
   const where: Prisma.ProductWhereInput = {
@@ -51,9 +45,8 @@ export default async function SearchPage(props: PageProps<"/[locale]/search">) {
     ...(q ? searchWhere(q) : {}),
     ...(brand ? { brand } : {}),
     ...(inStock ? { stock: { gt: 0 } } : {}),
-    ...(minPrice !== undefined || maxPrice !== undefined
-      ? { price: { ...(minPrice !== undefined ? { gte: minPrice } : {}), ...(maxPrice !== undefined ? { lte: maxPrice } : {}) } }
-      : {}),
+    // "Price on request" items have no public price, so a price filter skips them.
+    ...(priceRange ? { price: priceRange, priceOnRequest: false } : {}),
   };
   const [categories, products, total, brands] = await Promise.all([
     getHeaderCategories(locale),
@@ -83,7 +76,7 @@ export default async function SearchPage(props: PageProps<"/[locale]/search">) {
           {products.length === 0 ? (
             <p className="mt-8 text-slate-500">{t.catalog.noResults}</p>
           ) : (
-            <div className="product-grid mt-6 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+            <div className="product-grid mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
               {products.map((p, i) => (
                 <ProductCard key={p.id} product={toCard(p, locale)} priority={i < 4} />
               ))}

@@ -21,14 +21,14 @@ function entry(path: string, lastModified: Date, priority: number): MetadataRout
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [categories, products] = await Promise.all([
-    prisma.category.findMany({ where: { isActive: true, products: { some: { isActive: true } } }, select: { slug: true, updatedAt: true } }),
+    prisma.category.findMany({ where: { isActive: true, products: { some: { isActive: true } } }, select: { slug: true, updatedAt: true, isSparePart: true } }),
     prisma.product.findMany({ where: { isActive: true }, select: { slug: true, updatedAt: true } }),
   ]);
   const now = new Date();
   return [
     ...entry("/", now, 1),
     ...entry("/search", now, 0.7),
-    ...entry("/ehtiyot-qismlar", now, 0.7),
+    ...(categories.some((c) => c.isSparePart) ? entry("/ehtiyot-qismlar", now, 0.7) : []),
     // Direction landing pages that have at least one category with products on sale.
     ...FOCUS.filter((f) => f.categories.some((s) => categories.some((c) => c.slug === s))).flatMap((f) => entry(`/yonalish/${f.slug}`, now, 0.95)),
     ...categories.flatMap((c) => entry(`/category/${c.slug}`, c.updatedAt, 0.9)),

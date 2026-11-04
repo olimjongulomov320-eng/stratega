@@ -44,7 +44,7 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
               {discount !== null && discount > 0 && <span className="rounded-md bg-rose-500 px-2 py-0.5 text-xs font-bold text-white">{fmt(t.product.discount, { n: discount })}</span>}
             </span>
           )}
-          <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-slate-50 p-8">
+          <div className="relative flex aspect-square items-center justify-center overflow-hidden bg-slate-50 p-4 sm:p-8">
             {product.imageUrl ? (
               <ProductImage
                 src={product.imageUrl}
@@ -56,7 +56,7 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
             ) : (
               // No photo yet: show the brand instead of an empty box.
               <span className="relative flex flex-col items-center gap-1 text-center" role="img" aria-label={product.name}>
-                <span className="text-2xl font-black tracking-wide text-slate-300">{product.brand ?? "STRATEGA"}</span>
+                <span className="text-lg font-black tracking-wide text-slate-300 sm:text-2xl">{product.brand ?? "STRATEGA"}</span>
                 {product.sku && <span className="text-xs font-medium text-slate-400">{product.sku}</span>}
               </span>
             )}
@@ -76,10 +76,11 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
           </svg>
         </button>
 
-        <div className="absolute inset-x-3 bottom-3 z-10 flex justify-center gap-2 opacity-100 transition duration-300 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 focus-within:opacity-100">
+        {/* On phones the quick-view pill would cover the photo of a narrow card; tapping the card opens the product anyway. */}
+        <div className="absolute inset-x-3 bottom-3 z-10 flex justify-end gap-2 opacity-100 transition duration-300 sm:justify-center md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100 focus-within:opacity-100">
           <button
             onClick={() => openQuickView(product.slug)}
-            className="rounded-full bg-slate-900/85 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-900"
+            className="hidden rounded-full bg-slate-900/85 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-slate-900 sm:block"
           >
             {t.product.quickView}
           </button>
@@ -100,26 +101,26 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
         </div>
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 p-5">
+      <div className="flex flex-1 flex-col gap-2 p-3 sm:p-5">
         <div className="flex flex-wrap items-baseline gap-x-2">
           {product.priceOnRequest ? (
-            <span className="text-lg font-bold text-slate-900">{t.product.priceOnRequest}</span>
+            <span className="text-sm font-bold text-slate-900 sm:text-lg">{t.product.priceOnRequest}</span>
           ) : (
-            <span className="text-xl font-black text-slate-900">{formatSum(product.price, locale)}</span>
+            <span className="text-[15px] font-black tracking-tight text-slate-900 sm:text-xl sm:tracking-normal">{formatSum(product.price, locale)}</span>
           )}
-          {product.oldPrice && <span className="text-sm text-slate-400 line-through">{formatSum(product.oldPrice, locale)}</span>}
+          {product.oldPrice && <span className="text-xs text-slate-400 line-through sm:text-sm">{formatSum(product.oldPrice, locale)}</span>}
         </div>
         {product.buyerPrice ? (
-          <p className="-mt-1 text-sm font-semibold text-emerald-600">
+          <p className="-mt-1 text-xs font-semibold text-emerald-600 sm:text-sm">
             {t.focus.yourPrice}: {formatSum(product.buyerPrice, locale)}
           </p>
         ) : null}
 
         <Link href={url}>
-          <h3 className="line-clamp-2 min-h-[3rem] text-base text-slate-700 hover:text-indigo-600">{product.name}</h3>
+          <h3 className="line-clamp-2 min-h-[2.5rem] text-sm text-slate-700 [overflow-wrap:anywhere] hyphens-auto hover:text-indigo-600 sm:min-h-[3rem] sm:text-base">{product.name}</h3>
         </Link>
 
-        <div className="mt-auto flex flex-col gap-1 text-sm">
+        <div className="mt-auto flex flex-col gap-1 text-xs sm:text-sm">
           <span className={outOfStock ? "text-slate-400" : "font-medium text-emerald-600"}>
             {outOfStock ? t.product.notInStock : t.product.inStockShort}
           </span>
@@ -129,7 +130,7 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
         <button
           onClick={handleAdd}
           aria-live="polite"
-          className="mt-3 w-full rounded-full bg-indigo-600 py-3 text-base font-semibold text-white transition hover:bg-indigo-700"
+          className="mt-2 w-full rounded-full bg-indigo-600 px-1 py-2.5 text-[13px] font-semibold leading-tight text-white transition hover:bg-indigo-700 sm:mt-3 sm:px-2 sm:py-3 sm:text-base"
         >
           {added ? t.product.added : product.priceOnRequest ? t.product.requestPrice : t.product.addToCart}
         </button>

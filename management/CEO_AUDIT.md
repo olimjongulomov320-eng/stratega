@@ -1,36 +1,57 @@
-# CEO Audit — stratega.uz (v2 improved copy)
+# Audit summary — stratega.uz
 
-Date: 2026-11-01. Scope of this first pass: repository inspection, static checks, live-site text fetch.
-NOT done in this pass (no tooling run): Lighthouse, Playwright/browser tests, responsive screenshots,
-console-error check, production `next build`, DB-backed tests. Anything below not listed as verified is unverified.
+Second full audit: **2026-11-03/04**. **This repository is public**, so this file is a summary. Details of open weaknesses and items awaiting the owner's confirmation are kept privately, outside git (see decision D-14).
 
-## Verified
-- `tsc --noEmit`: passes. `eslint`: passes (no output).
-- `npm audit --omit=dev`: 20 vulnerabilities (1 critical, 14 high, 5 moderate). Critical/high include `next`
-  (fix available at 16.4.3, non-major), `@vercel/blob` (major bump), `prisma`/`@prisma/config`, `undici`, `nanoid`, `zod`, `sharp`, `postcss`.
-- Repo: 273 tracked files, 72 pages, locales uz/ru/en, admin panel, Telegram bot/Mini App, cron daily report (vercel.json), robots.ts + sitemap.ts present. `.env` is git-ignored; only `.env.example` is tracked.
-- Live https://stratega.uz (text fetch only): home 200; `/robots.txt` 404; `/sitemap.xml` 404; `/admin/login` 200 (login page publicly reachable); only Uzbek seen, no language switcher/ru/en routes found.
-  => The live site is an OLDER build than this copy (this copy defines robots/sitemap and ru/en routes).
-- Live content issues seen: several products show a placeholder emoji instead of images; duplicated claims ("CE sertifikati", "2000+ dona sotilgan") — the latter must be verified as true before keeping.
+## How the audit was done
 
-## Critical
-1. **Test suite cannot run in this environment**: all 4 test files fail with esbuild "The service was stopped"
-   (`node_modules/esbuild/bin/esbuild --version` prints nothing). Likely a broken/quarantined binary in the copied
-   node_modules. Fix: fresh `npm ci`. Until then QA of business logic is unverified.
-2. **Dependency vulnerabilities** (see above), incl. 1 critical in `next`.
-3. **Deploy risk**: `vercel-build` runs `prisma migrate deploy`. Deploying this copy against the live DB applies its migrations. Needs a DB backup and explicit approval first.
+| Check | How | Status |
+| --- | --- | --- |
+| Repository and architecture | 8 specialist reviewers (security, storefront, admin/ERP, integrations, SEO, performance, accessibility/UX, build/deploy). A separate skeptic re-checked each finding | 91 findings: 90 confirmed, 1 undetermined, 0 refuted |
+| Live site | Browser at 1024 px and 375 px; read-only requests to public routes | Done |
+| Static checks | `tsc`, `eslint`, `npm test`, `npm audit`, `next build` | Done, see QA_REPORT |
+| Local production build | `next start` on a local database of 957 products, browser at 360–1280 px, 273 route checks, simulated database outage | Done |
+| Independent review of the fixes | 2 fresh reviewers on the finished commits; 8 problems found in the new code, all fixed and retested | Done |
+| Lighthouse | Not available in this environment; time to first byte measured with `curl` instead | **Not run** |
+| Forms on the live site | Not submitted, because that would create real requests | Not done by design |
+| Real Telegram bots, SMS, AI chat, photo uploads | No credentials in this environment | **Not tested** |
+| Admin panel in a browser | Code review only | **Not tested in a browser** |
 
-## Important
-4. Live site lacks robots.txt/sitemap.xml -> SEO indexing signals missing (fixed in this copy, needs deploy).
-5. Live site is Uzbek-only; ru/en exist in this copy.
-6. Product images missing (7 of 15 per IMPROVEMENTS.md) and 8 missing product costs.
-7. Unverified business claims (direct import, official supplier, delivery coverage, WhatsApp number) — verify before launch.
-8. Git remote in this copy is a placeholder (`YOUR-ACCOUNT/stratega-v2`); real repo `stratega` `main` holds an unrelated project.
+## Current condition
 
-## Minor
-9. `/admin/login` is publicly indexable-reachable; confirm it is `noindex` and rate-limited.
-10. Duplicate marketing blocks on the live home page.
+The live site runs the v2 codebase on Vercel: a well-structured Next.js + Prisma store and admin ERP. Pages render correctly on desktop and phone, with hreflang, canonical and robots in place. The largest gaps are in business data rather than code: the production catalogue has 16 products while about 957 are prepared, and analytics are not switched on yet.
 
-## Actions completed
-- Branch `v2-improved` pushed to github.com/olimjongulomov320-eng/stratega (main untouched).
-- This management folder created.
+## Priorities
+
+"Fixed" means fixed on this branch; it reaches the live site only when deployed.
+
+| # | Improvement | Status |
+| --- | --- | --- |
+| 1 | Import the full catalogue to production | Owner |
+| 2 | Consistent "price on request" handling across public pages and downloads | Fixed |
+| 3 | Dependency updates, including Next.js 16.4.4 | Fixed |
+| 4 | Forms recover from server failures and show how to reach sales | Fixed |
+| 5 | Analytics and webmaster tools | Owner |
+| 6 | Product cards and navigation on phones | Fixed |
+| 7 | Security hardening: response headers, login flow | Fixed |
+| 8 | Valid structured data, proper error and 404 pages | Fixed |
+| 9 | Page caching | In progress |
+| 10 | Further admin hardening | Needs owner approval |
+
+## Performance
+
+Measured from one machine, 3 samples each:
+
+| URL | Time to first byte | Server wait |
+| --- | --- | --- |
+| Home, `/ru/about`, product page (uncached) | ≈ 0.72 s | ≈ 0.45 s |
+| `/sitemap.xml` (cached) | ≈ 0.43 s | ≈ 0.15 s |
+
+Every public page is rendered per request today, so caching would save about 0.3 s per page. Lighthouse was not run.
+
+## Known limitation of the 404 pages
+
+The root layout sits under the `[locale]` segment, so Next.js sends a 404 as an empty HTML shell and builds the page in the browser. Visitors see the branded page with header and footer, and the HTTP status is 404 with `noindex`, which is what search engines need.
+
+## Details
+
+See ROADMAP.md, CHANGELOG.md, QA_REPORT.md, KNOWN_ISSUES.md and DECISION_LOG.md.

@@ -10,14 +10,14 @@ import { getDictionary, fmt } from "@/i18n";
 import { isLocale, localePath } from "@/i18n/config";
 import { sortToOrderBy, toCard } from "@/lib/products";
 import { excerpt } from "@/lib/localize";
-import { pageMetadata, absoluteUrl, jsonLd } from "@/lib/seo";
+import { pageMetadata, absoluteUrl, jsonLd, fitTitle } from "@/lib/seo";
 
 export async function generateMetadata(props: PageProps<"/[locale]/yonalish/[slug]">): Promise<Metadata> {
   const { locale, slug } = await props.params;
   if (!isLocale(locale)) return {};
   const dir = getFocus(slug);
-  if (!dir) return {};
-  return pageMetadata({ locale, path: `/yonalish/${slug}`, title: `${dir.name[locale]} — ${dir.tagline[locale]}`, description: excerpt(dir.intro[locale]) });
+  if (!dir) return { title: getDictionary(locale).notFound.title, robots: { index: false } };
+  return pageMetadata({ locale, path: `/yonalish/${slug}`, title: fitTitle(`${dir.name[locale]} — ${dir.tagline[locale]} | Stratega`, `${dir.name[locale]} — ${dir.tagline[locale]}`), description: excerpt(dir.intro[locale]) });
 }
 
 export default async function DirectionPage(props: PageProps<"/[locale]/yonalish/[slug]">) {
@@ -67,9 +67,11 @@ export default async function DirectionPage(props: PageProps<"/[locale]/yonalish
         </span>
       </nav>
 
-      <h1 className="text-2xl font-bold text-slate-800 sm:text-3xl">
-        <span aria-hidden="true">{dir.icon}</span> {name}
-      </h1>
+      {/* The icon sits next to the H1, not inside it, so search engines read a clean heading. */}
+      <div className="flex items-center gap-2">
+        <span aria-hidden="true" className="text-2xl sm:text-3xl">{dir.icon}</span>
+        <h1 className="text-2xl font-bold text-slate-800 sm:text-3xl">{name}</h1>
+      </div>
       <div className="mt-3 max-w-3xl space-y-3 text-slate-600">
         {dir.intro[locale].split(/\n\n+/).map((p) => (
           <p key={p.slice(0, 24)}>{p}</p>
@@ -99,7 +101,7 @@ export default async function DirectionPage(props: PageProps<"/[locale]/yonalish
         {products.length === 0 ? (
           <p className="text-slate-500">{t.catalog.noResults}</p>
         ) : (
-          <div className="product-grid grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="product-grid grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
             {products.map((p, i) => (
               <ProductCard key={p.id} product={toCard(p, locale, buyer.get(p.id))} priority={i < 4} />
             ))}

@@ -5,7 +5,7 @@ import { moveStock } from "@/lib/inventory";
 import { can, type Permission } from "@/lib/permissions";
 import { RFQ_STATUS } from "@/lib/labels";
 import { parseNumber } from "@/lib/csv";
-import { api, sendMessage, notifySeller, siteUrl, html, money, webAppUrl } from "@/lib/telegram-api";
+import { api, sendMessage, notifySeller, siteUrl, html, money, webAppUrl, itemLines } from "@/lib/telegram-api";
 import { Prisma } from "@/generated/prisma/client";
 import type { Employee, RfqStatus } from "@/generated/prisma/client";
 
@@ -180,7 +180,7 @@ type RequestWithItems = {
 /** Text of a request card (used for new-request notifications and /sorovlar). */
 export function requestText(r: RequestWithItems) {
   const who = [r.companyName, r.contactName].filter((x, i, a) => x && x !== "—" && a.indexOf(x) === i).join(", ");
-  const items = r.items.map((i) => `• ${html(i.product.name)}${i.product.sku ? ` (${html(i.product.sku)})` : ""} × ${i.quantity}`).join("\n");
+  const items = itemLines(r.items.map((i) => `• ${html(i.product.name)}${i.product.sku ? ` (${html(i.product.sku)})` : ""} × ${i.quantity}`));
   const time = r.createdAt.toLocaleString("ru-RU", { timeZone: "Asia/Tashkent", day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
   return (
     `<b>${html(r.requestType)}</b> · ${time}\n` +

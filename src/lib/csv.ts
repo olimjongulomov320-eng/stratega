@@ -39,13 +39,36 @@ export function parseCsv(input: string): string[][] {
   return rows.map((r) => r.map((v) => v.trim()));
 }
 
-/** "12 500,50" / "12500.5" / "12,500" → number (null when empty or invalid). */
-export function parseNumber(value: string | undefined): number | null {
+/**
+ * "12 500,50" / "12500.5" / "12,500" / "125.000" / "1.250.000,50" → number (null when empty or invalid).
+ * A single "," or "." before exactly three digits is a thousands separator ("125,000" is 125000, not 125);
+ * "0,500" and "12,5" stay decimals. Pass `groups: false` for small decimal values (kW), where "1,500" means 1.5.
+ */
+export function parseNumber(value: string | undefined, { groups = true }: { groups?: boolean } = {}): number | null {
   if (value === undefined) return null;
-  let v = value.replace(/[\s ]/g, "").replace(/so'?m|сум|usd|\$/gi, "");
+  let v = value.replace(/[\s\u00a0]/g, "").replace(/so'?m|сум|usd|\$/gi, "");
   if (!v) return null;
-  if (v.includes(",") && !v.includes(".")) v = /,\d{3}$/.test(v) && v.split(",").length > 2 ? v.replace(/,/g, "") : v.replace(",", ".");
-  else v = v.replace(/,/g, "");
+  const isGrouped = (text: string, sep: string) => text.split(sep).every((part, i) => (i === 0 ? /^-?\d{1,3}$/ : /^\d{3}$/).test(part));
+  if (v.includes(",") && v.includes(".")) {
+    // Both separators: whichever comes last is the decimal point.
+    const decimal = v.lastIndexOf(",") > v.lastIndexOf(".") ? "," : ".";
+    const group = decimal === "," ? "." : ",";
+    const whole = v.slice(0, v.lastIndexOf(decimal));
+    if (!isGrouped(whole, group)) return null;
+    v = `${whole.split(group).join("")}.${v.slice(v.lastIndexOf(decimal) + 1)}`;
+  } else {
+    const sep = v.includes(",") ? "," : v.includes(".") ? "." : null;
+    if (sep) {
+      const parts = v.split(sep);
+      if (parts.length > 2) {
+        // Several separators can only be digit groups; "125.000.00" or a date is a typo, not a number.
+        if (!isGrouped(v, sep)) return null;
+        v = parts.join("");
+      } else {
+        v = groups && /^-?[1-9]/.test(parts[0]) && isGrouped(v, sep) ? parts.join("") : parts.join(".");
+      }
+    }
+  }
   const n = Number(v);
   return Number.isFinite(n) ? n : null;
 }

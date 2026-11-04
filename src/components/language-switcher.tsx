@@ -15,11 +15,22 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
   const qs = searchParams.toString();
 
   return (
-    <div className="relative">
+    <div
+      className="relative"
+      onBlur={(e) => {
+        // Close only when focus leaves the whole widget, so keyboard users can Tab into the list.
+        if (!e.currentTarget.contains(e.relatedTarget)) setTimeout(() => setOpen(false), 150);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape" && open) {
+          setOpen(false);
+          e.currentTarget.querySelector("button")?.focus();
+        }
+      }}
+    >
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
         aria-label={t.common.language}
         aria-expanded={open}
         className={`flex items-center gap-1.5 rounded-full border border-slate-200 font-medium text-slate-600 transition hover:border-indigo-200 hover:text-indigo-600 ${
@@ -33,7 +44,7 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
         {compact ? locale.toUpperCase() : LOCALE_LABELS[locale]}
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-50 mt-2 w-40 rounded-xl border border-slate-100 bg-white py-1.5 shadow-lg">
+        <div onClick={() => setOpen(false)} className="absolute right-0 top-full z-50 mt-2 w-40 rounded-xl border border-slate-100 bg-white py-1.5 shadow-lg">
           {LOCALES.map((l) => (
             <Link
               key={l}

@@ -38,6 +38,9 @@ export async function generateMetadata(
   });
 }
 
+// A catalogue of a dozen items reads as a small shop; the hero shows the model count once the catalogue is filled.
+const MIN_MODELS_FOR_STAT = 50;
+
 const SOCIALS = [
   {
     name: "Telegram",
@@ -181,7 +184,7 @@ export default async function Home(props: PageProps<"/[locale]">) {
               </Link>
             </div>
             <div className="mt-10 flex flex-wrap gap-8">
-              {inStockModels > 0 && (
+              {inStockModels >= MIN_MODELS_FOR_STAT && (
                 <div>
                   <p className="text-3xl font-black text-white">
                     {inStockModels}
@@ -372,9 +375,9 @@ export default async function Home(props: PageProps<"/[locale]">) {
               {t.common.viewAll}
             </Link>
           </div>
-          <div className="product-grid grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
-            {bestsellers.map((p, i) => (
-              <ProductCard key={p.id} product={toCard(p, locale)} priority={i < 4} />
+          <div className="product-grid grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+            {bestsellers.map((p) => (
+              <ProductCard key={p.id} product={toCard(p, locale)} />
             ))}
           </div>
         </section>
@@ -392,12 +395,11 @@ export default async function Home(props: PageProps<"/[locale]">) {
             {t.common.viewAll}
           </Link>
         </div>
-        <div className="product-grid grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
-          {featured.map((p, i) => (
+        <div className="product-grid grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+          {featured.map((p) => (
             <ProductCard
               key={p.id}
               product={toCard(p, locale)}
-              priority={i < 4}
             />
           ))}
         </div>

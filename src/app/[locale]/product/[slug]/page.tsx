@@ -30,7 +30,7 @@ export async function generateMetadata(props: PageProps<"/[locale]/product/[slug
   const { locale, slug } = await props.params;
   if (!isLocale(locale)) return {};
   const product = await getProduct(slug);
-  if (!product || !product.isActive) return {};
+  if (!product || !product.isActive) return { title: getDictionary(locale).notFound.title, robots: { index: false } };
   const t = getDictionary(locale);
   const name = localName(product, locale);
   return pageMetadata({
@@ -80,14 +80,16 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
   const avgRating = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : null;
   const url = absoluteUrl(lp(`/product/${product.slug}`));
 
+  // Google rejects a Product without an offer, review or rating, so "price on request" items without
+  // reviews get only the breadcrumb. Out-of-stock items are imported to order, hence BackOrder.
+  const hasProductSchema = !product.priceOnRequest || avgRating !== null;
   const structuredData = [
-    {
+    hasProductSchema && {
       "@context": "https://schema.org",
       "@type": "Product",
       name,
       description: excerpt(description, 500),
       sku: product.sku ?? undefined,
-      mpn: product.sku ?? undefined,
       image: images.map((i) => absoluteUrl(i)),
       brand: product.brand ? { "@type": "Brand", name: product.brand } : undefined,
       category: categoryName,
@@ -98,7 +100,7 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
         url,
         priceCurrency: "UZS",
         price: product.price,
-        availability: product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+        availability: product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/BackOrder",
         itemCondition: "https://schema.org/NewCondition",
         seller: { "@type": "Organization", name: COMPANY.brand },
       },
@@ -158,7 +160,7 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
-      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(structuredData)} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLd(structuredData.filter(Boolean))} />
       <TrackView productId={product.id} />
 
       <nav aria-label="breadcrumb" className="mb-6 flex flex-wrap items-center gap-1 text-sm text-slate-500">
@@ -375,7 +377,7 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
             <h2 className="text-xl font-bold text-slate-800">{t.parts.forThisMachine}</h2>
             <Link href={lp(`/ehtiyot-qismlar?q=${encodeURIComponent(tokens[0])}`)} className="text-sm font-medium text-indigo-600">{t.common.viewAll}</Link>
           </div>
-          <div className="product-grid grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="product-grid grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
             {parts.map((p) => (
               <ProductCard key={p.id} product={toCard(p, locale, buyerPrices.get(p.id))} />
             ))}
@@ -386,7 +388,7 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
       {related.length > 0 && (
         <section className="mt-12 border-t border-slate-200 pt-8">
           <h2 className="mb-5 text-xl font-bold text-slate-800">{t.product.related}</h2>
-          <div className="product-grid grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="product-grid grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
             {related.map((p) => (
               <ProductCard key={p.id} product={toCard(p, locale, buyerPrices.get(p.id))} />
             ))}

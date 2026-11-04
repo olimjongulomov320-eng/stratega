@@ -2,12 +2,15 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useI18n } from "@/i18n/client";
+import { useCompare } from "@/lib/compare-context";
 import { trackGoal } from "@/lib/web-analytics";
 
 type ChatMessage = { role: "user" | "assistant"; content: string };
 
 export function ChatWidget() {
   const { t, locale } = useI18n();
+  // The compare bar takes the bottom of the screen while it is shown, so the chat moves up.
+  const { count: comparing } = useCompare();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([{ role: "assistant", content: t.chat.greeting }]);
   const [input, setInput] = useState("");
@@ -57,7 +60,9 @@ export function ChatWidget() {
           setOpen((v) => !v);
         }}
         aria-label={open ? t.common.close : t.chat.open}
-        className="fixed bottom-20 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition hover:scale-105 hover:bg-indigo-500 active:scale-95 sm:bottom-5 sm:right-5"
+        className={`fixed right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 transition hover:scale-105 hover:bg-indigo-500 active:scale-95 sm:right-5 ${
+          comparing > 0 ? "bottom-32 sm:bottom-20" : "bottom-20 sm:bottom-5"
+        }`}
       >
         {open ? (
           <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
@@ -79,10 +84,12 @@ export function ChatWidget() {
       </button>
 
       <div
-        className={`fixed bottom-[9.5rem] right-4 z-50 flex w-[calc(100vw-2rem)] max-w-sm origin-bottom-right flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 sm:bottom-24 sm:right-5 ${
+        className={`fixed right-4 z-50 flex w-[calc(100vw-2rem)] max-w-sm origin-bottom-right flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl transition-all duration-200 sm:right-5 ${
+          comparing > 0 ? "bottom-[12rem] sm:bottom-[9.25rem]" : "bottom-[9.5rem] sm:bottom-24"
+        } ${
           open
             ? "scale-100 opacity-100"
-            : "pointer-events-none scale-95 opacity-0"
+            : "pointer-events-none invisible scale-95 opacity-0"
         }`}
         style={{ height: "min(32rem, 70vh)" }}
       >

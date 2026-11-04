@@ -3,6 +3,8 @@ import { LOCALES, LOCALE_TAGS, localePath, type Locale } from "@/i18n/config";
 import { SITE_URL } from "@/lib/site";
 
 export function absoluteUrl(path: string): string {
+  // Photos uploaded from the admin panel already have a full Vercel Blob URL.
+  if (/^https?:\/\//.test(path)) return path;
   return `${SITE_URL}${path === "/" ? "" : path}` || SITE_URL;
 }
 

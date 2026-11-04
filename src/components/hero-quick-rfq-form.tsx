@@ -4,6 +4,8 @@ import { useState } from "react";
 import { submitQuickRfq } from "@/app/[locale]/actions";
 import { trackGoal } from "@/lib/web-analytics";
 import { useI18n } from "@/i18n/client";
+import { fmt } from "@/i18n";
+import { COMPANY } from "@/lib/site";
 
 export function HeroQuickRfqForm() {
   const { t, locale } = useI18n();
@@ -20,9 +22,15 @@ export function HeroQuickRfqForm() {
     setError(null);
     setSubmitting(true);
 
-    const result = await submitQuickRfq({ companyName, phone, requestType, description }, locale);
-
-    setSubmitting(false);
+    let result: Awaited<ReturnType<typeof submitQuickRfq>>;
+    try {
+      result = await submitQuickRfq({ companyName, phone, requestType, description }, locale);
+    } catch {
+      setError(fmt(t.common.sendFailed, { phone: COMPANY.phone }));
+      return;
+    } finally {
+      setSubmitting(false);
+    }
 
     if (!result.ok) {
       setError(result.error);

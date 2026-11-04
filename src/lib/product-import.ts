@@ -76,10 +76,10 @@ export async function importProductRows(
   // Spec columns: only filled, non-negative numbers / https links are written.
   const specCols = (r: string[]) => {
     const out: Record<string, number | string> = {};
-    for (const k of ["capacityKg", "powerKw"] as const) {
-      const v = n(r, k);
-      if (v !== null && v >= 0) out[k] = v;
-    }
+    const capacity = n(r, "capacityKg");
+    if (capacity !== null && capacity >= 0) out.capacityKg = capacity;
+    const power = parseNumber(get(r, "powerKw"), { groups: false });
+    if (power !== null && power >= 0) out.powerKw = power;
     for (const k of ["liftHeightMm", "workingWidthMm", "leadTimeDays"] as const) {
       const v = n(r, k);
       if (v !== null && v >= 0) out[k] = Math.round(v);

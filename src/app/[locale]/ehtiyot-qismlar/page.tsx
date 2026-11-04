@@ -16,7 +16,9 @@ export async function generateMetadata(props: PageProps<"/[locale]/ehtiyot-qisml
   const sp = await props.searchParams;
   const t = getDictionary(locale);
   const hasQuery = typeof sp.q === "string" && sp.q.trim().length > 0;
-  return pageMetadata({ locale, path: "/ehtiyot-qismlar", title: t.parts.metaTitle, description: t.parts.metaDescription, noindex: hasQuery });
+  // Until spare parts are on sale the page is empty, so it stays out of search results.
+  const empty = (await getSparePartCategories(locale)).length === 0;
+  return pageMetadata({ locale, path: "/ehtiyot-qismlar", title: t.parts.metaTitle, description: t.parts.metaDescription, noindex: hasQuery || empty });
 }
 
 /** Spare parts: part types + search by machine model / part code. */
@@ -75,7 +77,7 @@ export default async function SparePartsPage(props: PageProps<"/[locale]/ehtiyot
             <a href={`tel:${COMPANY.phoneHref}`} className="mt-3 inline-block font-semibold text-indigo-600">{COMPANY.phone}</a>
           </div>
         ) : (
-          <div className="product-grid grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="product-grid grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
             {products.map((p, i) => (
               <ProductCard key={p.id} product={toCard(p, locale)} priority={i < 4} />
             ))}

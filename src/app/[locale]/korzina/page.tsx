@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { useRfq } from "@/lib/rfq-context";
 import { formatSum } from "@/lib/format";
 import { useI18n } from "@/i18n/client";
+import { fmt } from "@/i18n";
+import { COMPANY } from "@/lib/site";
 import { submitRfq } from "../actions";
 import { ProductImage } from "@/components/product-image";
 import { trackGoal } from "@/lib/web-analytics";
@@ -61,11 +63,19 @@ export default function KorzinaPage() {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
-    const result = await submitRfq(
-      { companyName, contactName, phone, requestType, comment, items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })) },
-      locale
-    );
-    setSubmitting(false);
+    let result: Awaited<ReturnType<typeof submitRfq>>;
+    try {
+      result = await submitRfq(
+        { companyName, contactName, phone, requestType, comment, items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })) },
+        locale
+      );
+    } catch {
+      // Network failure, server error or a new deploy: keep the cart and tell the buyer how to reach us.
+      setError(fmt(t.common.sendFailed, { phone: COMPANY.phone }));
+      return;
+    } finally {
+      setSubmitting(false);
+    }
     if (!result.ok) {
       setError(result.error);
       return;

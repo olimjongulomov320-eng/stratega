@@ -15,7 +15,7 @@ export function CatalogFilters({ brands }: { brands: string[] }) {
   }
   return <div className="flex flex-col gap-4 border-t border-slate-200 pt-5">
     {brands.length > 0 && <label className="flex flex-col gap-2 text-sm font-semibold text-slate-700">{t.product.brand}
-      <select value={search.get("brand") ?? ""} onChange={(e) => update("brand", e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 font-normal">
+      <select value={search.get("brand") ?? ""} onChange={(e) => update("brand", e.target.value)} className="rounded-lg border border-slate-200 px-3 py-2 text-sm font-normal">
         <option value="">{t.catalog.allBrands}</option>{brands.map((brand) => <option key={brand} value={brand}>{brand}</option>)}
       </select>
     </label>}
