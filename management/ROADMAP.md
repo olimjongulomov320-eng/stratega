@@ -1,11 +1,39 @@
-# Roadmap (ranked: impact, UX, technical importance, effort, risk)
-1. Fresh `npm ci`, get `npm test` green (low effort, unblocks QA).
-2. Upgrade `next` to patched 16.4.3 (non-major); rebuild and re-test. Then review prisma/undici/nanoid fixes; `@vercel/blob` is a major bump — test uploads.
-3. Back up the live DB, then deploy v2 (robots, sitemap, ru/en, fixes). Needs owner approval.
-4. Add product photos and costs for incomplete products.
-5. Verify and correct business claims (certificates, "2000+ sold", delivery coverage, WhatsApp).
-6. Run Lighthouse + Playwright smoke tests (home, category, product, cart, RFQ, login) at mobile/tablet/desktop.
-7. Confirm admin login is noindex, rate-limited; consider hiding behind staff-only route.
-8. Structured data (Product, Organization) once product data is complete.
-9. Wire a real GitHub remote for this codebase; decide fate of stratega `main` (CyberQalqon).
-10. Add CI: typecheck, lint, test, build.
+# Roadmap
+
+Ranked by business impact, then user experience, technical importance, effort (S/M/L) and risk.
+"Owner" = needs the owner's action or approval. Last updated: 2026-11-04.
+
+## P0 — this week
+
+| # | Item | Effort | Who |
+| --- | --- | --- | --- |
+| 1 | Deploy the audit fixes, then test the Telegram Mini Apps and the admin barcode camera | S | Owner approves |
+| 2 | Import the full catalogue on production and upload photos through the admin panel. Do this **after** #1, with a database backup first | M | Owner |
+| 3 | Switch on Yandex Metrica (and GA4 if wanted), verify Yandex Webmaster and Google Search Console, submit the sitemap, set the region to Tashkent | S | Owner |
+
+## P1 — next 2 weeks
+
+| # | Item | Effort |
+| --- | --- | --- |
+| 4 | Further hardening of the admin panel and its API | M |
+| 5 | Products export and import that round-trip safely | M |
+| 6 | One canonical phone format; guest requests appear in the cabinet after login | M |
+| 7 | Telegram: more robust webhook error handling, on-order products in the bot checkout, localized errors | M |
+| 8 | Search-engine language signals only for languages a product is translated into; report of missing translations | M |
+| 9 | CI (typecheck, lint, test, build) and error monitoring (the monitoring account is an owner decision) | M |
+
+## P2 — performance
+
+| # | Item | Effort |
+| --- | --- | --- |
+| 10 | Cache public pages, with on-demand refresh after admin edits | L |
+| 11 | Run functions in the same region as the database, after confirming where it is (owner approval) | S |
+| 12 | Loading skeletons on catalogue pages, after #10 (see D-8) | S |
+
+## P3 — backlog
+
+- Order, refund and stock workflow improvements (the refund process is an owner decision).
+- Accessibility: quick-view modal, search autocomplete, contrast, same price and call to action on card, quick view and compare.
+- Larger product photos; SVG icons instead of emoji.
+- Serve local `/uploads` for development and self-hosting.
+- Major dependency upgrades, with upload testing.
