@@ -42,4 +42,4 @@ Checked on the live site on 2026-11-08: 22 active products. "After deploy" descr
 3. Add English names and descriptions (admin → Mahsulotlar) for products marked — above.
 4. Fix the data on the economy pallet truck.
 5. Give older products longer descriptions with uses and key specs; new products already have them.
-6. Fill the specification table and the filter fields (capacity, lift height, working width, power) in the admin. Specs written only inside the description are invisible to search engines as data; on 2026-11-08, 8 products had none in structured form and most others 1–3.
+6. For the 7 older products whose descriptions are plain sentences, add a "Texnik xususiyatlari: Label: value; …" paragraph (and the Russian "Характеристики: …"), or fill the specification table. Then fill the filter fields (capacity, lift height, working width, power) in the admin. Specs written only inside the description are invisible to search engines as data; on 2026-11-08, 8 products had none in structured form and most others 1–3.
