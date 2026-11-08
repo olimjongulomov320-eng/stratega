@@ -17,3 +17,4 @@
 - Built the SEO and AI-visibility change and checked it on a local production build. Not pushed.
 - Owner approved. PR #2 merged and deployed (652719e). Live: all 22 products in the sitemap (8 were missing), /llms.txt lists 22, every sitemap URL returns 200. All 103 sitemap URLs submitted to IndexNow (HTTP 202 accepted).
 - Found: specifications mostly live inside description text, so 8 products expose no structured specs and most others 1–3.
+- PR #3 (specs from descriptions) merged and deployed (5cdf5b8). Live: 15 of 22 products carry 6–14 structured specs in uz and ru; /llms.txt shows them. Sitemap re-submitted to IndexNow.

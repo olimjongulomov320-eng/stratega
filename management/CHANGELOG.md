@@ -2,7 +2,7 @@
 
 Local changes until deployed. "Deployed" is stated explicitly when it happens.
 
-## 2026-11-08 — specs from descriptions (NOT deployed)
+## 2026-11-08 — specs from descriptions (deployed, merge commit 5cdf5b8)
 
 - Product structured data and /llms.txt also use the spec paragraph of the description. On the live catalogue, 15 of 22 products go from 0–3 to 6–14 machine-readable specs.
 
