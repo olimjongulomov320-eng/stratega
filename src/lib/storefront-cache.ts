@@ -3,8 +3,8 @@ import { revalidatePath, unstable_cache } from "next/cache";
 
 /**
  * Public pages are cached (the [locale] layout sets how long). Call this after every write that changes what a
- * visitor can see: price, stock, catalogue data, reviews. tests/storefront-cache.test.ts fails on a write path
- * that doesn't.
+ * visitor can see: price, stock, catalogue data, reviews. Call it also when the save reports an error, since part of
+ * it may already be committed. tests/storefront-cache.test.ts fails on a function that writes such data without it.
  *
  * It clears the whole site on purpose. One product's price also shows on other products' pages (related items,
  * spare parts), its category and direction, the home page, page titles and the category's "from" price, and those
@@ -15,8 +15,9 @@ import { revalidatePath, unstable_cache } from "next/cache";
  */
 export function revalidateStorefront() {
   try {
+    // Every cached route carries the root layout tag, so this one call clears them all. The sitemap and /llms.txt
+    // are built per request and don't need it.
     revalidatePath("/", "layout");
-    revalidatePath("/sitemap.xml");
   } catch (error) {
     console.warn("Storefront cache not cleared", error instanceof Error ? error.message : error);
   }

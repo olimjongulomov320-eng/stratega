@@ -205,12 +205,12 @@ Set the same environment variables on the hosted site, set `NEXT_PUBLIC_SITE_URL
 Public pages are cached for an hour, so they open faster. You don't need to do anything for normal work:
 
 - **Saves in the admin panel and Telegram `/narx` and `/qoldiq` show on the site at once.** The sitemap updates too.
-- **Scripts and direct database changes** (`npm run seed:focus`, `scripts/import-products.ts`, `npm run db:seed`, the other `scripts/`) do not clear the cache. Their changes appear within an hour. To show them sooner, open any product in the admin panel and press Save, or redeploy.
+- **Scripts and direct database changes** (`npm run seed:focus`, `scripts/import-products.ts`, `npm run db:seed`, the other `scripts/`) do not clear the cache. **After running one, press Admin → Sozlamalar → «Sahifalarni yangilash».** Otherwise a page only refreshes on the first visit after its hour is up, and that visitor still gets the old copy; a rarely visited page can stay out of date much longer.
 - **`npm run telegram:dev`** (the local poller) cannot clear the cache either. It prints "Storefront cache not cleared", and the webhook used in production can.
 
 For developers:
 
-- Code that writes products, categories, reviews, price lists or stock must call `revalidateStorefront()` from `src/lib/storefront-cache.ts`. `npm test` fails on a new write path until it is added to the list in `tests/storefront-cache.test.ts`.
+- Code that writes products, categories, reviews, price lists or stock must call `revalidateStorefront()` from `src/lib/storefront-cache.ts`, inside the same function, right after the write (after the permission check, so an anonymous request can never clear the cache). `npm test` fails when a function in a listed file writes without it, and when a new file writes such data until it is added to `tests/storefront-cache.test.ts`. Scripts in `scripts/` are not checked.
 - Public pages must not read cookies, headers or `searchParams`: that makes every page under them render per request again. Buyer-specific data goes through `useBuyerPrice` and `/api/buyer-prices`; login state comes from `useLoginHint`.
-- Catalogue pages: `page.tsx` is the cached plain URL and `filtered/page.tsx` handles URLs with a query (`src/lib/catalog-route.ts`). To keep a new ad tag on the cached page, add it there.
+- Catalogue pages: `page.tsx` is the cached plain URL and `filtered/page.tsx` handles URLs with a query (`src/lib/catalog-route.ts`). `filtered` pages answer only through the proxy's rewrite; opened directly they are a 404. To keep a new ad tag on the cached page, add it to `catalog-route.ts`.
 - Keep `loading.tsx` off these routes (`management/DECISION_LOG.md`, D-8).

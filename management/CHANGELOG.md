@@ -19,6 +19,15 @@ Local changes until deployed. "Deployed" is stated explicitly when it happens.
 
 ### Reliability
 - A page rendered without menus during a database failure stays in the cache for one minute instead of one hour (D-13, D-24).
+- Build workers use one database connection each (D-26).
+
+### After the independent review (2026-11-08)
+- Admin → Sozlamalar has a «Sahifalarni yangilash» button for changes made by scripts (README §11).
+- Each save clears the cache right after its write, so a later error in the same save (for example the audit entry) no longer leaves pages stale (D-27).
+- The guard test now checks every function that writes public data, any database client name and raw SQL on those tables.
+- `filtered` routes are a 404 when opened directly instead of a duplicate page.
+- More ad tags keep the cached page (`srsltid`, `gad_source`, `gad_campaignid`, `msclkid`, `_gl`, `ttclid`).
+- `/api/buyer-prices` answers an empty or odd request body without an error.
 
 ## 2026-11-08 — specs from descriptions (NOT deployed)
 

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { decodeAdminToken, ADMIN_COOKIE } from "@/lib/admin-auth";
-import { filteredCatalogPath } from "@/lib/catalog-route";
+import { filteredCatalogPath, FILTERED_REWRITE_HEADER } from "@/lib/catalog-route";
 import { SESSION_COOKIE, LOGIN_HINT_COOKIE, LOGIN_HINT_MAX_AGE_SECONDS, loginHintCookieOptions, newLoginHint } from "@/lib/login-hint";
 
 const PREFIXED = ["ru", "en"];
@@ -44,15 +44,19 @@ function routePublicSite(request: NextRequest) {
     if (!filtered) return NextResponse.next();
     const url = request.nextUrl.clone();
     url.pathname = `/${first}${filtered}`;
-    return NextResponse.rewrite(url);
+    const headers = new Headers(request.headers);
+    headers.set(FILTERED_REWRITE_HEADER, "1");
+    return NextResponse.rewrite(url, { request: { headers } });
   }
 
   // Unprefixed = Uzbek: rewrite internally to /uz/... (URL in the browser stays the same).
   const url = request.nextUrl.clone();
-  const path = filteredCatalogPath(pathname, searchParams) ?? pathname;
+  const filtered = filteredCatalogPath(pathname, searchParams);
+  const path = filtered ?? pathname;
   url.pathname = `/uz${path === "/" ? "" : path}`;
   const headers = new Headers(request.headers);
   headers.set(DEFAULT_LOCALE_REWRITE, "1");
+  if (filtered) headers.set(FILTERED_REWRITE_HEADER, "1");
   return NextResponse.rewrite(url, { request: { headers } });
 }
 

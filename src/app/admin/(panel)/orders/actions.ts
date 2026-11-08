@@ -238,9 +238,9 @@ export async function shipShipment(_: ActionState, form: FormData): Promise<Acti
       }
       throw new Error("Noma'lum amal.");
     });
-    await audit(session, `Jo'natma: ${to}`, "Shipment", id);
-    revalidatePath("/admin", "layout");
     // Only shipping takes goods out of stock; reservations and the other statuses don't change what visitors see.
     if (to === "SHIPPED") revalidateStorefront();
+    await audit(session, `Jo'natma: ${to}`, "Shipment", id);
+    revalidatePath("/admin", "layout");
   });
 }

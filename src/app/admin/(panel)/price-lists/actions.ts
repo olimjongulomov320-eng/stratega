@@ -17,10 +17,10 @@ export async function savePriceList(_: ActionState, form: FormData): Promise<Act
     const data = { name, code, note: optStr(form, "note"), isActive: bool(form, "isActive") };
     if (id) await prisma.priceList.update({ where: { id }, data });
     else savedId = (await prisma.priceList.create({ data })).id;
+    revalidateStorefront();
     await audit(session, id ? "Narx ro'yxati tahrirlandi" : "Narx ro'yxati yaratildi", "PriceList", savedId);
   });
   if (res?.error) return res;
-  revalidateStorefront();
   redirect(`/admin/price-lists/${savedId}`);
 }
 
@@ -43,9 +43,9 @@ export async function savePrices(_: ActionState, form: FormData): Promise<Action
       await prisma.priceListItem.upsert({ where: { priceListId_productId: { priceListId, productId } }, create: { priceListId, productId, price }, update: { price } });
       changed++;
     }
+    revalidateStorefront();
     await audit(session, "Narx ro'yxati narxlari saqlandi", "PriceList", priceListId, { changed });
     revalidatePath(`/admin/price-lists/${priceListId}`);
-    revalidateStorefront();
     return { ok: true, message: "Narxlar saqlandi." };
   });
 }

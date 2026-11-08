@@ -12,13 +12,13 @@ const NEVER_CACHE = { "cache-control": "private, no-store" };
  * price list. "Price on request" items are left out, as they are everywhere on the site's pages.
  */
 export async function POST(req: Request) {
-  let body: { ids?: unknown };
+  let body: { ids?: unknown } | null;
   try {
     body = await req.json();
   } catch {
     return Response.json({}, { status: 400, headers: NEVER_CACHE });
   }
-  const ids = Array.isArray(body.ids) ? body.ids.filter((x): x is string => typeof x === "string").slice(0, MAX_IDS) : [];
+  const ids = Array.isArray(body?.ids) ? body.ids.filter((x: unknown): x is string => typeof x === "string").slice(0, MAX_IDS) : [];
 
   const list = await getBuyerPriceList();
   if (!list || ids.length === 0) return Response.json({}, { headers: NEVER_CACHE });

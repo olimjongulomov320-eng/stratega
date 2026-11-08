@@ -16,11 +16,18 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
-// Writes to the data public pages show, directly or through the stock helpers.
-const CATALOGUE_WRITE =
-  /\b(?:prisma|tx)\.(?:product|category|review|priceList|priceListItem)\.(?:create|createMany|update|updateMany|upsert|delete|deleteMany)\(|\b(?:moveStock|postStockDocument|syncProductStock)\(/;
+// Writes to the data public pages show: products, categories, reviews, stock, price lists. Any client name, any spacing,
+// raw SQL on those tables, and the helpers that write them.
+const CATALOGUE_WRITE = new RegExp(
+  [
+    String.raw`\.\s*(?:product|category|review|priceList|priceListItem)\s*\.\s*(?:create|createMany|createManyAndReturn|update|updateMany|updateManyAndReturn|upsert|delete|deleteMany)\s*\(`,
+    String.raw`\$(?:executeRaw|executeRawUnsafe|queryRaw|queryRawUnsafe)\b[^;]*?\b(?:INSERT|UPDATE|DELETE)\b[^;]*?"(?:Product|Category|Review|StockLevel|PriceList|PriceListItem)"`,
+    String.raw`\b(?:moveStock|postStockDocument|syncProductStock|importProductRows)\s*\(`,
+  ].join("|"),
+  "s"
+);
 
-// Every file that writes such data. The ones that clear the cache themselves:
+// Files whose functions write that data. Each such function must clear the cache itself (checked below).
 const CLEARS_THE_CACHE = [
   "app/admin/(panel)/categories/actions.ts", // category saved, deleted
   "app/admin/(panel)/orders/actions.ts", // shipment shipped (stock goes out)
@@ -37,19 +44,45 @@ const CALLERS_CLEAR_THE_CACHE = [
   "lib/product-import.ts", // importProductRows: products/actions.ts (also scripts/import-products.ts, see README)
 ];
 
+/** Top-level functions of a source file, with their bodies (brace matching; enough for this code base). */
+function functions(source: string): { name: string; body: string; start: number; end: number }[] {
+  const found: { name: string; body: string; start: number; end: number }[] = [];
+  const header = /^(?:export\s+)?(?:async\s+)?function\s+(\w+)\s*\(|^(?:export\s+)?const\s+(\w+)\s*=\s*(?:async\s*)?\(/gm;
+  for (let m = header.exec(source); m; m = header.exec(source)) {
+    const open = source.indexOf("{", source.indexOf(")", m.index));
+    let depth = 0;
+    let i = open;
+    for (; i < source.length; i++) {
+      if (source[i] === "{") depth++;
+      else if (source[i] === "}" && --depth === 0) break;
+    }
+    found.push({ name: m[1] ?? m[2], body: source.slice(open, i + 1), start: m.index, end: i + 1 });
+    header.lastIndex = i + 1;
+  }
+  return found;
+}
+
 describe("every write to public data clears the page cache", () => {
   const writers = sourceFiles(SRC)
-    .filter((file) => !file.endsWith("storefront-cache.test.ts") && CATALOGUE_WRITE.test(readFileSync(file, "utf8")))
+    .filter((file) => CATALOGUE_WRITE.test(readFileSync(file, "utf8")))
     .map((file) => path.relative(SRC, file).split(path.sep).join("/"))
     .sort();
 
-  test("the list above is complete: a new write path must be added here and clear the cache", () => {
+  test("the list above is complete: a new file that writes public data must be added here", () => {
     assert.deepEqual(writers, [...CLEARS_THE_CACHE, ...CALLERS_CLEAR_THE_CACHE].sort());
   });
 
   for (const file of CLEARS_THE_CACHE) {
-    test(file, () => {
-      assert.match(readFileSync(path.join(SRC, file), "utf8"), /revalidateStorefront\(\)/);
+    test(`${file}: every function that writes clears the cache`, () => {
+      const source = readFileSync(path.join(SRC, file), "utf8");
+      const fns = functions(source);
+      const writing = fns.filter((fn) => CATALOGUE_WRITE.test(fn.body));
+      assert.ok(writing.length > 0, "no writing function found");
+      for (const fn of writing) assert.match(fn.body, /revalidateStorefront\(\)/, `${fn.name} writes public data without revalidateStorefront()`);
+      // A write outside any function (module level) would escape the check above.
+      let outside = source;
+      for (const fn of [...fns].reverse()) outside = outside.slice(0, fn.start) + outside.slice(fn.end);
+      assert.doesNotMatch(outside, CATALOGUE_WRITE);
     });
   }
 
@@ -88,6 +121,7 @@ describe("filteredCatalogPath", () => {
   });
   test("ad and analytics tags keep the cached page", () => {
     assert.equal(route("/category/rohlya", "utm_source=ads&utm_campaign=x&gclid=1&yclid=2&fbclid=3"), null);
+    assert.equal(route("/search", "srsltid=a&gad_source=1&gad_campaignid=2&msclkid=3&_gl=4&ttclid=5"), null);
     assert.equal(route("/search", "_rsc=abc"), null);
   });
   test("a tag next to a filter still renders per request", () => {

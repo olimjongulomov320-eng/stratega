@@ -13,8 +13,8 @@ export async function addReview(_: ActionState, form: FormData): Promise<ActionS
     const rating = Math.min(5, Math.max(1, int(form, "rating") ?? 5));
     if (!productId || !authorName || !comment) throw new Error("Mahsulot, muallif va matnni kiriting.");
     const r = await prisma.review.create({ data: { productId, authorName, company: optStr(form, "company"), rating, comment, isApproved: true } });
-    await audit(session, "Sharh qo'shildi", "Review", r.id);
     revalidateStorefront();
+    await audit(session, "Sharh qo'shildi", "Review", r.id);
     return { ok: true, message: "Sharh qo'shildi." };
   });
 }
@@ -26,7 +26,7 @@ export async function toggleReview(_: ActionState, form: FormData): Promise<Acti
     const action = str(form, "do");
     if (action === "delete") await prisma.review.delete({ where: { id } });
     else await prisma.review.update({ where: { id }, data: { isApproved: action === "approve" } });
-    await audit(session, `Sharh: ${action}`, "Review", id);
     revalidateStorefront();
+    await audit(session, `Sharh: ${action}`, "Review", id);
   });
 }

@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { requireAction, audit, safe, type ActionState } from "@/lib/admin";
 import { SETTING_DEFS } from "@/lib/settings";
+import { revalidateStorefront } from "@/lib/storefront-cache";
 
 export async function saveSettings(_: ActionState, form: FormData): Promise<ActionState> {
   return safe(async () => {
@@ -21,5 +22,15 @@ export async function saveSettings(_: ActionState, form: FormData): Promise<Acti
     await audit(session, "Sozlamalar saqlandi", "Setting");
     revalidatePath("/admin", "layout");
     return { ok: true, message: "Saqlandi." };
+  });
+}
+
+/** Clears the cached public pages: for changes made outside the admin panel (scripts, direct database edits). */
+export async function refreshPublicPages(): Promise<ActionState> {
+  return safe(async () => {
+    const session = await requireAction("settings.manage");
+    revalidateStorefront();
+    await audit(session, "Sayt sahifalari yangilandi", "Setting");
+    return { ok: true, message: "Sayt sahifalari yangilandi." };
   });
 }

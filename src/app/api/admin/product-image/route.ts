@@ -37,10 +37,10 @@ export async function POST(req: Request) {
     // An extra photo goes to the gallery; if the product has no main photo yet, it becomes the main one.
     const data = asExtra && product.imageUrl ? { images: [...product.images, url] } : { imageUrl: url };
     await prisma.product.update({ where: { id: product.id }, data });
+    revalidateStorefront();
     await prisma.auditLog.create({
       data: { action: asExtra ? "Qo'shimcha rasm yuklandi" : "Asosiy rasm yuklandi", actor: session.name, actorId: session.employeeId, entityType: "Product", entityId: product.id, details: { file: file.name, url } },
     });
-    revalidateStorefront();
     return Response.json({ ok: true, product: product.name, sku: product.sku, url, as: asExtra ? "extra" : "main" });
   } catch (err) {
     return Response.json({ error: err instanceof Error ? err.message : String(err) }, { status: 400 });

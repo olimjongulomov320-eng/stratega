@@ -40,10 +40,10 @@ export async function createDocument(_: ActionState, form: FormData): Promise<Ac
       id = doc.id;
       if (post) await postStockDocument(tx, doc.id, session.name, allowNegative);
     });
+    if (post) revalidateStorefront();
     await audit(session, post ? "Ombor hujjati o'tkazildi" : "Ombor hujjati yaratildi", "StockDocument", id, { type });
   });
   if (res?.error) return res;
-  revalidateStorefront();
   redirect(`/admin/stock-documents/${id}`);
 }
 
@@ -53,8 +53,8 @@ export async function postDocument(_: ActionState, form: FormData): Promise<Acti
     const id = str(form, "id");
     const allowNegative = await getSetting<boolean>("stock.allowNegative");
     await prisma.$transaction((tx) => postStockDocument(tx, id, session.name, allowNegative));
-    await audit(session, "Ombor hujjati o'tkazildi", "StockDocument", id);
     revalidateStorefront();
+    await audit(session, "Ombor hujjati o'tkazildi", "StockDocument", id);
     return { ok: true, message: "Hujjat o'tkazildi — qoldiqlar yangilandi." };
   });
 }

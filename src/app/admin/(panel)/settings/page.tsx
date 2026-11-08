@@ -2,7 +2,7 @@ import { requirePage } from "@/lib/admin";
 import { PageHeader, Field, inputCls, Card } from "@/components/admin/ui";
 import { ActionForm, Submit } from "@/components/admin/forms";
 import { SETTING_DEFS, getSettings } from "@/lib/settings";
-import { saveSettings } from "./actions";
+import { saveSettings, refreshPublicPages } from "./actions";
 
 export default async function SettingsPage() {
   await requirePage("settings.manage");
@@ -25,6 +25,12 @@ export default async function SettingsPage() {
         )}
         <div><Submit>Saqlash</Submit></div>
       </ActionForm>
+      <Card title="Sayt sahifalari" className="mt-6">
+        <p className="text-sm text-slate-600">Sayt sahifalari tez ochilishi uchun bir soatgacha saqlanadi. Admin panel va Telegram orqali kiritilgan o&apos;zgarishlar saytda darhol ko&apos;rinadi. Skript yoki bazada to&apos;g&apos;ridan-to&apos;g&apos;ri o&apos;zgartirgandan keyin shu tugmani bosing.</p>
+        <ActionForm action={refreshPublicPages} className="mt-3">
+          <Submit variant="secondary">Sahifalarni yangilash</Submit>
+        </ActionForm>
+      </Card>
       <Card title="Sayt matnlari va da'volar" className="mt-6">
         <p className="text-sm text-slate-600">Kompaniya rekvizitlari, telefon, manzil va saytdagi da&apos;volar (CE sertifikati, servis markazi, sotilgan dona soni, kafolat) <code>src/lib/site.ts</code> faylida. Har bir da&apos;vo faqat yoqilganda ko&apos;rsatiladi — faqat haqiqat bo&apos;lsa yoqing.</p>
       </Card>
