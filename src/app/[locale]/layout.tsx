@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { notFound } from "next/navigation";
+import { notFound, unstable_rethrow } from "next/navigation";
 import "@fontsource-variable/inter";
 import "../globals.css";
 import { LOCALES, isLocale } from "@/i18n/config";
@@ -38,6 +38,7 @@ export default async function LocaleLayout(props: LayoutProps<"/[locale]">) {
   const dict = getDictionary(locale);
   // A database failure must not take the layout down with it: the page's error.tsx then still shows contacts and navigation.
   const onFail = <T,>(fallback: T) => (error: unknown) => {
+    unstable_rethrow(error); // Next's own signals (e.g. "this page reads cookies") must pass through.
     console.error("Layout query failed", error instanceof Error ? error.message : error);
     return fallback;
   };

@@ -22,7 +22,7 @@ The live site runs the v2 codebase on Vercel: a well-structured Next.js + Prisma
 
 ## Priorities
 
-"Fixed" means fixed on this branch; it reaches the live site only when deployed.
+"Fixed" items were deployed to production on 2026-11-04 (merge commit c31b729) and checked on the live site; see QA_REPORT.
 
 | # | Improvement | Status |
 | --- | --- | --- |

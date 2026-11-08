@@ -125,6 +125,13 @@ export default async function Home(props: PageProps<"/[locale]">) {
         name: `${COMPANY.brand} — INDEX`,
         telephone: COMPANY.phone,
         address: { "@type": "PostalAddress", streetAddress: COMPANY.shop[locale], addressLocality: COMPANY.city, addressCountry: COMPANY.country },
+        hasMap: COMPANY.shopMapUrl,
+        openingHoursSpecification: {
+          "@type": "OpeningHoursSpecification",
+          dayOfWeek: COMPANY.openingHours.days,
+          opens: COMPANY.openingHours.opens,
+          closes: COMPANY.openingHours.closes,
+        },
       },
     },
     {

@@ -15,6 +15,7 @@ import { toCard, modelTokens, sparePartsWhere } from "@/lib/products";
 import { pageMetadata, absoluteUrl, jsonLd, fitTitle } from "@/lib/seo";
 import { CLAIMS, COMPANY } from "@/lib/site";
 import { SPEC_FILTERS, parseSpecRows, specLabel, youTubeId } from "@/lib/product-specs";
+import { productLocales, productFacts } from "@/lib/product-seo";
 import { getBuyerPriceList, getBuyerPrices } from "@/lib/customer-price";
 import { ProductImage } from "@/components/product-image";
 import { QuickOrder } from "@/components/quick-order";
@@ -33,9 +34,13 @@ export async function generateMetadata(props: PageProps<"/[locale]/product/[slug
   if (!product || !product.isActive) return { title: getDictionary(locale).notFound.title, robots: { index: false } };
   const t = getDictionary(locale);
   const name = localName(product, locale);
+  // A language without its own product name would show another language's text: keep it out of search results.
+  const locales = productLocales(product);
   return pageMetadata({
     locale,
     path: `/product/${slug}`,
+    locales,
+    noindex: !locales.includes(locale),
     title: product.priceOnRequest
       ? fitTitle(fmt(t.meta.productTitleNoPrice, { name }), `${name} | Stratega`)
       : fitTitle(
@@ -80,11 +85,12 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
   const avgRating = reviews.length ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : null;
   const url = absoluteUrl(lp(`/product/${product.slug}`));
 
-  // Google rejects a Product without an offer, review or rating, so "price on request" items without
-  // reviews get only the breadcrumb. Out-of-stock items are imported to order, hence BackOrder.
-  const hasProductSchema = !product.priceOnRequest || avgRating !== null;
+  // Every product is described, so search engines and AI assistants know its brand, model and specs. A "price on
+  // request" item has no offer: Google then shows no price rich result for it, which is accepted. Out-of-stock
+  // items are imported to order, hence BackOrder.
+  const seoFacts = productFacts(product, locale);
   const structuredData = [
-    hasProductSchema && {
+    {
       "@context": "https://schema.org",
       "@type": "Product",
       name,
@@ -94,6 +100,7 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
       brand: product.brand ? { "@type": "Brand", name: product.brand } : undefined,
       category: categoryName,
       url,
+      additionalProperty: seoFacts.length ? seoFacts.map((f) => ({ "@type": "PropertyValue", name: f.name, value: f.value })) : undefined,
       // A Product offer needs a real price; "price on request" items are listed without one.
       offers: product.priceOnRequest ? undefined : {
         "@type": "Offer",

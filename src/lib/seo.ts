@@ -8,10 +8,10 @@ export function absoluteUrl(path: string): string {
   return `${SITE_URL}${path === "/" ? "" : path}` || SITE_URL;
 }
 
-/** canonical + hreflang for a locale-neutral path like "/product/x". */
-export function alternatesFor(locale: Locale, path: string): Metadata["alternates"] {
+/** canonical + hreflang for a locale-neutral path like "/product/x"; `locales` limits hreflang to languages the page really has. */
+export function alternatesFor(locale: Locale, path: string, locales: readonly Locale[] = LOCALES): Metadata["alternates"] {
   const languages: Record<string, string> = {};
-  for (const l of LOCALES) languages[l] = absoluteUrl(localePath(l, path));
+  for (const l of locales) languages[l] = absoluteUrl(localePath(l, path));
   languages["x-default"] = absoluteUrl(localePath("uz", path));
   return { canonical: absoluteUrl(localePath(locale, path)), languages };
 }
@@ -24,13 +24,15 @@ export function pageMetadata(opts: {
   image?: string | null;
   type?: "website" | "article";
   noindex?: boolean;
+  locales?: readonly Locale[];
 }): Metadata {
+  const locales = opts.locales ?? LOCALES;
   const url = absoluteUrl(localePath(opts.locale, opts.path));
   const image = opts.image ? (opts.image.startsWith("http") ? opts.image : absoluteUrl(opts.image)) : absoluteUrl("/og-default.png");
   return {
     title: { absolute: opts.title },
     description: opts.description,
-    alternates: alternatesFor(opts.locale, opts.path),
+    alternates: alternatesFor(opts.locale, opts.path, locales),
     openGraph: {
       type: opts.type ?? "website",
       url,
@@ -38,7 +40,7 @@ export function pageMetadata(opts: {
       description: opts.description,
       siteName: "Stratega",
       locale: LOCALE_TAGS[opts.locale].replace("-", "_"),
-      alternateLocale: LOCALES.filter((l) => l !== opts.locale).map((l) => LOCALE_TAGS[l].replace("-", "_")),
+      alternateLocale: locales.filter((l) => l !== opts.locale).map((l) => LOCALE_TAGS[l].replace("-", "_")),
       images: [{ url: image }],
     },
     twitter: { card: "summary_large_image", title: opts.title, description: opts.description, images: [image] },
