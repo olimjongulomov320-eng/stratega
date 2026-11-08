@@ -2,7 +2,11 @@
 
 Local changes until deployed. "Deployed" is stated explicitly when it happens.
 
-## 2026-11-08 — SEO and AI visibility (NOT deployed)
+## 2026-11-08 — specs from descriptions (NOT deployed)
+
+- Product structured data and /llms.txt also use the spec paragraph of the description. On the live catalogue, 15 of 22 products go from 0–3 to 6–14 machine-readable specs.
+
+## 2026-11-08 — SEO and AI visibility (deployed, merge commit 652719e)
 
 - Sitemap always current; products listed only in the languages they have names in.
 - Product structured data for every product, with specifications as properties.

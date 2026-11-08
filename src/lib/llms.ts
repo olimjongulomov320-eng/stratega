@@ -1,7 +1,7 @@
 import { localePath } from "@/i18n/config";
 import { absoluteUrl } from "@/lib/seo";
 import { formatNumber } from "@/lib/format";
-import { localName } from "@/lib/localize";
+import { localName, localDescription } from "@/lib/localize";
 import { productFacts, productLocales } from "@/lib/product-seo";
 import { COMPANY } from "@/lib/site";
 
@@ -11,6 +11,8 @@ type LlmsProduct = Parameters<typeof productFacts>[0] & {
   name: string;
   nameRu: string | null;
   nameEn: string | null;
+  description: string | null;
+  descriptionRu: string | null;
   brand: string | null;
   sku: string | null;
   price: number;
@@ -46,7 +48,7 @@ export function buildLlmsTxt(categories: LlmsCategory[], products: LlmsProduct[]
       const ru = productLocales(p).includes("ru");
       const title = ru ? localName(p, "ru") : p.name;
       const price = p.priceOnRequest ? "price on request" : `${formatNumber(p.price).replace(/\u00a0/g, " ")} UZS`;
-      const facts = productFacts(p, ru ? "ru" : "uz", 6).map((f) => `${f.name}: ${f.value}`);
+      const facts = productFacts(p, ru ? "ru" : "uz", 8, localDescription(p, ru ? "ru" : "uz")).map((f) => `${f.name}: ${f.value}`);
       const details = [p.brand && `brand ${p.brand}`, p.sku && `model ${p.sku}`, price, p.stock > 0 ? "in stock" : "to order", ...facts]
         .filter(Boolean)
         .join("; ");

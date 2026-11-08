@@ -88,7 +88,7 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
   // Every product is described, so search engines and AI assistants know its brand, model and specs. A "price on
   // request" item has no offer: Google then shows no price rich result for it, which is accepted. Out-of-stock
   // items are imported to order, hence BackOrder.
-  const seoFacts = productFacts(product, locale);
+  const seoFacts = productFacts(product, locale, 20, description);
   const structuredData = [
     {
       "@context": "https://schema.org",
