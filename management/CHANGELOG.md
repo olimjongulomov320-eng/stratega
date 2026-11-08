@@ -2,6 +2,17 @@
 
 Local changes until deployed. "Deployed" is stated explicitly when it happens.
 
+## 2026-11-08 — SEO and AI visibility (NOT deployed)
+
+- Sitemap always current; products listed only in the languages they have names in.
+- Product structured data for every product, with specifications as properties.
+- English product pages without an English name are `noindex`.
+- `/llms.txt`: catalogue for AI assistants, built from live data.
+- IndexNow: key file, daily submission of changed products (Vercel cron), `npm run indexnow` for a full submission.
+- Shop opening hours and map link in the store's structured data.
+- Layout error handling no longer swallows Next.js internal signals.
+- Per-product status: `management/SEO_PRODUCTS.md`.
+
 ## 2026-11-04 — audit fixes (deployed to production, merge commit c31b729)
 
 ### Security and dependencies

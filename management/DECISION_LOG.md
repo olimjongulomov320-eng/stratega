@@ -18,3 +18,11 @@ Numbers are not continuous: some decisions are recorded privately (D-14).
 - **D-10 Catch-all route for unknown URLs.** Costs a function call per junk URL; accepted so visitors get a branded 404 with navigation.
 - **D-13 Layout queries fail soft.** If the database is down the menus are empty but the page still renders, so `error.tsx` can show contacts and info pages keep working. Pages that need data still return HTTP 500.
 - **D-14 This repository stays public (owner's decision).** Nothing goes into this folder, commit messages or pull requests that describes an unfixed weakness, shows how to exploit one, reveals a hidden price, or lists claims awaiting proof. Full audit material is kept privately, outside git. Fixes should be deployed soon after they are pushed.
+
+## 2026-11-08
+
+- **D-15 Every product gets Product structured data (replaces part of D-6).** Price-on-request items now carry brand, model, photos and specifications without an offer. Google shows no price rich result for them, which is accepted: search engines and AI assistants still learn what the product is.
+- **D-16 Sitemap built on each request.** The cached sitemap stayed stale, so products added in the admin never reached search engines.
+- **D-17 A product is published only in languages it has a name in.** Uzbek always; Russian and English need their own name, otherwise that page is `noindex` and left out of hreflang and the sitemap.
+- **D-18 AI visibility through the big indexes, not tricks.** ChatGPT search and Copilot use Bing, Gemini uses Google, Alice uses Yandex. So: IndexNow for Bing and Yandex, a fresh sitemap, rich structured data, and `/llms.txt` as a plain-text catalogue. `/llms.txt` states only what the product pages show.
+- **D-19 Layout error handling passes Next.js internal signals through** (`unstable_rethrow`). The 2026-11-04 catch swallowed the "page reads cookies" signal; harmless today because pages are dynamic anyway, but it would break static pages.

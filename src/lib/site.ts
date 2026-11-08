@@ -36,6 +36,8 @@ export const COMPANY = {
   // Bank account number: fill in from the bank details. Left empty = not shown.
   bankAccount: "",
   hours: { uz: "Dushanba–Shanba, 09:00–21:00", ru: "Понедельник–Суббота, 09:00–21:00", en: "Monday–Saturday, 09:00–21:00" },
+  // The same hours for search engines (structured data). Keep both in step.
+  openingHours: { days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], opens: "09:00", closes: "21:00" },
   // Floating "write to us" buttons. Set a value to "" to hide that button.
   messengers: {
     telegram: "https://t.me/stratega_uz",

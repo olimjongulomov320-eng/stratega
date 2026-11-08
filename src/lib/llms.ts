@@ -1,0 +1,59 @@
+import { localePath } from "@/i18n/config";
+import { absoluteUrl } from "@/lib/seo";
+import { formatNumber } from "@/lib/format";
+import { localName } from "@/lib/localize";
+import { productFacts, productLocales } from "@/lib/product-seo";
+import { COMPANY } from "@/lib/site";
+
+type LlmsCategory = { slug: string; name: string; nameRu: string | null; nameEn: string | null };
+type LlmsProduct = Parameters<typeof productFacts>[0] & {
+  slug: string;
+  name: string;
+  nameRu: string | null;
+  nameEn: string | null;
+  brand: string | null;
+  sku: string | null;
+  price: number;
+  priceOnRequest: boolean;
+  stock: number;
+  categorySlug: string;
+};
+
+/**
+ * /llms.txt (llmstxt.org): a plain-text map of the shop for AI assistants — who we are, where to buy, and every
+ * product with its page, price and key specs. States only what the product pages already show.
+ */
+export function buildLlmsTxt(categories: LlmsCategory[], products: LlmsProduct[]): string {
+  const lines: string[] = [
+    `# ${COMPANY.brand} (stratega.uz)`,
+    "",
+    "> B2B supplier of warehouse equipment, floor-cleaning machines, PE pipe welding machines and related equipment in Tashkent, Uzbekistan. Prices in Uzbek so'm (UZS); the site is in Uzbek (default), Russian (/ru) and English (/en).",
+    "",
+    "## Contacts",
+    `- Phone: ${COMPANY.phone}`,
+    `- Telegram: ${COMPANY.messengers.telegram}`,
+    `- Email: ${COMPANY.email}`,
+    `- Shop: ${COMPANY.shop.en} (${COMPANY.hours.en})`,
+    `- Legal entity: ${COMPANY.legalName}, INN ${COMPANY.inn}`,
+    `- Website: ${absoluteUrl("/")}`,
+    "",
+  ];
+  for (const c of categories) {
+    const items = products.filter((p) => p.categorySlug === c.slug);
+    if (!items.length) continue;
+    lines.push(`## ${c.nameRu || c.name} / ${c.name}`, "", `Category page: ${absoluteUrl(localePath("ru", `/category/${c.slug}`))}`, "");
+    for (const p of items) {
+      const ru = productLocales(p).includes("ru");
+      const title = ru ? localName(p, "ru") : p.name;
+      const price = p.priceOnRequest ? "price on request" : `${formatNumber(p.price).replace(/\u00a0/g, " ")} UZS`;
+      const facts = productFacts(p, ru ? "ru" : "uz", 6).map((f) => `${f.name}: ${f.value}`);
+      const details = [p.brand && `brand ${p.brand}`, p.sku && `model ${p.sku}`, price, p.stock > 0 ? "in stock" : "to order", ...facts]
+        .filter(Boolean)
+        .join("; ");
+      lines.push(`- [${title}](${absoluteUrl(localePath(ru ? "ru" : "uz", `/product/${p.slug}`))}): ${details}`);
+      if (ru && p.name !== title) lines.push(`  - O'zbekcha: [${p.name}](${absoluteUrl(`/product/${p.slug}`)})`);
+    }
+    lines.push("");
+  }
+  return lines.join("\n");
+}
