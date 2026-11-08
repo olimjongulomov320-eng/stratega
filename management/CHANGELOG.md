@@ -2,7 +2,7 @@
 
 Local changes until deployed. "Deployed" is stated explicitly when it happens.
 
-## 2026-11-08 — SEO and AI visibility (NOT deployed)
+## 2026-11-08 — SEO and AI visibility (deployed, merge commit 652719e)
 
 - Sitemap always current; products listed only in the languages they have names in.
 - Product structured data for every product, with specifications as properties.

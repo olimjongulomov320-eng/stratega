@@ -15,3 +15,5 @@
 - Compared with irtemstroymarket.uz: they answer about 4× faster (server in Uzbekistan); we lead on prices, filters and SEO basics.
 - Audited all 22 live products in uz/ru/en. 8 were missing from the stale sitemap; English pages showed Russian text; one product has contradictory data.
 - Built the SEO and AI-visibility change and checked it on a local production build. Not pushed.
+- Owner approved. PR #2 merged and deployed (652719e). Live: all 22 products in the sitemap (8 were missing), /llms.txt lists 22, every sitemap URL returns 200. All 103 sitemap URLs submitted to IndexNow (HTTP 202 accepted).
+- Found: specifications mostly live inside description text, so 8 products expose no structured specs and most others 1–3.
