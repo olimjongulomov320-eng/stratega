@@ -43,3 +43,9 @@ Numbers are not continuous: some decisions are recorded privately (D-14).
 - **D-21 Two kinds of stock.** Products are "own warehouse" (stock ledger, reserved on confirmation) or "supplier warehouse" (bought from a supplier's local warehouse right after each sale). Supplier items never enter the ledger, always show as available, and each sold line records the price actually paid, which drives margins. Butt welding machines and warehouse equipment are own stock; Xiangshun and BISON are supplier stock (owner's instruction).
 - **D-22 Supplier prices.** Xiangshun: purchase price in USD x CBU rate of the import day + 20%, rounded up. BISON: no local purchase price exists in the files; the factory PDF prices are FOB China without shipping, customs or VAT, so they are not used as cost. BISON stays "price on request" until the owner enters local prices.
 - **D-23 Product data is prepared as import files**, not written to the production database directly: the owner uploads them in the admin. Each file holds at most 100 rows so an import fits Vercel's time limit.
+
+## 2026-11-10
+
+- **D-28 Own stock is only the TURAN welders and the NIULI order (owner's instruction, replaces the D-21 split).** Everything else is supplier stock. The NIULI items show "to order" with a delivery time until the goods arrive and are received into stock; their cost is estimated from the factory price plus the expense share of the last TURAN shipment until the real landed cost is known. Prices already on the site are kept where they are above cost + 20%; new pages use cost + 20%.
+- **D-29 New product photos ship with the site (`public/products/`)** and are linked from the import file. Uploads to Vercel Blob were failing, so this avoids depending on it. The admin photo upload still uses Blob.
+- **D-30 The import sets "featured" (column `tavsiya`)** so the products the business is pushing come first on the home page and in lists.

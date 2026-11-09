@@ -41,6 +41,7 @@ export const COLS = {
   leadTimeDays: ["yetkazish_kun", "срок_поставки_дней", "lead_time_days"],
   priceOnRequest: ["narx_sorov", "narx_so'rov", "цена_по_запросу", "price_on_request"],
   sourcing: ["manba", "ombor_turi", "источник", "sourcing"],
+  featured: ["tavsiya", "tavsiya_etiladi", "featured", "рекомендуем"],
 } as const;
 
 export const UNIT_ALIASES: Record<string, Unit> = {
@@ -151,6 +152,8 @@ export async function importProductRows(
         : price !== null && price > 0
           ? false
           : undefined;
+      const featuredRaw = get(r, "featured").toLowerCase();
+      const featured = featuredRaw ? ["1", "ha", "yes", "да", "true"].includes(featuredRaw) : undefined;
       const activeRaw = get(r, "active").toLowerCase();
       const active = activeRaw ? ["1", "ha", "yes", "да", "true"].includes(activeRaw) : undefined;
       const image = get(r, "image");
@@ -171,6 +174,7 @@ export async function importProductRows(
         ...specCols(r),
         ...(priceOnRequest !== undefined && { priceOnRequest }),
         ...(parseSourcing(get(r, "sourcing")) && { sourcing: parseSourcing(get(r, "sourcing")) }),
+        ...(featured !== undefined && { isFeatured: featured }),
       };
 
       const productId = await prisma.$transaction(async (tx) => {

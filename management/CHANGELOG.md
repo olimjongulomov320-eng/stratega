@@ -2,6 +2,12 @@
 
 Local changes until deployed. "Deployed" is stated explicitly when it happens.
 
+## 2026-11-10 — own stock focus (local, not deployed)
+
+- Import column `tavsiya` sets "featured".
+- Product photos added to `public/products/`: NIULI CBY-AC, CTY-E, CTQB15-35, welders CN-013A and CN-026, and 117 sharpened BISON photos (enlarged with Real-ESRGAN).
+- Import files (outside the repository): TURAN and NIULI as own stock, all other products as supplier stock, BISON photo links.
+
 ## 2026-11-09 — supplier products and finance (deployed, merge commit 2a9630b)
 
 - Products are "own warehouse" or "supplier warehouse". Supplier items skip stock reservation and shipment moves, show as available on the site, in feeds and in the Telegram bot, and record supplier and estimated cost per sold line.
