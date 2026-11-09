@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateStorefront } from "@/lib/storefront-cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAction, audit, safe, str, optStr, nextNumber, type ActionState } from "@/lib/admin";
@@ -39,10 +40,10 @@ export async function createDocument(_: ActionState, form: FormData): Promise<Ac
       id = doc.id;
       if (post) await postStockDocument(tx, doc.id, session.name, allowNegative);
     });
+    if (post) revalidateStorefront();
     await audit(session, post ? "Ombor hujjati o'tkazildi" : "Ombor hujjati yaratildi", "StockDocument", id, { type });
   });
   if (res?.error) return res;
-  revalidatePath("/", "layout");
   redirect(`/admin/stock-documents/${id}`);
 }
 
@@ -52,8 +53,8 @@ export async function postDocument(_: ActionState, form: FormData): Promise<Acti
     const id = str(form, "id");
     const allowNegative = await getSetting<boolean>("stock.allowNegative");
     await prisma.$transaction((tx) => postStockDocument(tx, id, session.name, allowNegative));
+    revalidateStorefront();
     await audit(session, "Ombor hujjati o'tkazildi", "StockDocument", id);
-    revalidatePath("/", "layout");
     return { ok: true, message: "Hujjat o'tkazildi — qoldiqlar yangilandi." };
   });
 }

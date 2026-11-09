@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { decodeAdminToken, ADMIN_COOKIE } from "@/lib/admin-auth";
+import { filteredCatalogPath, FILTERED_REWRITE_HEADER } from "@/lib/catalog-route";
+import { SESSION_COOKIE, LOGIN_HINT_COOKIE, LOGIN_HINT_MAX_AGE_SECONDS, loginHintCookieOptions, newLoginHint } from "@/lib/login-hint";
 
 const PREFIXED = ["ru", "en"];
 const DEFAULT_LOCALE_REWRITE = "x-stratega-default-locale-rewrite";
@@ -23,6 +25,12 @@ export function proxy(request: NextRequest) {
   // Telegram Mini App entry pages are not localised.
   if (pathname === "/tg" || pathname.startsWith("/tg/")) return NextResponse.next();
 
+  return syncLoginHint(request, routePublicSite(request));
+}
+
+function routePublicSite(request: NextRequest) {
+  const { pathname, searchParams } = request.nextUrl;
+
   // ── Public site i18n ──
   // /uz and /uz/* duplicate the default language → permanent redirect to the unprefixed URL.
   if (pathname === "/uz" || pathname.startsWith("/uz/")) {
@@ -31,14 +39,34 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(url, 301);
   }
   const first = pathname.split("/")[1];
-  if (PREFIXED.includes(first)) return NextResponse.next();
+  if (PREFIXED.includes(first)) {
+    const filtered = filteredCatalogPath(pathname.slice(first.length + 1), searchParams);
+    if (!filtered) return NextResponse.next();
+    const url = request.nextUrl.clone();
+    url.pathname = `/${first}${filtered}`;
+    const headers = new Headers(request.headers);
+    headers.set(FILTERED_REWRITE_HEADER, "1");
+    return NextResponse.rewrite(url, { request: { headers } });
+  }
 
   // Unprefixed = Uzbek: rewrite internally to /uz/... (URL in the browser stays the same).
   const url = request.nextUrl.clone();
-  url.pathname = `/uz${pathname === "/" ? "" : pathname}`;
+  const filtered = filteredCatalogPath(pathname, searchParams);
+  const path = filtered ?? pathname;
+  url.pathname = `/uz${path === "/" ? "" : path}`;
   const headers = new Headers(request.headers);
   headers.set(DEFAULT_LOCALE_REWRITE, "1");
+  if (filtered) headers.set(FILTERED_REWRITE_HEADER, "1");
   return NextResponse.rewrite(url, { request: { headers } });
+}
+
+/** Keeps the login hint in step with the session cookie: covers sessions from before the hint, and expired ones. */
+function syncLoginHint(request: NextRequest, response: NextResponse) {
+  const hasSession = request.cookies.has(SESSION_COOKIE);
+  const hasHint = request.cookies.has(LOGIN_HINT_COOKIE);
+  if (hasSession && !hasHint) response.cookies.set(LOGIN_HINT_COOKIE, newLoginHint(), { ...loginHintCookieOptions(), maxAge: LOGIN_HINT_MAX_AGE_SECONDS });
+  if (!hasSession && hasHint) response.cookies.delete(LOGIN_HINT_COOKIE);
+  return response;
 }
 
 export const config = {

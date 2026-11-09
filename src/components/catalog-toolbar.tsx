@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import type { SortOption } from "@/lib/products";
 import { useI18n } from "@/i18n/client";
 import { fmt } from "@/i18n";
@@ -9,7 +9,6 @@ export function CatalogToolbar({ totalCount, currentSort }: { totalCount: number
   const { t } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const labels: Record<SortOption, string> = {
     popular: t.catalog.sortPopular,
     newest: t.catalog.sortNewest,
@@ -18,7 +17,7 @@ export function CatalogToolbar({ totalCount, currentSort }: { totalCount: number
   };
 
   function updateSort(sort: string) {
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
     params.delete("page");
     if (sort === "popular") params.delete("sort");
     else params.set("sort", sort);

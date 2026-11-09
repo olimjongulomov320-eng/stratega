@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { LOCALES, LOCALE_LABELS, localePath, stripLocale } from "@/i18n/config";
 import { useI18n } from "@/i18n/client";
@@ -9,10 +9,10 @@ import { useI18n } from "@/i18n/client";
 export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
   const { locale, t } = useI18n();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
+  // Read when the menu opens: useSearchParams() would keep the whole button out of the cached HTML.
+  const [query, setQuery] = useState("");
   const base = stripLocale(pathname);
-  const qs = searchParams.toString();
 
   return (
     <div
@@ -30,7 +30,10 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
     >
       <button
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => {
+          setQuery(window.location.search);
+          setOpen((v) => !v);
+        }}
         aria-label={t.common.language}
         aria-expanded={open}
         className={`flex items-center gap-1.5 rounded-full border border-slate-200 font-medium text-slate-600 transition hover:border-indigo-200 hover:text-indigo-600 ${
@@ -48,7 +51,7 @@ export function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
           {LOCALES.map((l) => (
             <Link
               key={l}
-              href={`${localePath(l, base)}${qs ? `?${qs}` : ""}`}
+              href={`${localePath(l, base)}${query}`}
               hrefLang={l}
               className={`block px-4 py-2 text-sm hover:bg-indigo-50 ${
                 l === locale ? "font-semibold text-indigo-600" : "text-slate-700"

@@ -10,6 +10,7 @@
 - Owner decided to keep the repository public, so these documents were reduced to summaries (D-14).
 - Started two follow-up sessions at the owner's request: page caching and a reliability batch.
 - Owner approved merging. PR #1 merged and deployed to production; live checks passed (see QA_REPORT). The owner confirmed the Telegram Mini Apps and the barcode camera work.
+- Page caching (ROADMAP #10, #12) built and verified on a local production build, not deployed. Loading skeletons tested and declined (D-8).
 
 ## 2026-11-08
 - Compared with irtemstroymarket.uz: they answer about 4× faster (server in Uzbekistan); we lead on prices, filters and SEO basics.
@@ -18,3 +19,4 @@
 - Owner approved. PR #2 merged and deployed (652719e). Live: all 22 products in the sitemap (8 were missing), /llms.txt lists 22, every sitemap URL returns 200. All 103 sitemap URLs submitted to IndexNow (HTTP 202 accepted).
 - Found: specifications mostly live inside description text, so 8 products expose no structured specs and most others 1–3.
 - PR #3 (specs from descriptions) merged and deployed (5cdf5b8). Live: 15 of 22 products carry 6–14 structured specs in uz and ru; /llms.txt shows them. Sitemap re-submitted to IndexNow.
+- Page caching: independent review (no blockers), fixes, rebased onto the deployed SEO change, full rerun from a clean build (223 checks pass). Still on the branch, not deployed.

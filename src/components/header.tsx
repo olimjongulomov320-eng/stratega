@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useState } from "react";
+import { useState } from "react";
 import { useRfq } from "@/lib/rfq-context";
 import { useWishlist } from "@/lib/wishlist-context";
+import { useLoginHint } from "@/lib/buyer-prices-context";
 import { SearchBox } from "@/components/search-box";
 import { LogoMark } from "@/components/logo-mark";
 import { LanguageSwitcher } from "@/components/language-switcher";
@@ -12,22 +13,19 @@ import { COMPANY } from "@/lib/site";
 import type { HeaderCategory, MenuDirection } from "@/lib/categories";
 import { QuickOrder } from "@/components/quick-order";
 
-export type HeaderUser = { phone: string; companyName: string | null } | null;
-
 export function Header({
   categories,
   directions = [],
-  user,
   hasSpareParts = false,
 }: {
   categories: HeaderCategory[];
   directions?: MenuDirection[];
-  user: HeaderUser;
   hasSpareParts?: boolean;
 }) {
   const { t, href } = useI18n();
   const { totalItems } = useRfq();
   const { count: wishlistCount } = useWishlist();
+  const loggedIn = useLoginHint() !== null;
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -145,9 +143,7 @@ export function Header({
           </div>
 
           <div className="ml-auto flex items-center gap-2 sm:ml-0">
-            <Suspense fallback={null}>
-              <LanguageSwitcher compact />
-            </Suspense>
+            <LanguageSwitcher compact />
 
             <Link
               href={href("/wishlist")}
@@ -165,14 +161,14 @@ export function Header({
             </Link>
 
             <Link
-              href={href(user ? "/kabinet" : "/kirish")}
+              href={href(loggedIn ? "/kabinet" : "/kirish")}
               className="hidden shrink-0 items-center gap-2 rounded-full border border-slate-200 px-4 py-2.5 text-sm font-semibold text-slate-600 transition hover:border-indigo-200 hover:text-indigo-600 md:flex"
             >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="h-4 w-4">
                 <circle cx="12" cy="8" r="4" />
                 <path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8" />
               </svg>
-              <span className="max-w-[10rem] truncate">{user ? user.companyName ?? user.phone : t.common.cabinet}</span>
+              <span className="max-w-[10rem] truncate">{t.common.cabinet}</span>
             </Link>
 
             <Link

@@ -11,10 +11,14 @@ import { Footer } from "@/components/footer";
 import { ChatWidget } from "@/components/chat-widget";
 import { MobileTabBar } from "@/components/mobile-tab-bar";
 import { getHeaderCategories, getSparePartCategories, directionsFrom, type HeaderCategory } from "@/lib/categories";
-import { getCurrentUser } from "@/lib/auth";
+import { shortenPageCache } from "@/lib/storefront-cache";
 import { SITE_URL } from "@/lib/site";
 import { Analytics } from "@/components/web-analytics";
 import { Suspense } from "react";
+
+// How long a public page stays cached. Saves in the admin panel and Telegram clear it at once (revalidateStorefront);
+// this limit is for changes made outside the app, such as scripts run against the database.
+export const revalidate = 3600;
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -37,17 +41,17 @@ export default async function LocaleLayout(props: LayoutProps<"/[locale]">) {
   if (!isLocale(locale)) notFound();
   const dict = getDictionary(locale);
   // A database failure must not take the layout down with it: the page's error.tsx then still shows contacts and navigation.
-  const onFail = <T,>(fallback: T) => (error: unknown) => {
+  // A page rendered without menus is cached only briefly, so it doesn't outlive the outage by an hour.
+  const onFail = <T,>(fallback: T) => async (error: unknown) => {
     unstable_rethrow(error); // Next's own signals (e.g. "this page reads cookies") must pass through.
     console.error("Layout query failed", error instanceof Error ? error.message : error);
+    await shortenPageCache();
     return fallback;
   };
-  const [categories, partCategories, user] = await Promise.all([
+  const [categories, partCategories] = await Promise.all([
     getHeaderCategories(locale).catch(onFail<HeaderCategory[]>([])),
     getSparePartCategories(locale).catch(onFail<HeaderCategory[]>([])),
-    getCurrentUser().catch(onFail(null)),
   ]);
-  const headerUser = user ? { phone: user.phone, companyName: user.companyName } : null;
 
   return (
     <html lang={locale} className="h-full antialiased">
@@ -58,11 +62,11 @@ export default async function LocaleLayout(props: LayoutProps<"/[locale]">) {
         <I18nProvider locale={locale} dict={dict}>
           <div className="flex min-h-full flex-1 flex-col pb-[calc(4rem+env(safe-area-inset-bottom))] sm:pb-0">
             <Providers>
-              <Header categories={categories} directions={directionsFrom(categories, locale)} user={headerUser} hasSpareParts={partCategories.length > 0} />
+              <Header categories={categories} directions={directionsFrom(categories, locale)} hasSpareParts={partCategories.length > 0} />
               <main id="main" className="flex-1">{props.children}</main>
               <Footer categories={categories} locale={locale} />
               <ChatWidget />
-              <MobileTabBar user={headerUser} />
+              <MobileTabBar />
             </Providers>
             <Suspense fallback={null}>
               <Analytics />

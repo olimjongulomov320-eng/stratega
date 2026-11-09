@@ -10,12 +10,13 @@ Last updated: 2026-11-04. Fixed items move to CHANGELOG.md. Security-related ite
 
 ## Engineering backlog (see ROADMAP for order)
 
-- Every public page is rendered per request (time to first byte ≈ 0.72 s).
 - Products export is not yet safe to re-import.
 - Phone numbers are not stored in one format; guest requests do not appear in the cabinet after login.
 - Telegram bot checkout does not yet handle on-order products.
 - ru/en product pages fall back to Uzbek text when a translation is missing.
-- The sitemap does not refresh between deploys.
+- Changes made by scripts or directly in the database reach public pages only after Admin → Sozlamalar → «Sahifalarni yangilash», or on a visit after the hour (README §11).
+- A browser tab that is already open can show a price up to 5 minutes old when moving between pages, until it is reloaded (Next.js keeps prefetched pages that long). Requests are priced on the server, so this affects display only.
+- A cart line keeps the price from when it was first added, including after a later login.
 - No CI and no error monitoring.
 - Payments and order lifecycle have no automated tests; the stock-ledger tests need `RUN_DB_TESTS=1` and a local test database.
 - Accessibility: quick-view modal focus handling, search autocomplete semantics, low-contrast text, emoji icons.

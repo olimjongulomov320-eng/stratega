@@ -1,16 +1,19 @@
 "use client";
 
-import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useState } from "react";
 import { useI18n } from "@/i18n/client";
+import { firstParam, type CatalogParams } from "@/lib/query-params";
 
 export function PriceFilter({
+  params: current,
   minParam = "minPrice",
   maxParam = "maxPrice",
   label,
   placeholderMin,
   placeholderMax,
 }: {
+  params: CatalogParams;
   minParam?: string;
   maxParam?: string;
   /** Heading; defaults to "Price". Used for the spec filters too (capacity, lift height, width, power). */
@@ -21,14 +24,13 @@ export function PriceFilter({
   const { t } = useI18n();
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
 
-  const [min, setMin] = useState(searchParams.get(minParam) ?? "");
-  const [max, setMax] = useState(searchParams.get(maxParam) ?? "");
+  const [min, setMin] = useState(firstParam(current[minParam]) ?? "");
+  const [max, setMax] = useState(firstParam(current[maxParam]) ?? "");
 
   function apply(e: React.FormEvent) {
     e.preventDefault();
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
     params.delete("page");
     if (min) params.set(minParam, min);
     else params.delete(minParam);
@@ -40,7 +42,7 @@ export function PriceFilter({
   function clear() {
     setMin("");
     setMax("");
-    const params = new URLSearchParams(searchParams.toString());
+    const params = new URLSearchParams(window.location.search);
     params.delete(minParam);
     params.delete(maxParam);
     params.delete("page");
@@ -80,7 +82,7 @@ export function PriceFilter({
         >
           {t.common.apply}
         </button>
-        {(searchParams.get(minParam) || searchParams.get(maxParam)) && (
+        {(firstParam(current[minParam]) || firstParam(current[maxParam])) && (
           <button
             type="button"
             onClick={clear}
