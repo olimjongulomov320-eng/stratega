@@ -2,8 +2,7 @@
 
 Local changes until deployed. "Deployed" is stated explicitly when it happens.
 
-## 2026-11-08 — specs from descriptions (deployed, merge commit 5cdf5b8)
-## 2026-11-04/08 — public pages cached (branch `claude/optimistic-ptolemy-64bcdc`, NOT deployed)
+## 2026-11-04/08 — public pages cached (PR #4, NOT deployed: merge waits for the owner)
 
 ### Faster pages
 - Home, product, category, direction, catalogue, spare-parts and info pages are static or ISR (one hour) instead of rendered per request. `next start` sends `s-maxage=3600`.
@@ -30,7 +29,7 @@ Local changes until deployed. "Deployed" is stated explicitly when it happens.
 - More ad tags keep the cached page (`srsltid`, `gad_source`, `gad_campaignid`, `msclkid`, `_gl`, `ttclid`).
 - `/api/buyer-prices` answers an empty or odd request body without an error.
 
-## 2026-11-08 — specs from descriptions (NOT deployed)
+## 2026-11-08 — specs from descriptions (deployed, merge commit 5cdf5b8)
 
 - Product structured data and /llms.txt also use the spec paragraph of the description. On the live catalogue, 15 of 22 products go from 0–3 to 6–14 machine-readable specs.
 
