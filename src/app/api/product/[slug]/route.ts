@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { isAvailable } from "@/lib/sourcing";
 import { isLocale } from "@/i18n/config";
 import { localName, localDescription } from "@/lib/localize";
 
@@ -18,6 +19,7 @@ export async function GET(req: Request, ctx: RouteContext<"/api/product/[slug]">
       oldPrice: p.priceOnRequest ? null : p.oldPrice,
       imageUrl: p.imageUrl,
       stock: p.stock,
+      available: isAvailable(p),
       sku: p.sku,
       category: { name: localName(p.category, locale), slug: p.category.slug },
     },

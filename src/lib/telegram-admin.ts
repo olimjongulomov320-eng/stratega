@@ -2,6 +2,7 @@ import "server-only";
 
 import { prisma } from "@/lib/prisma";
 import { moveStock } from "@/lib/inventory";
+import { revalidateStorefront } from "@/lib/storefront-cache";
 import { can, type Permission } from "@/lib/permissions";
 import { RFQ_STATUS } from "@/lib/labels";
 import { parseNumber } from "@/lib/csv";
@@ -128,6 +129,7 @@ async function setPrice(chatId: number, staff: Employee, args: string[]) {
     prisma.product.update({ where: { id: product.id }, data: { price: newPrice, priceOnRequest: false } }),
     prisma.priceChange.create({ data: { productId: product.id, oldPrice: product.price, newPrice, actor: `${staff.name} (Telegram)` } }),
   ]);
+  revalidateStorefront();
   await audit(staff, "Narx o'zgardi", "Product", product.id, { sku, oldPrice: product.price, newPrice });
   await sendMessage(chatId, `✅ <b>${html(product.name)}</b>\n${money(product.price)} → <b>${money(newPrice)}</b>${product.priceOnRequest ? "\n«Narxi so'rov bo'yicha» o'chirildi." : ""}`, { parse_mode: "HTML" });
 }
@@ -154,6 +156,7 @@ async function setStock(chatId: number, staff: Employee, args: string[]) {
       moveStock(tx, { productId: product.id, warehouseId: warehouse.id, delta, reason: "ADJUSTMENT", note: "Telegram /qoldiq", actor: `${staff.name} (Telegram)`, allowNegative: true })
     );
   }
+  revalidateStorefront();
   await audit(staff, "Qoldiq tuzatildi", "Product", product.id, { sku, warehouse: warehouse.name, from: level?.quantity ?? 0, to: qty });
   await sendMessage(chatId, `✅ <b>${html(product.name)}</b>\n${html(warehouse.name)}: ${level?.quantity ?? 0} → <b>${qty}</b>`, { parse_mode: "HTML" });
 }

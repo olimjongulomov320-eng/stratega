@@ -6,6 +6,7 @@ import { useRfq } from "@/lib/rfq-context";
 import { useWishlist } from "@/lib/wishlist-context";
 import { useCompare } from "@/lib/compare-context";
 import { useQuickView } from "@/lib/quick-view-context";
+import { useBuyerPrice } from "@/lib/buyer-prices-context";
 import { formatSum } from "@/lib/format";
 import { useI18n } from "@/i18n/client";
 import { fmt } from "@/i18n";
@@ -20,18 +21,19 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
   const { isWishlisted, toggle: toggleWishlist } = useWishlist();
   const { isComparing, toggle: toggleCompare, maxReached } = useCompare();
   const { open: openQuickView } = useQuickView();
+  const { buyerPrice, cartPrice } = useBuyerPrice(product);
   const [added, setAdded] = useState(false);
 
   const url = href(`/product/${product.slug}`);
-  const outOfStock = product.stock <= 0;
+  const outOfStock = !product.available;
   const discount = product.oldPrice ? Math.round(100 - (product.price / product.oldPrice) * 100) : null;
   const comparing = isComparing(product.id);
   const wished = isWishlisted(product.id);
 
-  function handleAdd() {
-    addItem({ productId: product.id, slug: product.slug, name: product.name, price: product.buyerPrice ?? product.price, imageUrl: product.imageUrl });
+  async function handleAdd() {
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
+    addItem({ productId: product.id, slug: product.slug, name: product.name, price: await cartPrice(), imageUrl: product.imageUrl });
   }
 
   return (
@@ -110,9 +112,9 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
           )}
           {product.oldPrice && <span className="text-xs text-slate-400 line-through sm:text-sm">{formatSum(product.oldPrice, locale)}</span>}
         </div>
-        {product.buyerPrice ? (
+        {buyerPrice ? (
           <p className="-mt-1 text-xs font-semibold text-emerald-600 sm:text-sm">
-            {t.focus.yourPrice}: {formatSum(product.buyerPrice, locale)}
+            {t.focus.yourPrice}: {formatSum(buyerPrice, locale)}
           </p>
         ) : null}
 
@@ -122,7 +124,7 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
 
         <div className="mt-auto flex flex-col gap-1 text-xs sm:text-sm">
           <span className={outOfStock ? "text-slate-400" : "font-medium text-emerald-600"}>
-            {outOfStock ? t.product.notInStock : t.product.inStockShort}
+            {outOfStock ? t.product.notInStock : product.fromSupplier ? t.product.availableNow : t.product.inStockShort}
           </span>
           {product.freeDelivery && <span className="font-medium text-emerald-600">🚚 {t.product.freeDelivery}</span>}
         </div>

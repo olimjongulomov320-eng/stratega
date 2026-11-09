@@ -4,6 +4,7 @@ import { formatNumber } from "@/lib/format";
 import { localName, localDescription } from "@/lib/localize";
 import { productFacts, productLocales } from "@/lib/product-seo";
 import { COMPANY } from "@/lib/site";
+import { isAvailable } from "@/lib/sourcing";
 
 type LlmsCategory = { slug: string; name: string; nameRu: string | null; nameEn: string | null };
 type LlmsProduct = Parameters<typeof productFacts>[0] & {
@@ -18,6 +19,7 @@ type LlmsProduct = Parameters<typeof productFacts>[0] & {
   price: number;
   priceOnRequest: boolean;
   stock: number;
+  sourcing?: "OWN_STOCK" | "SUPPLIER_STOCK";
   categorySlug: string;
 };
 
@@ -49,7 +51,7 @@ export function buildLlmsTxt(categories: LlmsCategory[], products: LlmsProduct[]
       const title = ru ? localName(p, "ru") : p.name;
       const price = p.priceOnRequest ? "price on request" : `${formatNumber(p.price).replace(/\u00a0/g, " ")} UZS`;
       const facts = productFacts(p, ru ? "ru" : "uz", 8, localDescription(p, ru ? "ru" : "uz")).map((f) => `${f.name}: ${f.value}`);
-      const details = [p.brand && `brand ${p.brand}`, p.sku && `model ${p.sku}`, price, p.stock > 0 ? "in stock" : "to order", ...facts]
+      const details = [p.brand && `brand ${p.brand}`, p.sku && `model ${p.sku}`, price, isAvailable(p) ? "in stock" : "to order", ...facts]
         .filter(Boolean)
         .join("; ");
       lines.push(`- [${title}](${absoluteUrl(localePath(ru ? "ru" : "uz", `/product/${p.slug}`))}): ${details}`);

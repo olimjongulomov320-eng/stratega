@@ -41,6 +41,7 @@ export type ProductFormValues = {
   datasheetUrl?: string | null;
   videoUrl?: string | null;
   leadTimeDays?: number | null;
+  sourcing?: "OWN_STOCK" | "SUPPLIER_STOCK";
   isActive?: boolean;
   isFeatured?: boolean;
   isBestseller?: boolean;
@@ -213,6 +214,12 @@ export function ProductForm({
           </Field>
           <Field label="Video (YouTube havola)">
             <input name="videoUrl" placeholder="https://youtu.be/…" defaultValue={values.videoUrl ?? ""} className={inputCls} />
+          </Field>
+          <Field label="Qayerda turadi" hint="Ta'minotchi ombori: sotilgach darhol sotib olinadi, o'z omborimizda hisoblanmaydi, saytda «Mavjud»">
+            <select name="sourcing" defaultValue={values.sourcing ?? "OWN_STOCK"} className={inputCls}>
+              <option value="OWN_STOCK">O&apos;z omborimiz</option>
+              <option value="SUPPLIER_STOCK">Ta&apos;minotchi ombori (sotilgach sotib olinadi)</option>
+            </select>
           </Field>
           <Field label="Yetkazish muddati (kun)" hint="Omborda yo'q bo'lsa ko'rsatiladi">
             <input name="leadTimeDays" inputMode="numeric" defaultValue={values.leadTimeDays ?? ""} className={inputCls} />

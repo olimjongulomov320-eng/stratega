@@ -5,7 +5,7 @@ import { getDictionary } from "@/i18n";
 import { isLocale, localePath } from "@/i18n/config";
 import { pageMetadata } from "@/lib/seo";
 import { COMPANY, CLAIMS } from "@/lib/site";
-import { getCurrentUser } from "@/lib/auth";
+import { GuestOnly } from "@/components/guest-only";
 
 export async function generateMetadata(props: PageProps<"/[locale]/yuridik-shaxslar">): Promise<Metadata> {
   const { locale } = await props.params;
@@ -20,7 +20,6 @@ export default async function B2bPage(props: PageProps<"/[locale]/yuridik-shaxsl
   const t = getDictionary(locale);
   const f = t.focus;
   const lp = (p: string) => localePath(locale, p);
-  const user = await getCurrentUser();
 
   const requisites: [string, string][] = [
     [f.reqName, COMPANY.legalName],
@@ -48,11 +47,11 @@ export default async function B2bPage(props: PageProps<"/[locale]/yuridik-shaxsl
         <Link href={lp("/korzina")} className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
           {f.requestOffer}
         </Link>
-        {!user && (
+        <GuestOnly>
           <Link href={lp("/kirish")} className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
             {f.login}
           </Link>
-        )}
+        </GuestOnly>
       </div>
 
       <div className="mt-8 grid gap-3 sm:grid-cols-2">

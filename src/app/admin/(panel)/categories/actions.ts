@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateStorefront } from "@/lib/storefront-cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAction, audit, safe, str, optStr, int, bool, type ActionState } from "@/lib/admin";
@@ -33,15 +33,16 @@ export async function saveCategory(_: ActionState, form: FormData): Promise<Acti
     if (id) {
       const slug = slugify(str(form, "slug"));
       await prisma.category.update({ where: { id }, data: { ...data, ...(slug ? { slug } : {}) } });
+      revalidateStorefront();
       await audit(session, "Kategoriya tahrirlandi", "Category", id);
     } else {
       const slug = slugify(str(form, "slug") || data.name);
       const c = await prisma.category.create({ data: { ...data, slug } });
+      revalidateStorefront();
       await audit(session, "Kategoriya yaratildi", "Category", c.id);
     }
   });
   if (res?.error) return res;
-  revalidatePath("/", "layout");
   if (id) return { ok: true, message: "Saqlandi." };
   redirect("/admin/categories");
 }
@@ -53,9 +54,9 @@ export async function deleteCategory(_: ActionState, form: FormData): Promise<Ac
     const count = await prisma.product.count({ where: { categoryId: id } });
     if (count > 0) throw new Error(`Kategoriyada ${count} ta mahsulot bor — avval ularni boshqa kategoriyaga o'tkazing.`);
     await prisma.category.delete({ where: { id } });
+    revalidateStorefront();
     await audit(session, "Kategoriya o'chirildi", "Category", id);
   });
   if (res?.error) return res;
-  revalidatePath("/", "layout");
   redirect("/admin/categories");
 }

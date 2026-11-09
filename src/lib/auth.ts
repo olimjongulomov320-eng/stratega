@@ -1,8 +1,8 @@
 import { cookies, headers } from "next/headers";
 import { randomBytes, randomInt, timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/prisma";
+import { SESSION_COOKIE, LOGIN_HINT_COOKIE, loginHintCookieOptions, newLoginHint } from "@/lib/login-hint";
 
-const SESSION_COOKIE = "stratega_session";
 const SESSION_DAYS = 30;
 
 export function generateOtpCode(): string {
@@ -45,6 +45,7 @@ export async function createSession(userId: string) {
     path: "/",
     expires: expiresAt,
   });
+  cookieStore.set(LOGIN_HINT_COOKIE, newLoginHint(), { ...loginHintCookieOptions(), expires: expiresAt });
 }
 
 export async function getCurrentUser() {
@@ -69,4 +70,5 @@ export async function clearSession() {
     await prisma.session.deleteMany({ where: { token } });
   }
   cookieStore.delete(SESSION_COOKIE);
+  cookieStore.delete(LOGIN_HINT_COOKIE);
 }

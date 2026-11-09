@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/settings";
+import { lineUnitCost } from "@/lib/sourcing";
 
 const SALE_STATUSES = ["CONFIRMED", "SHIPPED", "COMPLETED"] as const;
 
@@ -17,6 +18,8 @@ export async function salesReport(days: number) {
   const byProduct = new Map<string, { name: string; qty: number; revenue: number; cost: number }>();
   const byCustomer = new Map<string, { name: string; orders: number; revenue: number }>();
   const byDay = new Map<string, number>();
+  // Own warehouse vs supplier warehouse (bought after the sale): revenue and cost per kind, VAT included.
+  const bySourcing = { OWN_STOCK: { revenue: 0, cost: 0 }, SUPPLIER_STOCK: { revenue: 0, cost: 0 } };
   for (const o of orders) {
     revenue += o.total;
     revenueNet += o.total / 1.12;
@@ -28,8 +31,11 @@ export async function salesReport(days: number) {
     c.revenue += o.total;
     byCustomer.set(ck, c);
     for (const l of o.lines) {
-      const lineCost = (l.costPrice ?? 0) * l.quantity;
-      if (!l.costPrice) missingCost++;
+      const unitCost = lineUnitCost(l);
+      const lineCost = (unitCost ?? 0) * l.quantity;
+      if (!unitCost) missingCost++;
+      bySourcing[l.sourcing].revenue += l.price * l.quantity;
+      bySourcing[l.sourcing].cost += lineCost;
       cogs += lineCost;
       const p = byProduct.get(l.productId) ?? { name: l.product.name, qty: 0, revenue: 0, cost: 0 };
       p.qty += l.quantity;
@@ -46,6 +52,7 @@ export async function salesReport(days: number) {
     cogs,
     profit: revenueNet - cogs,
     missingCost,
+    bySourcing,
     topProducts: [...products].sort((a, b) => b.revenue - a.revenue).slice(0, 10),
     topMargin: [...products].filter((p) => p.cost > 0).sort((a, b) => b.margin - a.margin).slice(0, 10),
     topCustomers: [...byCustomer.values()].sort((a, b) => b.revenue - a.revenue).slice(0, 10),

@@ -15,7 +15,7 @@ export async function GET() {
       where: { isActive: true, category: { isActive: true } },
       orderBy: [{ isFeatured: "desc" }, { name: "asc" }],
       select: {
-        slug: true, name: true, nameRu: true, nameEn: true, description: true, descriptionRu: true, brand: true, sku: true, price: true, priceOnRequest: true, stock: true,
+        slug: true, name: true, nameRu: true, nameEn: true, description: true, descriptionRu: true, brand: true, sku: true, price: true, priceOnRequest: true, stock: true, sourcing: true,
         specs: true, capacityKg: true, liftHeightMm: true, workingWidthMm: true, powerKw: true,
         category: { select: { slug: true } },
       },

@@ -3,20 +3,22 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useRfq } from "@/lib/rfq-context";
+import { useBuyerPrice } from "@/lib/buyer-prices-context";
 import { useI18n } from "@/i18n/client";
 import type { ProductCardData } from "@/lib/products";
 
 export function AddToCart({ product }: { product: ProductCardData }) {
   const { t, href } = useI18n();
   const { addItem } = useRfq();
+  const { cartPrice } = useBuyerPrice(product);
   const router = useRouter();
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
 
-  function add() {
-    addItem({ productId: product.id, slug: product.slug, name: product.name, price: product.price, imageUrl: product.imageUrl }, quantity);
+  async function add() {
     setAdded(true);
     setTimeout(() => setAdded(false), 1500);
+    addItem({ productId: product.id, slug: product.slug, name: product.name, price: await cartPrice(), imageUrl: product.imageUrl }, quantity);
   }
 
   return (
@@ -45,8 +47,8 @@ export function AddToCart({ product }: { product: ProductCardData }) {
           {added ? t.product.added : t.product.addToCart}
         </button>
         <button
-          onClick={() => {
-            add();
+          onClick={async () => {
+            await add();
             router.push(href("/korzina"));
           }}
           className="flex-1 rounded-full bg-indigo-600 py-3 font-semibold text-white transition hover:bg-indigo-700"

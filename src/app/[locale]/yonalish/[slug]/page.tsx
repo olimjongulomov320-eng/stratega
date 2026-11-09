@@ -4,13 +4,16 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { ProductCard } from "@/components/product-card";
 import { getHeaderCategories } from "@/lib/categories";
-import { getFocus } from "@/lib/focus";
-import { getBuyerPrices } from "@/lib/customer-price";
+import { FOCUS, getFocus } from "@/lib/focus";
 import { getDictionary, fmt } from "@/i18n";
 import { isLocale, localePath } from "@/i18n/config";
 import { sortToOrderBy, toCard } from "@/lib/products";
 import { excerpt } from "@/lib/localize";
 import { pageMetadata, absoluteUrl, jsonLd, fitTitle } from "@/lib/seo";
+
+export function generateStaticParams() {
+  return FOCUS.map((f) => ({ slug: f.slug }));
+}
 
 export async function generateMetadata(props: PageProps<"/[locale]/yonalish/[slug]">): Promise<Metadata> {
   const { locale, slug } = await props.params;
@@ -33,7 +36,6 @@ export default async function DirectionPage(props: PageProps<"/[locale]/yonalish
   const products = cats.length
     ? await prisma.product.findMany({ where: { isActive: true, categoryId: { in: cats.map((c) => c.id) } }, orderBy: sortToOrderBy("popular"), take: 24 })
     : [];
-  const buyer = await getBuyerPrices(products.map((p) => p.id));
   const name = dir.name[locale];
   const url = absoluteUrl(lp(`/yonalish/${slug}`));
 
@@ -103,7 +105,7 @@ export default async function DirectionPage(props: PageProps<"/[locale]/yonalish
         ) : (
           <div className="product-grid grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
             {products.map((p, i) => (
-              <ProductCard key={p.id} product={toCard(p, locale, buyer.get(p.id))} priority={i < 4} />
+              <ProductCard key={p.id} product={toCard(p, locale)} priority={i < 4} />
             ))}
           </div>
         )}

@@ -16,9 +16,15 @@ import { pageMetadata, absoluteUrl, jsonLd, fitTitle } from "@/lib/seo";
 import { CLAIMS, COMPANY } from "@/lib/site";
 import { SPEC_FILTERS, parseSpecRows, specLabel, youTubeId } from "@/lib/product-specs";
 import { productLocales, productFacts } from "@/lib/product-seo";
-import { getBuyerPriceList, getBuyerPrices } from "@/lib/customer-price";
+import { isAvailable } from "@/lib/sourcing";
+import { BuyerPriceBox } from "@/components/buyer-price-box";
 import { ProductImage } from "@/components/product-image";
 import { QuickOrder } from "@/components/quick-order";
+
+// No page is built ahead: each one is rendered on its first visit, then cached (time limit: [locale]/layout.tsx).
+export function generateStaticParams() {
+  return [];
+}
 
 const getProduct = cache(async (slug: string) =>
   prisma.product.findUnique({
@@ -107,7 +113,7 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
         url,
         priceCurrency: "UZS",
         price: product.price,
-        availability: product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/BackOrder",
+        availability: isAvailable(product) ? "https://schema.org/InStock" : "https://schema.org/BackOrder",
         itemCondition: "https://schema.org/NewCondition",
         seller: { "@type": "Organization", name: COMPANY.brand },
       },
@@ -135,8 +141,6 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
     },
   ];
 
-  const [buyerList, buyerPrices] = await Promise.all([getBuyerPriceList(), getBuyerPrices([product.id, ...related.map((p) => p.id), ...parts.map((p) => p.id)])]);
-  const buyerPrice = product.priceOnRequest ? undefined : buyerPrices.get(product.id);
   const f = t.focus;
 
   // Spec table: the filterable fields first, then the free rows.
@@ -226,18 +230,14 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
               )}
             </div>
             <p className="mt-1 text-xs text-slate-400">{product.priceOnRequest ? t.product.priceOnRequestNote : t.product.priceWithVat}</p>
-            {buyerPrice && buyerList && buyerPrice !== product.price && (
-              <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-                <p className="text-sm text-emerald-700">{f.yourPrice}</p>
-                <p className="text-2xl font-bold text-emerald-700">{formatSum(buyerPrice, locale)}</p>
-                <p className="text-xs text-emerald-600">{fmt(f.yourPriceNote, { company: buyerList.companyName })}</p>
-              </div>
-            )}
+            <BuyerPriceBox product={card} />
           </div>
 
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-            <span className={product.stock > 0 ? "font-medium text-emerald-600" : "text-slate-500"}>
-              {product.stock > 0
+            <span className={isAvailable(product) ? "font-medium text-emerald-600" : "text-slate-500"}>
+              {product.sourcing === "SUPPLIER_STOCK"
+                ? t.product.availableNow
+                : product.stock > 0
                 ? fmt(t.product.inStock, { n: product.stock })
                 : product.leadTimeDays
                   ? fmt(f.leadTime, { n: product.leadTimeDays })
@@ -246,7 +246,7 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
             {product.freeDelivery && <span className="font-medium text-emerald-600">🚚 {t.product.freeDelivery}</span>}
           </div>
 
-          <AddToCart product={buyerPrice ? { ...card, price: buyerPrice } : card} />
+          <AddToCart product={card} />
           <QuickOrder
             productId={product.id}
             productName={name}
@@ -386,7 +386,7 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
           </div>
           <div className="product-grid grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
             {parts.map((p) => (
-              <ProductCard key={p.id} product={toCard(p, locale, buyerPrices.get(p.id))} />
+              <ProductCard key={p.id} product={toCard(p, locale)} />
             ))}
           </div>
         </section>
@@ -397,7 +397,7 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
           <h2 className="mb-5 text-xl font-bold text-slate-800">{t.product.related}</h2>
           <div className="product-grid grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
             {related.map((p) => (
-              <ProductCard key={p.id} product={toCard(p, locale, buyerPrices.get(p.id))} />
+              <ProductCard key={p.id} product={toCard(p, locale)} />
             ))}
           </div>
         </section>

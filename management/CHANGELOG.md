@@ -2,7 +2,41 @@
 
 Local changes until deployed. "Deployed" is stated explicitly when it happens.
 
-## 2026-11-08 — specs from descriptions (NOT deployed)
+## 2026-11-09 — supplier products and finance (NOT deployed)
+
+- Products are "own warehouse" or "supplier warehouse". Supplier items skip stock reservation and shipment moves, show as available on the site, in feeds and in the Telegram bot, and record supplier and estimated cost per sold line.
+- New admin page «Ta'minotchidan xaridlar»: what to buy from which supplier, record the price paid, 30-day margin. Sales analytics split revenue, cost and margin by stock kind.
+- Product form and import (column `manba`) set the stock kind. Additive migration `20261109051107_product_sourcing`.
+- Import files for 383 Xiangshun and 203 BISON products with photos (outside the repository).
+
+## 2026-11-04/08 — public pages cached (PR #4, NOT deployed: merge waits for the owner)
+
+### Faster pages
+- Home, product, category, direction, catalogue, spare-parts and info pages are static or ISR (one hour) instead of rendered per request. `next start` sends `s-maxage=3600`.
+- URLs with filters, sorting, a page number or a search query still render per request, through an internal `/filtered` route (`src/lib/catalog-route.ts`). Visitors see no change in the URL. Ad tags (`utm_*`, `gclid`, `yclid`…) keep the cached page.
+
+### Buyer prices
+- "Your price" now loads in the browser from a new private route, `POST /api/buyer-prices`, and still goes into the cart. It never appears in cached HTML.
+- It now shows on every product card (home, catalogue, search, spare parts, wishlist, recently viewed), not only on category, direction and product pages.
+- The header shows "Shaxsiy kabinet" for logged-in buyers instead of their company name; the cabinet page still shows it.
+
+### Fresh data
+- `revalidateStorefront()` clears the cached pages after every write to public data. New: shipments going out, price-list saves, Telegram `/narx` and `/qoldiq`. It replaces the same call in product, category, review, photo and stock-document saves.
+- `tests/storefront-cache.test.ts` lists every write path and fails on a new one that is not covered.
+
+### Reliability
+- A page rendered without menus during a database failure stays in the cache for one minute instead of one hour (D-13, D-24).
+- Build workers use one database connection each (D-26).
+
+### After the independent review (2026-11-08)
+- Admin → Sozlamalar has a «Sahifalarni yangilash» button for changes made by scripts (README §11).
+- Each save clears the cache right after its write, so a later error in the same save (for example the audit entry) no longer leaves pages stale (D-27).
+- The guard test now checks every function that writes public data, any database client name and raw SQL on those tables.
+- `filtered` routes are a 404 when opened directly instead of a duplicate page.
+- More ad tags keep the cached page (`srsltid`, `gad_source`, `gad_campaignid`, `msclkid`, `_gl`, `ttclid`).
+- `/api/buyer-prices` answers an empty or odd request body without an error.
+
+## 2026-11-08 — specs from descriptions (deployed, merge commit 5cdf5b8)
 
 - Product structured data and /llms.txt also use the spec paragraph of the description. On the live catalogue, 15 of 22 products go from 0–3 to 6–14 machine-readable specs.
 

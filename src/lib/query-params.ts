@@ -25,3 +25,9 @@ export function rangeFilter(min: number | undefined, max: number | undefined, in
     ...(max !== undefined ? { lte: int ? Math.floor(max) : max } : {}),
   };
 }
+
+/** The query of a catalogue URL. Cached pages have none, so the controls get it as a prop instead of useSearchParams(). */
+export type CatalogParams = Record<string, string | string[] | undefined>;
+
+/** First value of a query parameter that may appear more than once. */
+export const firstParam = (value: string | string[] | undefined): string | undefined => (Array.isArray(value) ? value[0] : value);

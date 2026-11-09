@@ -1,6 +1,7 @@
 import type { Prisma, Product } from "@/generated/prisma/client";
 import type { Locale } from "@/i18n/config";
 import { localName } from "@/lib/localize";
+import { isAvailable } from "@/lib/sourcing";
 
 export type ProductCardData = {
   id: string;
@@ -10,19 +11,21 @@ export type ProductCardData = {
   oldPrice: number | null;
   imageUrl: string | null;
   stock: number;
+  /** Can be ordered now: in our warehouse, or bought from a supplier's warehouse right after the sale. */
+  available: boolean;
+  /** Available through a supplier's warehouse rather than ours. */
+  fromSupplier: boolean;
   freeDelivery: boolean;
   /** Price not confirmed: `price` is 0 and the site shows "price on request". */
   priceOnRequest: boolean;
   sku: string | null;
   brand: string | null;
   isBestseller: boolean;
-  /** Logged-in buyer's own price (from their price list), when lower or different from the list price. */
-  buyerPrice?: number | null;
 };
 
-export function toCard(p: Product, locale: Locale, buyerPrice?: number | null): ProductCardData {
+export function toCard(p: Product, locale: Locale): ProductCardData {
   if (p.priceOnRequest) {
-    return { ...toCard({ ...p, priceOnRequest: false }, locale), price: 0, oldPrice: null, buyerPrice: null, priceOnRequest: true };
+    return { ...toCard({ ...p, priceOnRequest: false }, locale), price: 0, oldPrice: null, priceOnRequest: true };
   }
   return {
     id: p.id,
@@ -32,12 +35,13 @@ export function toCard(p: Product, locale: Locale, buyerPrice?: number | null): 
     oldPrice: p.oldPrice,
     imageUrl: p.imageUrl,
     stock: p.stock,
+    available: isAvailable(p),
+    fromSupplier: p.sourcing === "SUPPLIER_STOCK",
     freeDelivery: p.freeDelivery,
     priceOnRequest: false,
     sku: p.sku,
     brand: p.brand,
     isBestseller: p.isBestseller,
-    buyerPrice: buyerPrice && buyerPrice !== p.price ? buyerPrice : null,
   };
 }
 

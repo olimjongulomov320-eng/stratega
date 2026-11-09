@@ -46,7 +46,7 @@ Measured from one machine, 3 samples each:
 | Home, `/ru/about`, product page (uncached) | ≈ 0.72 s | ≈ 0.45 s |
 | `/sitemap.xml` (cached) | ≈ 0.43 s | ≈ 0.15 s |
 
-Every public page is rendered per request today, so caching would save about 0.3 s per page. Lighthouse was not run.
+These are the figures from before caching. Public pages are now cached on a branch that is not yet deployed, which should save about 0.3 s per page; measure again after deploy. Lighthouse was not run.
 
 ## Known limitation of the 404 pages
 

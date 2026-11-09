@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidateStorefront } from "@/lib/storefront-cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { requireAction, audit, safe, str, optStr, int, num, bool, type ActionState } from "@/lib/admin";
@@ -76,6 +76,7 @@ function readProduct(form: FormData) {
     datasheetUrl: safeUrl(optStr(form, "datasheetUrl")),
     videoUrl: safeUrl(optStr(form, "videoUrl")),
     leadTimeDays: nonNeg(int(form, "leadTimeDays")),
+    sourcing: str(form, "sourcing") === "SUPPLIER_STOCK" ? ("SUPPLIER_STOCK" as const) : ("OWN_STOCK" as const),
     isActive: bool(form, "isActive"),
     isFeatured: bool(form, "isFeatured"),
     isBestseller: bool(form, "isBestseller"),
@@ -93,15 +94,19 @@ export async function createProduct(_: ActionState, form: FormData): Promise<Act
     id = created.id;
     const opening = int(form, "openingStock") ?? 0;
     const warehouseId = str(form, "warehouseId");
-    if (opening > 0 && warehouseId) {
-      await prisma.$transaction((tx) =>
-        moveStock(tx, { productId: created.id, warehouseId, delta: opening, reason: "OPENING", note: "Boshlang'ich qoldiq", actor: session.name })
-      );
+    try {
+      if (opening > 0 && warehouseId) {
+        await prisma.$transaction((tx) =>
+          moveStock(tx, { productId: created.id, warehouseId, delta: opening, reason: "OPENING", note: "Boshlang'ich qoldiq", actor: session.name })
+        );
+      }
+    } finally {
+      // The product exists even if the opening stock fails.
+      revalidateStorefront();
     }
     await audit(session, "Mahsulot yaratildi", "Product", created.id, { name: data.name, price: data.price });
   });
   if (res?.error) return res;
-  revalidatePath("/", "layout");
   redirect(`/admin/products/${id}/overview`);
 }
 
@@ -119,8 +124,8 @@ export async function updateProduct(_: ActionState, form: FormData): Promise<Act
         await tx.priceChange.create({ data: { productId: id, oldPrice: before.price, newPrice: data.price, actor: session.name } });
       }
     });
+    revalidateStorefront();
     await audit(session, "Mahsulot tahrirlandi", "Product", id, before.price !== data.price ? { oldPrice: before.price, newPrice: data.price } : undefined);
-    revalidatePath("/", "layout");
     return { ok: true, message: "Saqlandi." };
   });
 }
@@ -131,8 +136,8 @@ export async function setProductActive(_: ActionState, form: FormData): Promise<
     const id = str(form, "id");
     const isActive = str(form, "active") === "1";
     await prisma.product.update({ where: { id }, data: { isActive } });
+    revalidateStorefront();
     await audit(session, isActive ? "Mahsulot faollashtirildi" : "Mahsulot yashirildi", "Product", id);
-    revalidatePath("/", "layout");
   });
 }
 
@@ -148,10 +153,10 @@ export async function deleteProduct(_: ActionState, form: FormData): Promise<Act
     const refs = Object.values(used._count).reduce((a, b) => a + b, 0);
     if (refs > 0) throw new Error("Mahsulot hujjatlarda ishlatilgan — o'chirib bo'lmaydi. Uni yashiring (Faol emas).");
     await prisma.product.delete({ where: { id } });
+    revalidateStorefront();
     await audit(session, "Mahsulot o'chirildi", "Product", id, { name: used.name });
   });
   if (res?.error) return res;
-  revalidatePath("/", "layout");
   redirect("/admin/products");
 }
 
@@ -171,8 +176,8 @@ export async function adjustStock(_: ActionState, form: FormData): Promise<Actio
       if (delta === 0) return;
       await moveStock(tx, { productId, warehouseId, delta, reason: "ADJUSTMENT", note: note ?? "Qo'lda tuzatish", actor: session.name, allowNegative });
     });
+    revalidateStorefront();
     await audit(session, "Qoldiq tuzatildi", "Product", productId, { warehouseId, mode, value });
-    revalidatePath("/", "layout");
     return { ok: true, message: "Qoldiq yangilandi." };
   });
 }
@@ -187,10 +192,11 @@ export async function importProductsCsv(_: ActionState, form: FormData): Promise
     const usdRate = num(form, "usdRate");
     const createMissing = form.get("createMissing") !== null;
 
-    const { created, updated, skipped, errors } = await importProductRows(await readTableFile(file), { usdRate, createMissing, actor: session.name });
+    const rows = await readTableFile(file);
+    // Rows are saved one by one, so clear the cache even if the import stops part way.
+    const { created, updated, skipped, errors } = await importProductRows(rows, { usdRate, createMissing, actor: session.name }).finally(() => revalidateStorefront());
 
     await audit(session, "CSV import (mahsulotlar)", "Product", undefined, { created, updated, skipped: skipped.slice(0, 50), errors: errors.slice(0, 50), usdRate });
-    revalidatePath("/", "layout");
     const parts = [`${created} ta yangi mahsulot qo'shildi, ${updated} ta yangilandi.`];
     if (skipped.length) parts.push(`Topilmadi (o'tkazib yuborildi): ${skipped.slice(0, 10).join(", ")}${skipped.length > 10 ? "…" : ""}`);
     if (errors.length) parts.push(`Xatolar: ${errors.slice(0, 5).join("; ")}${errors.length > 5 ? ` va yana ${errors.length - 5} ta` : ""}`);
