@@ -70,6 +70,7 @@ const en: Dictionary = {
     addToWishlist: "Add to wishlist",
     inStock: "In stock: {n} pcs",
     inStockShort: "In stock",
+    availableNow: "Available",
     notInStock: "Not in stock — available to order",
     quantity: "Quantity",
     freeDelivery: "Free delivery",

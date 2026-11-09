@@ -18,6 +18,7 @@ type QuickViewProduct = {
   oldPrice: number | null;
   imageUrl: string | null;
   stock: number;
+  available: boolean;
   category: { name: string; slug: string };
 };
 
@@ -178,7 +179,7 @@ export function QuickViewModal() {
                   }}
                   className="flex-1 rounded-full bg-indigo-600 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-200"
                 >
-                  {added ? t.product.added : product.stock <= 0 ? t.product.requestPrice : t.product.addToCart}
+                  {added ? t.product.added : !product.available ? t.product.requestPrice : t.product.addToCart}
                 </button>
                 <Link
                   href={href(`/product/${product.slug}`)}

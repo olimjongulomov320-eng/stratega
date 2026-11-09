@@ -78,12 +78,21 @@ export async function confirmOrder(_: ActionState, form: FormData): Promise<Acti
     const id = str(form, "id");
     const allowOver = await getSetting<boolean>("stock.allowOverReserve");
     await prisma.$transaction(async (tx) => {
-      const order = await tx.order.findUnique({ where: { id }, include: { lines: { include: { product: true } }, customer: true, payments: true } });
+      const order = await tx.order.findUnique({
+        where: { id },
+        include: { lines: { include: { product: { include: { suppliers: { orderBy: { id: "asc" }, take: 1 } } } } }, customer: true, payments: true },
+      });
       if (!order) throw new Error("Buyurtma topilmadi.");
       if (order.status !== "DRAFT") throw new Error("Buyurtma allaqachon tasdiqlangan.");
-      for (const l of order.lines) await reserve(tx, l.productId, order.warehouseId, l.quantity, allowOver);
-      // Snapshot cost at confirmation for margin reports.
-      for (const l of order.lines) await tx.orderLine.update({ where: { id: l.id }, data: { costPrice: l.product.costPrice } });
+      // Only our own stock is reserved; supplier-warehouse items are bought after the sale.
+      for (const l of order.lines) if (l.product.sourcing === "OWN_STOCK") await reserve(tx, l.productId, order.warehouseId, l.quantity, allowOver);
+      // Snapshot cost, sourcing and supplier at confirmation for margin and purchase reports.
+      for (const l of order.lines) {
+        await tx.orderLine.update({
+          where: { id: l.id },
+          data: { costPrice: l.product.costPrice, sourcing: l.product.sourcing, supplierId: l.product.sourcing === "SUPPLIER_STOCK" ? (l.product.suppliers[0]?.supplierId ?? null) : null },
+        });
+      }
       await tx.order.update({ where: { id }, data: { status: "CONFIRMED", confirmedAt: new Date() } });
     });
     await audit(session, "Buyurtma tasdiqlandi (band qilindi)", "Order", id);
@@ -104,7 +113,7 @@ export async function cancelOrder(_: ActionState, form: FormData): Promise<Actio
         throw new Error("Jo'natilgan buyurtmani bekor qilib bo'lmaydi — qaytarish hujjatini yarating.");
       }
       if (order.status === "CONFIRMED") {
-        for (const l of order.lines) await reserve(tx, l.productId, order.warehouseId, -l.quantity);
+        for (const l of order.lines) if (l.sourcing === "OWN_STOCK") await reserve(tx, l.productId, order.warehouseId, -l.quantity);
       }
       await tx.shipment.updateMany({ where: { orderId: id, status: { in: ["DRAFT", "READY"] } }, data: { status: "CANCELLED" } });
       await tx.order.update({ where: { id }, data: { status: "CANCELLED" } });
@@ -211,7 +220,10 @@ export async function shipShipment(_: ActionState, form: FormData): Promise<Acti
       }
       if (to === "SHIPPED") {
         if (s.status !== "DRAFT" && s.status !== "READY") throw new Error("Bu jo'natma allaqachon jo'natilgan yoki bekor qilingan.");
+        // Supplier-warehouse items go from the supplier to the buyer: no reservation or stock move here.
+        const supplierItems = new Set(s.order.lines.filter((l) => l.sourcing === "SUPPLIER_STOCK").map((l) => l.productId));
         for (const l of s.lines) {
+          if (supplierItems.has(l.productId)) continue;
           await reserve(tx, l.productId, s.warehouseId, -l.quantity);
           await moveStock(tx, { productId: l.productId, warehouseId: s.warehouseId, delta: -l.quantity, reason: "SHIPMENT", shipmentId: s.id, note: `${s.number} / ${s.order.number}`, actor: session.name });
         }

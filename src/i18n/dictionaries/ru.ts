@@ -70,6 +70,7 @@ const ru: Dictionary = {
     addToWishlist: "В избранное",
     inStock: "На складе: {n} шт.",
     inStockShort: "В наличии",
+    availableNow: "В наличии",
     notInStock: "Сейчас нет в наличии — под заказ",
     quantity: "Количество",
     freeDelivery: "Бесплатная доставка",

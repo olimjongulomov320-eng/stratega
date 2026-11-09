@@ -23,6 +23,7 @@ const COLUMNS: [string, string][] = [
   ["yuk_kg, kotarish_mm, ish_kengligi_mm, quvvat_kvt", "Texnik xususiyatlar — katalogdagi filtrlar uchun (raqam)"],
   ["pasport_pdf, video", "Texnik pasport (PDF) va YouTube havolasi — https:// bilan"],
   ["yetkazish_kun", "Omborda yo'q bo'lsa: yetkazish muddati, kun"],
+  ["manba", "«o'z ombori» yoki «ta'minotchi» (ta'minotchi omboridan sotilgach sotib olinadigan mahsulot)"],
 ];
 
 export default async function ImportPage() {

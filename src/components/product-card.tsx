@@ -25,7 +25,7 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
   const [added, setAdded] = useState(false);
 
   const url = href(`/product/${product.slug}`);
-  const outOfStock = product.stock <= 0;
+  const outOfStock = !product.available;
   const discount = product.oldPrice ? Math.round(100 - (product.price / product.oldPrice) * 100) : null;
   const comparing = isComparing(product.id);
   const wished = isWishlisted(product.id);
@@ -124,7 +124,7 @@ export function ProductCard({ product, priority = false }: { product: ProductCar
 
         <div className="mt-auto flex flex-col gap-1 text-xs sm:text-sm">
           <span className={outOfStock ? "text-slate-400" : "font-medium text-emerald-600"}>
-            {outOfStock ? t.product.notInStock : t.product.inStockShort}
+            {outOfStock ? t.product.notInStock : product.fromSupplier ? t.product.availableNow : t.product.inStockShort}
           </span>
           {product.freeDelivery && <span className="font-medium text-emerald-600">🚚 {t.product.freeDelivery}</span>}
         </div>

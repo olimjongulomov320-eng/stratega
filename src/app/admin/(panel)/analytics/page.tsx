@@ -33,6 +33,21 @@ export default async function AnalyticsPage(props: PageProps<"/admin/analytics">
         <Stat label="Marja" value={`${r.revenueNet ? ((r.profit / r.revenueNet) * 100).toFixed(1) : "0.0"}%`} hint={`O'rtacha chek: ${formatNumber(r.orders ? r.revenue / r.orders : 0)}`} />
       </div>
 
+      <Card title="O'z ombori va ta'minotchi ombori" className="mt-6">
+        <Table head={["", "Tushum (QQS bilan)", "Tannarx", "Yalpi foyda", "Marja"]}>
+          {([["O'z omborimiz", r.bySourcing.OWN_STOCK], ["Ta'minotchi ombori", r.bySourcing.SUPPLIER_STOCK]] as const).map(([label, s]) => (
+            <tr key={label}>
+              <Td>{label}</Td>
+              <Td right><Money value={s.revenue} /></Td>
+              <Td right><Money value={s.cost} /></Td>
+              <Td right><Money value={s.revenue - s.cost} /></Td>
+              <Td right>{s.revenue ? (((s.revenue - s.cost) / s.revenue) * 100).toFixed(1) : "0.0"}%</Td>
+            </tr>
+          ))}
+        </Table>
+        <p className="mt-2 text-xs text-slate-500">Ta&apos;minotchi ombori uchun haqiqiy xarid narxi «Ta&apos;minotchidan xaridlar» sahifasida yoziladi; yozilmaguncha taxminiy tannarx olinadi.</p>
+      </Card>
+
       {r.byDay.length > 0 && (
         <Card title="Kunlik tushum" className="mt-6">
           <div className="flex h-40 items-end gap-1" role="img" aria-label="Kunlik tushum grafigi">

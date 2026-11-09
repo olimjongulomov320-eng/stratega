@@ -68,6 +68,7 @@ const uz = {
     addToWishlist: "Sevimlilarga qo'shish",
     inStock: "Omborda: {n} dona",
     inStockShort: "Omborda bor",
+    availableNow: "Mavjud",
     notInStock: "Hozircha mavjud emas — buyurtma asosida",
     quantity: "Miqdor",
     freeDelivery: "Bepul yetkazib berish",

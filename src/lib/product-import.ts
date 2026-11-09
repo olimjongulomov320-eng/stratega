@@ -4,6 +4,7 @@ import { moveStock } from "@/lib/inventory";
 import type { Unit } from "@/generated/prisma/client";
 import { slugify } from "@/lib/slug";
 import { parseNumber } from "@/lib/csv";
+import { parseSourcing } from "@/lib/sourcing";
 
 const UNITS: Unit[] = ["PIECE", "SET", "KG", "METER", "LITER", "PALLET", "BOX"];
 
@@ -39,6 +40,7 @@ export const COLS = {
   videoUrl: ["video", "video_url", "видео"],
   leadTimeDays: ["yetkazish_kun", "срок_поставки_дней", "lead_time_days"],
   priceOnRequest: ["narx_sorov", "narx_so'rov", "цена_по_запросу", "price_on_request"],
+  sourcing: ["manba", "ombor_turi", "источник", "sourcing"],
 } as const;
 
 export const UNIT_ALIASES: Record<string, Unit> = {
@@ -168,6 +170,7 @@ export async function importProductRows(
         ...(get(r, "compatibleWith") && { compatibleWith: get(r, "compatibleWith") }),
         ...specCols(r),
         ...(priceOnRequest !== undefined && { priceOnRequest }),
+        ...(parseSourcing(get(r, "sourcing")) && { sourcing: parseSourcing(get(r, "sourcing")) }),
       };
 
       const productId = await prisma.$transaction(async (tx) => {

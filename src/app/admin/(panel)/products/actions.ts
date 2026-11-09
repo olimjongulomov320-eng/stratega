@@ -76,6 +76,7 @@ function readProduct(form: FormData) {
     datasheetUrl: safeUrl(optStr(form, "datasheetUrl")),
     videoUrl: safeUrl(optStr(form, "videoUrl")),
     leadTimeDays: nonNeg(int(form, "leadTimeDays")),
+    sourcing: str(form, "sourcing") === "SUPPLIER_STOCK" ? ("SUPPLIER_STOCK" as const) : ("OWN_STOCK" as const),
     isActive: bool(form, "isActive"),
     isFeatured: bool(form, "isFeatured"),
     isBestseller: bool(form, "isBestseller"),

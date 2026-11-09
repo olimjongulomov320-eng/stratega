@@ -39,6 +39,7 @@ const NAV: { title: string; items: { href: string; label: string; perm: Permissi
     title: "Moliya",
     items: [
       { href: "/admin/payments", label: "To'lovlar", perm: "finance.read" },
+      { href: "/admin/supplier-purchases", label: "Ta'minotchidan xaridlar", perm: "orders.read" },
       { href: "/admin/price-lists", label: "Narxlar ro'yxati", perm: "finance.read" },
     ],
   },

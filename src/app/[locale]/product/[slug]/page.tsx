@@ -16,6 +16,7 @@ import { pageMetadata, absoluteUrl, jsonLd, fitTitle } from "@/lib/seo";
 import { CLAIMS, COMPANY } from "@/lib/site";
 import { SPEC_FILTERS, parseSpecRows, specLabel, youTubeId } from "@/lib/product-specs";
 import { productLocales, productFacts } from "@/lib/product-seo";
+import { isAvailable } from "@/lib/sourcing";
 import { BuyerPriceBox } from "@/components/buyer-price-box";
 import { ProductImage } from "@/components/product-image";
 import { QuickOrder } from "@/components/quick-order";
@@ -112,7 +113,7 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
         url,
         priceCurrency: "UZS",
         price: product.price,
-        availability: product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/BackOrder",
+        availability: isAvailable(product) ? "https://schema.org/InStock" : "https://schema.org/BackOrder",
         itemCondition: "https://schema.org/NewCondition",
         seller: { "@type": "Organization", name: COMPANY.brand },
       },
@@ -233,8 +234,10 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
           </div>
 
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-            <span className={product.stock > 0 ? "font-medium text-emerald-600" : "text-slate-500"}>
-              {product.stock > 0
+            <span className={isAvailable(product) ? "font-medium text-emerald-600" : "text-slate-500"}>
+              {product.sourcing === "SUPPLIER_STOCK"
+                ? t.product.availableNow
+                : product.stock > 0
                 ? fmt(t.product.inStock, { n: product.stock })
                 : product.leadTimeDays
                   ? fmt(f.leadTime, { n: product.leadTimeDays })

@@ -43,29 +43,29 @@ enum Unit {
 }
 
 model Product {
-  id              String   @id @default(cuid())
-  slug            String   @unique
+  id              String          @id @default(cuid())
+  slug            String          @unique
   name            String // Uzbek (default language)
   nameRu          String?
   nameEn          String?
-  description     String   @default("")
+  description     String          @default("")
   descriptionRu   String?
   descriptionEn   String?
   brand           String?
-  sku             String?  @unique
+  sku             String?         @unique
   barcode         String?
   compatibleWith  String? // spare parts: machine models / SKUs this part fits, comma separated
-  unit            Unit     @default(PIECE)
+  unit            Unit            @default(PIECE)
   price           Int // retail price, so'm, VAT included
   oldPrice        Int? // price before discount
-  priceOnRequest  Boolean  @default(false) // price not confirmed: site shows "price on request" instead of `price`
+  priceOnRequest  Boolean         @default(false) // price not confirmed: site shows "price on request" instead of `price`
   costPrice       Int? // landed cost, so'm — never shown publicly
   imageUrl        String?
-  images          String[] @default([]) // extra photos
+  images          String[]        @default([]) // extra photos
   warrantyMonths  Int?
-  freeDelivery    Boolean  @default(false)
-  stock           Int      @default(0) // cached sum of StockLevel.quantity
-  minimumStock    Int      @default(0) // "low stock" threshold
+  freeDelivery    Boolean         @default(false)
+  stock           Int             @default(0) // cached sum of StockLevel.quantity
+  minimumStock    Int             @default(0) // "low stock" threshold
   reorderPoint    Int?
   reorderQuantity Int?
   weightKg        Float?
@@ -78,25 +78,28 @@ model Product {
   datasheetUrl    String? // PDF datasheet / passport
   videoUrl        String? // YouTube or other video link
   leadTimeDays    Int? // delivery time in days when not in stock
-  isActive        Boolean  @default(true)
-  isFeatured      Boolean  @default(false)
-  isBestseller    Boolean  @default(false) // "Xit savdo / Хит продаж" badge; the first one is shown in the home page hero
-  category        Category @relation(fields: [categoryId], references: [id])
+  // OWN_STOCK: kept in our warehouse (stock ledger). SUPPLIER_STOCK: bought from a supplier's local warehouse after
+  // each sale (back-to-back), so it never enters the ledger and counts as available.
+  sourcing        ProductSourcing @default(OWN_STOCK)
+  isActive        Boolean         @default(true)
+  isFeatured      Boolean         @default(false)
+  isBestseller    Boolean         @default(false) // "Xit savdo / Хит продаж" badge; the first one is shown in the home page hero
+  category        Category        @relation(fields: [categoryId], references: [id])
   categoryId      String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
-  rfqItems        RfqItem[]
-  stockLevels     StockLevel[]
-  stockMoves      StockMove[]
-  documentLines   StockDocumentLine[]
-  orderLines      OrderLine[]
-  quotationLines  QuotationLine[]
-  shipmentLines   ShipmentLine[]
-  priceListItems  PriceListItem[]
-  suppliers       ProductSupplier[]
-  priceChanges    PriceChange[]
-  reviews         Review[]
+  rfqItems       RfqItem[]
+  stockLevels    StockLevel[]
+  stockMoves     StockMove[]
+  documentLines  StockDocumentLine[]
+  orderLines     OrderLine[]
+  quotationLines QuotationLine[]
+  shipmentLines  ShipmentLine[]
+  priceListItems PriceListItem[]
+  suppliers      ProductSupplier[]
+  priceChanges   PriceChange[]
+  reviews        Review[]
 
   @@index([categoryId, isActive])
 }
@@ -262,6 +265,7 @@ model Supplier {
   updatedAt   DateTime          @updatedAt
   products    ProductSupplier[]
   documents   StockDocument[]
+  orderLines  OrderLine[]
 }
 
 model ProductSupplier {
@@ -398,14 +402,25 @@ model Order {
 }
 
 model OrderLine {
-  id        String  @id @default(cuid())
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  orderId   String
-  product   Product @relation(fields: [productId], references: [id])
-  productId String
-  quantity  Int
-  price     Int // sale price per unit, so'm
-  costPrice Int? // cost per unit at time of sale (for margin)
+  id           String          @id @default(cuid())
+  order        Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId      String
+  product      Product         @relation(fields: [productId], references: [id])
+  productId    String
+  quantity     Int
+  price        Int // sale price per unit, so'm
+  costPrice    Int? // cost per unit at time of sale (for margin)
+  // Snapshot at confirmation: a supplier-warehouse line is bought after the sale and does not touch our stock.
+  sourcing     ProductSourcing @default(OWN_STOCK)
+  supplier     Supplier?       @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  supplierId   String?
+  purchasedAt  DateTime? // when the item was bought from the supplier
+  purchaseCost Int? // actual purchase price per unit paid to the supplier, so'm (replaces costPrice in margins)
+}
+
+enum ProductSourcing {
+  OWN_STOCK
+  SUPPLIER_STOCK
 }
 
 enum ShipmentStatus {
@@ -617,7 +632,7 @@ model TelegramSession {
 }
 
 model TelegramUpdate {
-  updateId   Int      @id
+  updateId    Int      @id
   processedAt DateTime @default(now())
 }
 

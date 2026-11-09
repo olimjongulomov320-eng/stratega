@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { availableWhere } from "@/lib/sourcing";
 import { getHeaderCategories } from "@/lib/categories";
 import { ProductCard } from "@/components/product-card";
 import { CategorySidebar } from "@/components/category-sidebar";
@@ -28,7 +29,7 @@ export async function SearchView({ locale, sp }: { locale: Locale; sp: CatalogPa
     isActive: true,
     ...(q ? searchWhere(q) : {}),
     ...(brand ? { brand } : {}),
-    ...(inStock ? { stock: { gt: 0 } } : {}),
+    ...(inStock ? availableWhere : {}),
     // "Price on request" items have no public price, so a price filter skips them.
     ...(priceRange ? { price: priceRange, priceOnRequest: false } : {}),
   };

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { availableWhere } from "@/lib/sourcing";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { cache } from "react";
@@ -95,7 +96,7 @@ export async function CategoryView({ locale, slug, sp }: { locale: Locale; slug:
     // "Price on request" items have no public price, so a price filter skips them.
     ...(priceRange ? { price: priceRange, priceOnRequest: false } : {}),
     ...(brand ? { brand } : {}),
-    ...(inStock ? { stock: { gt: 0 } } : {}),
+    ...(inStock ? availableWhere : {}),
     ...(specWhere.length ? { AND: specWhere } : {}),
   };
   const [categories, products, total, brands] = await Promise.all([

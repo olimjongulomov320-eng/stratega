@@ -3,6 +3,7 @@ import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { absoluteUrl } from "@/lib/seo";
 import { COMPANY } from "@/lib/site";
+import { isAvailable } from "@/lib/sourcing";
 
 /**
  * OLX export: turns active catalogue products into OLX-ready adverts.
@@ -55,6 +56,7 @@ export type OlxRow = {
   images: string[];
   url: string;
   stock: number;
+  available: boolean;
   city: string;
   contactName: string;
   phone: string;
@@ -99,7 +101,7 @@ export async function buildOlxRows(settings: OlxSettings): Promise<{ rows: OlxRo
     const images = [p.imageUrl, ...p.images].filter((x): x is string => Boolean(x)).slice(0, 8).map((u) => (u.startsWith("http") ? u : absoluteUrl(u)));
     if (p.price <= 0 || p.priceOnRequest) { skipped.push({ name, reason: "narx yo'q" }); continue; }
     if (images.length === 0) { skipped.push({ name, reason: "rasm yo'q" }); continue; }
-    if (settings.onlyInStock && p.stock <= 0) { skipped.push({ name, reason: "omborda yo'q" }); continue; }
+    if (settings.onlyInStock && !isAvailable(p)) { skipped.push({ name, reason: "omborda yo'q" }); continue; }
     const base = cleanDescription((settings.lang === "ru" ? p.descriptionRu || p.description : p.description) || "");
     let description = base.includes(t.tail) ? base : [base, t.tail].filter(Boolean).join("\n\n");
     if (description.length < 80) description = `${name}. ${description}`;
@@ -116,6 +118,7 @@ export async function buildOlxRows(settings: OlxSettings): Promise<{ rows: OlxRo
       images,
       url: absoluteUrl(`${settings.lang === "ru" ? "/ru" : ""}/product/${p.slug}`),
       stock: p.stock,
+      available: isAvailable(p),
       city: settings.city,
       contactName: settings.contactName,
       phone: settings.phone,
@@ -152,7 +155,7 @@ export function toYml(rows: OlxRow[]): string {
   const date = new Date().toISOString().slice(0, 16).replace("T", " ");
   const offers = rows
     .map(
-      (r) => `    <offer id="${xml(r.externalId)}" available="${r.stock > 0 ? "true" : "false"}">
+      (r) => `    <offer id="${xml(r.externalId)}" available="${r.available ? "true" : "false"}">
       <url>${xml(r.url)}</url>
       <price>${r.price}</price>
       <currencyId>UZS</currencyId>

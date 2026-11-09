@@ -18,6 +18,8 @@ type CompareProduct = {
   priceOnRequest: boolean;
   imageUrl: string | null;
   stock: number;
+  available: boolean;
+  fromSupplier: boolean;
   sku: string | null;
   categoryName: string;
 };
@@ -63,7 +65,7 @@ export default function ComparePage() {
     { label: t.compare.price, render: (p) => <span className="font-bold text-indigo-600">{p.priceOnRequest ? t.product.priceOnRequest : formatSum(p.price, locale)}</span> },
     { label: t.compare.model, render: (p) => p.sku ?? "—" },
     { label: t.compare.category, render: (p) => p.categoryName },
-    { label: t.compare.stock, render: (p) => (p.stock > 0 ? fmt(t.product.inStock, { n: p.stock }) : t.product.notInStock) },
+    { label: t.compare.stock, render: (p) => (p.fromSupplier ? t.product.availableNow : p.stock > 0 ? fmt(t.product.inStock, { n: p.stock }) : t.product.notInStock) },
     { label: t.product.description, render: (p) => <span className="line-clamp-6 whitespace-pre-line text-sm text-slate-600">{p.description}</span> },
   ];
 

@@ -221,7 +221,7 @@ async function createBotOrder(chatId: number, from: TelegramUser, session: Sessi
     if (!product) throw new Error("One of the products is no longer available.");
     const level = product.stockLevels[0];
     const available = Math.max(0, (level?.quantity ?? 0) - (level?.reserved ?? 0));
-    if (line.quantity > available) throw new Error(`${product.name}: only ${available} available.`);
+    if (product.sourcing === "OWN_STOCK" && line.quantity > available) throw new Error(`${product.name}: only ${available} available.`);
     return { product, quantity: line.quantity };
   });
   const total = validLines.reduce((sum, line) => sum + linePrice(line.product) * line.quantity, 0);
