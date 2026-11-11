@@ -20,3 +20,7 @@
 - Found: specifications mostly live inside description text, so 8 products expose no structured specs and most others 1–3.
 - PR #3 (specs from descriptions) merged and deployed (5cdf5b8). Live: 15 of 22 products carry 6–14 structured specs in uz and ru; /llms.txt shows them. Sitemap re-submitted to IndexNow.
 - Page caching: independent review (no blockers), fixes, rebased onto the deployed SEO change, full rerun from a clean build (223 checks pass). Still on the branch, not deployed.
+
+## 2026-11-09
+- PR #5 (page caching + supplier finance) merged by the owner and deployed (2a9630b). Live: edge cache hits, home first byte about 0.54 s (was 0.72–1.0 s).
+- Owner imported 383 Xiangshun and 203 BISON products. Live check: all 586 present by exact name; Xiangshun prices and photos all correct; 21 BISON photos missing (uploaded before their products existed), re-upload folder prepared. 1 351 sitemap URLs sent to IndexNow.

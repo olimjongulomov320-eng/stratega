@@ -2,14 +2,20 @@
 
 Local changes until deployed. "Deployed" is stated explicitly when it happens.
 
-## 2026-11-09 — supplier products and finance (NOT deployed)
+## 2026-11-10 — own stock focus (local, not deployed)
+
+- Import column `tavsiya` sets "featured".
+- Product photos added to `public/products/`: NIULI CBY-AC, CTY-E, CTQB15-35, welders CN-013A and CN-026, and 117 sharpened BISON photos (enlarged with Real-ESRGAN).
+- Import files (outside the repository): TURAN and NIULI as own stock, all other products as supplier stock, BISON photo links.
+
+## 2026-11-09 — supplier products and finance (deployed, merge commit 2a9630b)
 
 - Products are "own warehouse" or "supplier warehouse". Supplier items skip stock reservation and shipment moves, show as available on the site, in feeds and in the Telegram bot, and record supplier and estimated cost per sold line.
 - New admin page «Ta'minotchidan xaridlar»: what to buy from which supplier, record the price paid, 30-day margin. Sales analytics split revenue, cost and margin by stock kind.
 - Product form and import (column `manba`) set the stock kind. Additive migration `20261109051107_product_sourcing`.
 - Import files for 383 Xiangshun and 203 BISON products with photos (outside the repository).
 
-## 2026-11-04/08 — public pages cached (PR #4, NOT deployed: merge waits for the owner)
+## 2026-11-04/08 — public pages cached (deployed with PR #5, merge commit 2a9630b)
 
 ### Faster pages
 - Home, product, category, direction, catalogue, spare-parts and info pages are static or ISR (one hour) instead of rendered per request. `next start` sends `s-maxage=3600`.

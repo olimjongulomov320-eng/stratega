@@ -24,6 +24,7 @@ const COLUMNS: [string, string][] = [
   ["pasport_pdf, video", "Texnik pasport (PDF) va YouTube havolasi — https:// bilan"],
   ["yetkazish_kun", "Omborda yo'q bo'lsa: yetkazish muddati, kun"],
   ["manba", "«o'z ombori» yoki «ta'minotchi» (ta'minotchi omboridan sotilgach sotib olinadigan mahsulot)"],
+  ["tavsiya", "1 — bosh sahifada va ro'yxatlarda birinchi ko'rsatish, 0 — oddiy (ixtiyoriy)"],
 ];
 
 export default async function ImportPage() {
