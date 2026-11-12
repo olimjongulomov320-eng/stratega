@@ -2,7 +2,14 @@
 
 Local changes until deployed. "Deployed" is stated explicitly when it happens.
 
-## 2026-11-12 — buyer guides (local, not deployed)
+## 2026-11-13 — «пайка» and «рохли» on category pages (local, not deployed)
+
+- Competitors ranking first (munu.uz, mest.uz — one company; promet.uz) use the words buyers type: «пайка», «утюг», «дазмол», «рохли». Our welder page used none of them.
+- Welder category (uz/ru): title, description and heading now start with «Пайка для ПЭ и ПНД труб» / «PE va PND quvurlar uchun payka»; new text block explaining the other names and which model fits which diameter; one extra FAQ question.
+- Pallet-truck category (uz/ru): heading «Рохли — гидравлические тележки для паллет»; new blocks «Рохли на 2 и 3 тонны» and «Как выбрать рохлю»; one extra FAQ question.
+- config/category-seo.ts can now set a heading, text blocks and extra FAQ per category. These show even when the admin has its own intro. New tests in tests/category-seo.test.ts.
+
+## 2026-11-12 — buyer guides (deployed)
 
 - New section /qollanma (uz) and /ru/qollanma: 4 guides — choosing a PE pipe welder, butt welding step by step, choosing a pallet truck, manual vs electric stacker. Each has FAQ, Article + FAQPage structured data, live product cards (no prices in the text) and a call/Telegram/WhatsApp block.
 - Web analytics switched on: Yandex Metrica counter 114222888 (9 goals) and Google Analytics G-1YJXQ5XMV7 are built in and load only on stratega.uz (environment variables still override). Metrica now counts the first page of each visit itself.

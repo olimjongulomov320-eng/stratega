@@ -3,10 +3,22 @@
 // actually type (Google and Yandex autocomplete for Uzbekistan / Tashkent, 12.11.2026): product type first,
 // "купить в Ташкенте", "цена", "narxi". Brand names are left out: buyers search for the kind of machine.
 // `aka` lists other names buyers use; /llms.txt shows them to AI assistants.
+// Optional per language: `h1` replaces the category name in the page heading (the breadcrumb keeps the name),
+// `sections` is a short buying text shown under the products, and `faq` comes before the standard questions.
+// These are code, so they show even when the admin has written its own intro.
 
 import type { Locale } from "@/i18n/config";
 
-type CategorySeo = Record<Locale, { title: string; description: string; intro?: string }> & { aka?: string[] };
+export type CategorySeoSection = { h2: string; p?: string; ul?: string[] };
+export type CategorySeoText = {
+  title: string;
+  description: string;
+  intro?: string;
+  h1?: string;
+  sections?: CategorySeoSection[];
+  faq?: { q: string; a: string }[];
+};
+type CategorySeo = Record<Locale, CategorySeoText> & { aka?: string[] };
 
 export const CATEGORY_SEO: Record<string, CategorySeo> = {
   "gidravlik-telejkalar": {
@@ -14,11 +26,57 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Rohlya (gidravlik telejka) narxi Toshkentda | Stratega",
       description: "Rohlya — paletlar uchun gidravlik telejkalar 2–3 t, tarozili va rulon uchun. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
       intro: "Rohlya (gidravlik telejka) — ombor, do'kon va sexda paletlarni tashish uchun qo'l telejkasi. 2 va 3 tonnalik, 1150 va 1220 mm vilkali, tarozili va rulon uchun modellar.",
+      h1: "Rohlya — paletlar uchun gidravlik telejkalar",
+      sections: [
+        {
+          h2: "2 va 3 tonnalik rohlyalar",
+          ul: [
+            "2 t — NIULI CBY-JC ekonom rohlyasi: do'konlar va yengil paletli kichik omborlar uchun.",
+            "3 t — NIULI CBY-AC: 550×1150 mm vilkali (1200×800 mm yevropalet uchun) va 685×1220 mm vilkali (1200×1000 mm kabi kengroq paletlar uchun). BQSL 3 t, vilkasi 1200 mm.",
+            "Tarozili rohlya — NIULI CBY-CW I va 3 tonnalik elektron tarozili telejka: yuk vilkaning o'zida tortiladi, qabul va jo'natishda qulay.",
+          ],
+        },
+        {
+          h2: "Rohlyani qanday tanlash kerak",
+          ul: [
+            "Yuk ko'tarish — eng og'ir paletingizdan zaxira bilan oling: doim chegarada ishlaydigan telejkaning gidravlikasi tezroq yeyiladi.",
+            "Vilka — paletingiz o'lchamiga mos bo'lsin: 1200×800 mm yevropalet uchun 550 mm kenglik va 1150 mm uzunlik.",
+            "G'ildirak — poliuretan tinch va polni buzmaydi, neylon og'ir yuk va iflos polga chidamliroq.",
+            "Paletni stellajga ko'tarish kerak bo'lsa, rohlya emas, shtabeler kerak.",
+          ],
+        },
+      ],
+      faq: [
+        { q: "Rohlya va gidravlik telejka — bir narsami?", a: "Ha. Rohlya, gidravlik telejka, palet telejkasi va transpalet — paletlarni vilkada ko'tarib tashiydigan bitta qo'l telejkasining nomlari." },
+      ],
     },
     ru: {
       title: "Рохли (гидравлические тележки) купить в Ташкенте — цены | Stratega",
       description: "Рохли — гидравлические тележки для паллет 2–3 т, с весами и для рулонов. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
       intro: "Рохля (гидравлическая тележка, транспалет) — ручная тележка для перевозки паллет по складу, магазину и цеху. Модели на 2 и 3 тонны, с вилами 1150 и 1220 мм, с весами и для рулонов.",
+      h1: "Рохли — гидравлические тележки для паллет",
+      sections: [
+        {
+          h2: "Рохли на 2 и 3 тонны",
+          ul: [
+            "2 т — эконом-рохля NIULI CBY-JC: для магазинов и небольших складов с лёгкими паллетами.",
+            "3 т — NIULI CBY-AC с вилами 550×1150 мм (под европаллет 1200×800 мм) и 685×1220 мм (под более широкие паллеты, например 1200×1000 мм). Рохля BQSL на 3 т с вилами 1200 мм.",
+            "Рохли с весами — NIULI CBY-CW I и тележка с электронными весами на 3 т: груз взвешивается прямо на вилах, удобно при приёмке и отгрузке.",
+          ],
+        },
+        {
+          h2: "Как выбрать рохлю",
+          ul: [
+            "Грузоподъёмность — берите с запасом от самой тяжёлой паллеты: тележка, которая всё время работает на пределе, быстрее изнашивает гидравлику.",
+            "Вилы — под размер ваших паллет: для европаллеты 1200×800 мм нужна ширина 550 мм и длина 1150 мм.",
+            "Колёса — полиуретановые тише и не портят пол, нейлоновые лучше переносят тяжёлый груз и грязный пол.",
+            "Если паллеты нужно поднимать на стеллаж, нужна не рохля, а штабелер.",
+          ],
+        },
+      ],
+      faq: [
+        { q: "Рохля и гидравлическая тележка — это одно и то же?", a: "Да. Рохля, гидравлическая тележка, тележка для паллет и транспалет — названия одной ручной тележки, которая поднимает паллету на вилах и перевозит её." },
+      ],
     },
     en: {
       title: "Hand pallet trucks in Tashkent — prices | Stratega",
@@ -113,20 +171,62 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
   },
   "payvandlash-apparatlari": {
     uz: {
-      title: "Quvur payvandlash apparati (payka) narxi Toshkentda | Stratega",
-      description: "PND quvurlar uchun stykovoy payvandlash apparatlari 63–630 mm va plastik quvur paykalari. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      title: "PE va PND quvur paykasi (dazmol) narxi Toshkentda | Stratega",
+      description: "PE va PND quvurlar uchun payka (dazmol, utyug): 63–630 mm stykovoy payvandlash apparatlari va 20–110 mm paykalar. Narxlar QQS bilan, Toshkentda mavjud.",
       intro: "Polietilen (PND) quvurlarni payvandlash apparatlari: 63 dan 630 mm gacha mexanik va gidravlik stykovoy apparatlar, suv va isitish uchun plastik (PPR) quvur paykalari 20–110 mm.",
+      h1: "PE va PND quvurlar uchun payka — payvandlash apparatlari",
+      sections: [
+        {
+          h2: "Payka, dazmol, utyug — bir narsami?",
+          p: "Ha. Polietilen quvurlarni uchma-uch (stykovoy) payvandlash apparatini har xil atashadi: payka, dazmol, utyug, quvur payvandlash apparati, PND apparati. Bu bitta uskuna: qisqichli markazlashtirgich, torets kesgich va isitish ko'zgusi. Quvur uchlari tekislanadi, qizdiriladi va siqiladi — chok quvurning o'zidek mustahkam bo'ladi.",
+        },
+        {
+          h2: "Diametringizga qaysi payka kerak",
+          ul: [
+            "20–63 mm, polipropilen (PPR) — CN-026 paykasi.",
+            "50–110 mm — CN-013A paykasi, nasadkalar to'plami bilan.",
+            "63–200 va 63–250 mm — mexanik (gidrostansiyasiz) TURAN CN-63/200 va CN-63/250, 220 V.",
+            "90–315 mm — gidravlik TURAN CN-90/315H, 220 V.",
+            "160–450 va 160–500 mm — gidravlik TURAN CN-160/450H va CN-160/500H.",
+            "315–630 mm — TURAN CN-315/630H, 380 V kerak.",
+          ],
+        },
+      ],
+      faq: [
+        { q: "PE quvur paykasi polipropilen paykasidan nimasi bilan farq qiladi?", a: "PE paykasi (stykovoy apparat) PE va PND quvurlarni uchma-uch payvandlaydi, 63 mm dan katta suv, kanalizatsiya va sug'orish quvurlari uchun. Polipropilen paykasi quvur va fitingni rastrub usulida ulaydi — PPR va 110 mm gacha kichik quvurlar uchun." },
+      ],
     },
     ru: {
-      title: "Аппараты для сварки ПНД и ППР труб купить в Ташкенте | Stratega",
-      description: "Аппараты стыковой сварки ПНД труб 63–630 мм и паяльники для пластиковых труб. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      title: "Пайка для ПЭ и ПНД труб — аппараты сварки в Ташкенте | Stratega",
+      description: "Пайка для ПЭ и ПНД труб (утюг, дазмол): аппараты стыковой сварки 63–630 мм и паяльники 20–110 мм. Цены с НДС. В наличии в Ташкенте, доставка по Узбекистану.",
       intro: "Аппараты для сварки полиэтиленовых (ПНД, ПЭ) труб: механические и гидравлические аппараты стыковой сварки от 63 до 630 мм, а также паяльники для пластиковых (ППР) труб 20–110 мм для водопровода и отопления.",
+      h1: "Пайка для ПЭ и ПНД труб — аппараты сварки",
+      sections: [
+        {
+          h2: "Пайка, утюг, дазмол — это одно и то же?",
+          p: "Да. Аппарат стыковой сварки полиэтиленовых труб называют по-разному: пайка, утюг, дазмол, паяльник для труб, аппарат для сварки ПНД труб. Это одно оборудование: центратор с зажимами, торцеватель и нагревательное зеркало. Торцы труб выравнивают, нагревают и сжимают — шов получается не слабее самой трубы.",
+        },
+        {
+          h2: "Какая пайка нужна под ваш диаметр",
+          ul: [
+            "20–63 мм, полипропилен (PPR) — паяльник CN-026.",
+            "50–110 мм — паяльник CN-013A с комплектом насадок.",
+            "63–200 и 63–250 мм — механические (без гидростанции) TURAN CN-63/200 и CN-63/250, 220 В.",
+            "90–315 мм — гидравлическая TURAN CN-90/315H, 220 В.",
+            "160–450 и 160–500 мм — гидравлические TURAN CN-160/450H и CN-160/500H.",
+            "315–630 мм — TURAN CN-315/630H, нужно 380 В.",
+          ],
+        },
+      ],
+      faq: [
+        { q: "Чем пайка для ПЭ труб отличается от паяльника для полипропилена?", a: "Пайка для ПЭ труб (стыковой аппарат) сваривает ПЭ и ПНД трубы встык — для водопровода, канализации и полива от 63 мм. Паяльник для полипропилена соединяет трубу и фитинг раструбом — для PPR и небольших труб до 110 мм." },
+      ],
     },
     en: {
       title: "PE and PPR pipe welding machines in Tashkent | Stratega",
       description: "Butt fusion machines 63–630 mm and socket welders. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["аппарат для сварки пнд труб", "сварка пнд труб", "аппарат стыковой сварки", "паяльник для пластиковых труб", "payka", "payvandlash apparati"],
+    aka: ["пайка для пэ труб", "утюг для труб", "дазмол", "аппарат для сварки пнд труб", "сварка пнд труб", "аппарат стыковой сварки", "паяльник для пластиковых труб", "payka", "dazmol", "payvandlash apparati"],
   },
   "generatorlar": {
     uz: {

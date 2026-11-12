@@ -111,9 +111,12 @@ export async function CategoryView({ locale, slug, sp }: { locale: Locale; slug:
 
   const name = localName(category, locale);
   // The admin intro wins; otherwise the search-phrase intro from config/category-seo.ts.
-  const intro = localDescription(category, locale) || CATEGORY_SEO[slug]?.[locale]?.intro || null;
+  const seoText = CATEGORY_SEO[slug]?.[locale];
+  const intro = localDescription(category, locale) || seoText?.intro || null;
+  const heading = seoText?.h1 || name;
+  const sections = seoText?.sections ?? [];
   const pageUrl = absoluteUrl(lp(`/category/${slug}`));
-  const faq = categoryFaq(locale, name, data.count, data.minPrice);
+  const faq = [...(seoText?.faq ?? []), ...categoryFaq(locale, name, data.count, data.minPrice)];
   const structuredData = [
     faqJsonLd(faq),
     {
@@ -161,7 +164,7 @@ export async function CategoryView({ locale, slug, sp }: { locale: Locale; slug:
 
       <div className="flex items-center gap-2">
         <span aria-hidden="true" className="text-2xl">{category.icon}</span>
-        <h1 className="text-2xl font-bold text-slate-800">{name}</h1>
+        <h1 className="text-2xl font-bold text-slate-800">{heading}</h1>
       </div>
       {intro && <p className="mt-2 max-w-3xl whitespace-pre-line text-slate-600">{intro}</p>}
       {isGuideLocale(locale) && guidesForCategory(slug).length > 0 && (
@@ -209,6 +212,24 @@ export async function CategoryView({ locale, slug, sp }: { locale: Locale; slug:
           <CatalogPagination pathname={localePath(locale, `/category/${slug}`)} page={page} pageSize={pageSize} total={total} params={sp} labels={{ previous: t.catalog.previous, next: t.catalog.next, page: t.catalog.page }} />
         </div>
       </div>
+
+      {sections.length > 0 && (
+        <section className="mt-12 max-w-3xl border-t border-slate-200 pt-8">
+          {sections.map((sec, i) => (
+            <div key={sec.h2} className={i > 0 ? "mt-6" : undefined}>
+              <h2 className="text-xl font-bold text-slate-800">{sec.h2}</h2>
+              {sec.p && <p className="mt-2 leading-relaxed text-slate-600">{sec.p}</p>}
+              {sec.ul && (
+                <ul className="mt-2 list-disc space-y-1.5 pl-5 leading-relaxed text-slate-600">
+                  {sec.ul.map((li) => (
+                    <li key={li}>{li}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </section>
+      )}
 
       <section className="mt-12 max-w-3xl border-t border-slate-200 pt-8">
         <h2 className="text-xl font-bold text-slate-800">{t.common.faqTitle}</h2>
