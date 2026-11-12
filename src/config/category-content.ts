@@ -699,7 +699,6 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
           ul: [
             "Бензиновые XS на 60, 90 и 100 см, в том числе усиленные 90 и 100 см.",
             "Кромочная XS 60 см — для краёв, углов и вокруг колонн.",
-            "Бензиновые BISON BSH80, BSH90, BSH100 (780–960 мм).",
             "Двухроторные с сиденьем оператора — для больших площадей.",
           ],
         },
@@ -724,7 +723,6 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
           ul: [
             "Benzinli XS 60, 90 va 100 sm, shu jumladan kuchaytirilgan 90 va 100 sm.",
             "Chekka XS 60 sm — chekkalar, burchaklar va ustunlar atrofi uchun.",
-            "Benzinli BISON BSH80, BSH90, BSH100 (780–960 mm).",
             "Operator o'rindig'i bilan ikki rotorli — katta maydonlar uchun.",
           ],
         },
@@ -752,7 +750,6 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
           ul: [
             "Бензиновые XS, SDL и XS Weike — диск 500 мм.",
             "Дизельные SDL 188F, XS 190F и XS 192F — диск 500 мм, для долгой работы.",
-            "Бензиновые BISON BSH500 на 13, 15 и 17 л.с. — диск до 500 мм.",
             "Алмазные диски 400 и 500 мм.",
           ],
         },
@@ -777,7 +774,6 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
           ul: [
             "Benzinli XS, SDL va XS Weike — 500 mm disk.",
             "Dizel SDL 188F, XS 190F va XS 192F — 500 mm disk, uzoq ishlash uchun.",
-            "Benzinli BISON BSH500 13, 15 va 17 o.k. — 500 mm gacha disk.",
             "Olmosli disklar 400 va 500 mm.",
           ],
         },
@@ -803,9 +799,9 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
         {
           h2: "Какие модели есть",
           ul: [
-            "Бензиновые виброплиты SDL и XS C90T, BISON BSHC50 и BSHC80 — песок, щебень, тротуарная плитка.",
+            "Бензиновые виброплиты SDL и XS C90T — песок, щебень, тротуарная плитка.",
             "Реверсивная бензиновая виброплита XS 160 — тяжёлый грунт, ход вперёд и назад.",
-            "Бензиновые вибротрамбовки XS 100, XS 125, BISON BSRM75 и BSRM80 — траншеи и узкие места.",
+            "Бензиновые вибротрамбовки XS 100 и XS 125 — траншеи и узкие места.",
             "Электрические вибротрамбовки XS 100 и XS 125 на 220 и 380 В — работа в помещении и без выхлопа.",
           ],
         },
@@ -828,9 +824,9 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
         {
           h2: "Qanday modellar bor",
           ul: [
-            "Benzinli vibroplitalar SDL va XS C90T, BISON BSHC50 va BSHC80 — qum, shag'al, trotuar plitkasi.",
+            "Benzinli vibroplitalar SDL va XS C90T — qum, shag'al, trotuar plitkasi.",
             "Reversli benzinli vibroplita XS 160 — og'ir grunt, oldinga va orqaga yurish.",
-            "Benzinli vibrotrambovkalar XS 100, XS 125, BISON BSRM75 va BSRM80 — transheyalar va tor joylar.",
+            "Benzinli vibrotrambovkalar XS 100 va XS 125 — transheyalar va tor joylar.",
             "Elektr vibrotrambovkalar XS 100 va XS 125, 220 va 380 V — bino ichida va tutunsiz ishlash.",
           ],
         },
