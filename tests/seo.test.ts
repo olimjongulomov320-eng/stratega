@@ -1,7 +1,7 @@
 // SEO and AI-visibility helpers — no database. Run: npm test
 import { test, describe } from "node:test";
 import assert from "node:assert/strict";
-import { productLocales, productFacts, descriptionSpecs } from "@/lib/product-seo";
+import { productLocales, productFacts, descriptionSpecs, productMetaDescription } from "@/lib/product-seo";
 import { buildLlmsTxt } from "@/lib/llms";
 import { alternatesFor } from "@/lib/seo";
 import { SITE_URL } from "@/lib/site";
@@ -77,5 +77,22 @@ describe("descriptionSpecs (specs written inside the description)", () => {
   test("description specs come after field specs, without duplicates", () => {
     const facts = productFacts({ ...base, capacityKg: 2000 }, "ru", 20, "Характеристики: Грузоподъёмность: 2000 кг; Вес: 55–65 кг.");
     assert.deepEqual(facts, [{ name: "Грузоподъёмность", value: "2000 кг" }, { name: "Вес", value: "55–65 кг" }]);
+  });
+});
+
+describe("productMetaDescription", () => {
+  const base = { name: "Shtabeler X", price: 9220000, priceOnRequest: false, stock: 0, sourcing: "OWN_STOCK" as const, leadTimeDays: null };
+  test("starts with price and stock, drops the repeated name, stays within 160 chars", () => {
+    const d = productMetaDescription({ ...base, stock: 3 }, "ru", "Штабелёр X", "Штабелёр X. Для подъёма паллет на стеллажи. " + "Очень длинный текст ".repeat(20));
+    assert.match(d, /^Штабелёр X\. Цена 9 220 000 сум с НДС\. В наличии на складе в Ташкенте\. Для подъёма паллет/);
+    assert.ok(d.length <= 160, String(d.length));
+    assert.ok(d.endsWith("…"));
+  });
+  test("shows the lead time for own stock that is on the way, and supplier stock as available", () => {
+    assert.match(productMetaDescription({ ...base, leadTimeDays: 51 }, "uz", "X", ""), /Buyurtma asosida, ~51 kun\.$/);
+    assert.match(productMetaDescription({ ...base, sourcing: "SUPPLIER_STOCK" }, "en", "X", ""), /Price 9 220 000 UZS incl\. VAT\. Available\.$/);
+  });
+  test("says price on request instead of a zero price", () => {
+    assert.match(productMetaDescription({ ...base, price: 0 }, "ru", "X", ""), /Цена по запросу/);
   });
 });

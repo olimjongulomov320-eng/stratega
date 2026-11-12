@@ -15,7 +15,7 @@ import { toCard, modelTokens, sparePartsWhere } from "@/lib/products";
 import { pageMetadata, absoluteUrl, jsonLd, fitTitle } from "@/lib/seo";
 import { CLAIMS, COMPANY } from "@/lib/site";
 import { SPEC_FILTERS, parseSpecRows, specLabel, youTubeId } from "@/lib/product-specs";
-import { productLocales, productFacts } from "@/lib/product-seo";
+import { productLocales, productFacts, productMetaDescription } from "@/lib/product-seo";
 import { isAvailable } from "@/lib/sourcing";
 import { BuyerPriceBox } from "@/components/buyer-price-box";
 import { ProductImage } from "@/components/product-image";
@@ -54,7 +54,7 @@ export async function generateMetadata(props: PageProps<"/[locale]/product/[slug
           fmt(t.meta.productTitleShort, { name, price: formatNumber(product.price) }),
           `${name} | Stratega`
         ),
-    description: excerpt(localDescription(product, locale) || name),
+    description: productMetaDescription(product, locale, name, localDescription(product, locale) || ""),
     image: product.imageUrl,
   });
 }

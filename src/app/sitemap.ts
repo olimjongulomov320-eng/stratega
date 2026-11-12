@@ -6,8 +6,9 @@ import { FOCUS } from "@/lib/focus";
 import { productLocales } from "@/lib/product-seo";
 import type { Locale } from "@/i18n/config";
 
-// Built on each request: the cached version stayed stale, so products added in the admin never reached search engines.
-export const dynamic = "force-dynamic";
+// Cached for an hour and cleared by revalidateStorefront() on every catalogue save, so new products appear at once.
+// Built per request it took ~30 s cold (600+ products, three languages), which crawlers give up on.
+export const revalidate = 3600;
 
 function entry(path: string, lastModified: Date, priority: number, locales: readonly Locale[] = LOCALES): MetadataRoute.Sitemap {
   const languages: Record<string, string> = {};

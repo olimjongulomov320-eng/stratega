@@ -15,9 +15,10 @@ import { revalidatePath, unstable_cache } from "next/cache";
  */
 export function revalidateStorefront() {
   try {
-    // Every cached route carries the root layout tag, so this one call clears them all. The sitemap and /llms.txt
-    // are built per request and don't need it.
+    // Every cached page carries the root layout tag, so this one call clears them all. The sitemap is outside the
+    // layout and cached on its own; /llms.txt is built per request (CDN-cached for an hour).
     revalidatePath("/", "layout");
+    revalidatePath("/sitemap.xml");
   } catch (error) {
     console.warn("Storefront cache not cleared", error instanceof Error ? error.message : error);
   }
