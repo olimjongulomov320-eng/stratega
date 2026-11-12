@@ -31,7 +31,8 @@ const getCategory = cache(async (slug: string) => {
   if (!category || !category.isActive) return null;
   const [count, priced] = await Promise.all([
     prisma.product.count({ where: { categoryId: category.id, isActive: true } }),
-    prisma.product.aggregate({ where: { categoryId: category.id, isActive: true, priceOnRequest: false }, _min: { price: true } }),
+    // A price of 0 means "not set", not free: it must not become "from 0 so'm".
+    prisma.product.aggregate({ where: { categoryId: category.id, isActive: true, priceOnRequest: false, price: { gt: 0 } }, _min: { price: true } }),
   ]);
   return { category, count, minPrice: priced._min.price };
 });
