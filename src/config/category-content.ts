@@ -15,7 +15,7 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
       sections: [
         {
           h2: "Когда нужен ручной штабелер",
-          p: "Ручной (гидравлический) штабелер поднимает паллету на стеллаж без электричества: вилы поднимаются ручкой и ножной педалью. Он подходит, когда паллет немного в день, высота стеллажа до 1,6 м и на складе нет места для зарядки аккумулятора.",
+          p: "Ручной (гидравлический) штабелер — например, NIULI CTY-E на 2 т с подъёмом 1,6 м — поднимает паллету на стеллаж без электричества: вилы поднимаются ручкой и ножной педалью. Он подходит, когда паллет немного в день, высота стеллажа до 1,6 м и на складе нет места для зарядки аккумулятора.",
         },
         {
           h2: "Как выбрать",
@@ -36,7 +36,7 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
       sections: [
         {
           h2: "Qo'l shtabeleri qachon kerak",
-          p: "Qo'l (gidravlik) shtabeleri paletni elektrsiz stellajga ko'taradi: vilkalar dasta va oyoq pedali bilan ko'tariladi. Kuniga paletlar kam, stellaj balandligi 1,6 m gacha va akkumulyator zaryadlash joyi bo'lmasa qulay.",
+          p: "Qo'l (gidravlik) shtabeleri — masalan, 2 t va 1,6 m ko'taradigan NIULI CTY-E — paletni elektrsiz stellajga ko'taradi: vilkalar dasta va oyoq pedali bilan ko'tariladi. Kuniga paletlar kam, stellaj balandligi 1,6 m gacha va akkumulyator zaryadlash joyi bo'lmasa qulay.",
         },
         {
           h2: "Qanday tanlash kerak",
@@ -336,7 +336,7 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
           ul: [
             "Тихие в кожухе: BISON BS2000iS (1,8 кВт), BS2500iS (2,3 кВт), BS6250iE (5 кВт).",
             "Компактный BISON BS1500i (0,9 кВт) — для дачи, рыбалки, торговой точки.",
-            "Открытая рама: BISON 3–5 кВт — дом, магазин, кафе.",
+            "Открытая рама: BISON 3–5 кВт и XS на 3 и 5 кВт — дом, магазин, кафе.",
             "На колёсах: BISON BS10500i (8 кВт) и BS12500i (10 кВт) — большой дом, офис.",
           ],
         },
@@ -361,7 +361,7 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
           ul: [
             "Korpusli jim modellar: BISON BS2000iS (1,8 kVt), BS2500iS (2,3 kVt), BS6250iE (5 kVt).",
             "Ixcham BISON BS1500i (0,9 kVt) — dacha, baliq ovi, savdo nuqtasi uchun.",
-            "Ochiq rama: BISON 3–5 kVt — uy, do'kon, kafe.",
+            "Ochiq rama: BISON 3–5 kVt va XS 3 va 5 kVt — uy, do'kon, kafe.",
             "G'ildirakli: BISON BS10500i (8 kVt) va BS12500i (10 kVt) — katta uy, ofis.",
           ],
         },
@@ -390,6 +390,7 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
             "Открытые с электростартером: BISON от 2,8 до 11 кВА.",
             "В шумозащитном кожухе: BISON от 4,5 до 11 кВА — для дома, офиса и магазина, где важна тишина.",
             "Двухцилиндровые BISON на 9 и 11 кВА — для долгой работы под нагрузкой.",
+            "XS на 8 и 10 кВт — в однофазной версии на 220 В и в версии с равной номинальной и максимальной мощностью.",
           ],
         },
         {
@@ -414,6 +415,7 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
             "Elektr starterli ochiq modellar: BISON 2,8 dan 11 kVA gacha.",
             "Shovqindan himoya korpusida: BISON 4,5 dan 11 kVA gacha — jimlik muhim bo'lgan uy, ofis va do'kon uchun.",
             "Ikki silindrli BISON 9 va 11 kVA — yuk ostida uzoq ishlash uchun.",
+            "XS 8 va 10 kVt — 220 V bir fazali va nominal va maksimal quvvati teng versiyalarda.",
           ],
         },
         {
@@ -699,6 +701,7 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
           ul: [
             "Бензиновые XS на 60, 90 и 100 см, в том числе усиленные 90 и 100 см.",
             "Кромочная XS 60 см — для краёв, углов и вокруг колонн.",
+            "Бензиновые BISON BSH80, BSH90, BSH100 (780–960 мм).",
             "Двухроторные с сиденьем оператора — для больших площадей.",
           ],
         },
@@ -723,6 +726,7 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
           ul: [
             "Benzinli XS 60, 90 va 100 sm, shu jumladan kuchaytirilgan 90 va 100 sm.",
             "Chekka XS 60 sm — chekkalar, burchaklar va ustunlar atrofi uchun.",
+            "Benzinli BISON BSH80, BSH90, BSH100 (780–960 mm).",
             "Operator o'rindig'i bilan ikki rotorli — katta maydonlar uchun.",
           ],
         },
@@ -750,6 +754,7 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
           ul: [
             "Бензиновые XS, SDL и XS Weike — диск 500 мм.",
             "Дизельные SDL 188F, XS 190F и XS 192F — диск 500 мм, для долгой работы.",
+            "Бензиновые BISON BSH500 на 13, 15 и 17 л.с. — диск до 500 мм.",
             "Алмазные диски 400 и 500 мм.",
           ],
         },
@@ -774,6 +779,7 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
           ul: [
             "Benzinli XS, SDL va XS Weike — 500 mm disk.",
             "Dizel SDL 188F, XS 190F va XS 192F — 500 mm disk, uzoq ishlash uchun.",
+            "Benzinli BISON BSH500 13, 15 va 17 o.k. — 500 mm gacha disk.",
             "Olmosli disklar 400 va 500 mm.",
           ],
         },
@@ -799,9 +805,9 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
         {
           h2: "Какие модели есть",
           ul: [
-            "Бензиновые виброплиты SDL и XS C90T — песок, щебень, тротуарная плитка.",
+            "Бензиновые виброплиты SDL и XS C90T, BISON BSHC50 и BSHC80 — песок, щебень, тротуарная плитка.",
             "Реверсивная бензиновая виброплита XS 160 — тяжёлый грунт, ход вперёд и назад.",
-            "Бензиновые вибротрамбовки XS 100 и XS 125 — траншеи и узкие места.",
+            "Бензиновые вибротрамбовки XS 100, XS 125, BISON BSRM75 и BSRM80 — траншеи и узкие места.",
             "Электрические вибротрамбовки XS 100 и XS 125 на 220 и 380 В — работа в помещении и без выхлопа.",
           ],
         },
@@ -824,9 +830,9 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
         {
           h2: "Qanday modellar bor",
           ul: [
-            "Benzinli vibroplitalar SDL va XS C90T — qum, shag'al, trotuar plitkasi.",
+            "Benzinli vibroplitalar SDL va XS C90T, BISON BSHC50 va BSHC80 — qum, shag'al, trotuar plitkasi.",
             "Reversli benzinli vibroplita XS 160 — og'ir grunt, oldinga va orqaga yurish.",
-            "Benzinli vibrotrambovkalar XS 100 va XS 125 — transheyalar va tor joylar.",
+            "Benzinli vibrotrambovkalar XS 100, XS 125, BISON BSRM75 va BSRM80 — transheyalar va tor joylar.",
             "Elektr vibrotrambovkalar XS 100 va XS 125, 220 va 380 V — bino ichida va tutunsiz ishlash.",
           ],
         },
@@ -1013,7 +1019,7 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
           ul: [
             "Глубинные вибраторы JG и XS 2,2 кВт на 220 В, XS 2,2 и 3 кВт на 380 В — колонны, плиты, фундаменты.",
             "Ручные вибраторы 900–2300 Вт — небольшие заливки, частный дом.",
-            "Бензиновый привод SDL 170F и ранцевый бензиновый вибратор — там, где нет электричества.",
+            "Бензиновые приводы SDL 170F и BISON BS-VH (Honda GX160), ранцевый бензиновый вибратор — там, где нет электричества.",
             "Вибробулавы (валы) 1–4 м для ручных вибраторов и SDL Ø50 мм с валом от 4 до 12 м.",
           ],
         },
@@ -1038,7 +1044,7 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
           ul: [
             "Chuqurlik vibratorlari JG va XS 2,2 kVt 220 V, XS 2,2 va 3 kVt 380 V — ustunlar, plitalar, poydevorlar.",
             "Qo'l vibratorlari 900–2300 Vt — kichik quyishlar, xususiy uy.",
-            "Benzinli yuritma SDL 170F va ryukzak benzinli vibrator — elektr yo'q joyda.",
+            "Benzinli yuritmalar SDL 170F va BISON BS-VH (Honda GX160), ryukzak benzinli vibrator — elektr yo'q joyda.",
             "Qo'l vibratorlari uchun 1–4 m vibrobulava (val) va SDL Ø50 mm, val 4 dan 12 m gacha.",
           ],
         },
@@ -1118,6 +1124,7 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
           h2: "Какие двигатели есть",
           ul: [
             "Бензиновые BISON от 156F (2,5 л.с.) до 192F (16 л.с.): 168F, 170F, 177F, 188F, 190F и другие.",
+            "Бензиновые SDL 170F, XS 170F, Yihu 190F и двигатели SDL для вибротрамбовки.",
             "Дизельные BISON от 170F (2,5 кВт) до 195F (9,2 кВт), а также 1100FE на 10 кВт.",
             "Двухцилиндровые дизельные BISON BS292F (воздушное охлаждение) и BS2V80 (водяное).",
           ],
@@ -1142,6 +1149,7 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
           h2: "Qanday dvigatellar bor",
           ul: [
             "Benzinli BISON 156F (2,5 o.k.) dan 192F (16 o.k.) gacha: 168F, 170F, 177F, 188F, 190F va boshqalar.",
+            "Benzinli SDL 170F, XS 170F, Yihu 190F va vibrotrambovka uchun SDL dvigatellari.",
             "Dizel BISON 170F (2,5 kVt) dan 195F (9,2 kVt) gacha, shuningdek 10 kVt li 1100FE.",
             "Ikki silindrli dizel BISON BS292F (havo bilan sovutish) va BS2V80 (suv bilan).",
           ],
@@ -1163,14 +1171,13 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
 
   "qurilish-texnikasi": {
     ru: {
-      h1: "Бетономешалки и строительная техника",
+      h1: "Бетономешалки (бетоносмесители)",
       sections: [
         {
           h2: "Бетономешалки на 120–180 литров",
           ul: [
             "BISON BS-CM120 и BS-CM140 — частный дом, дача, небольшие заливки.",
             "BISON BS-CM160 и BS-CM180 — фундамент, стяжка, работа бригады.",
-            "Бензиновый привод глубинного вибратора BISON BS-VH (Honda GX160) — для уплотнения бетона без электричества.",
           ],
         },
         {
@@ -1187,14 +1194,13 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
       ],
     },
     uz: {
-      h1: "Betonomeshalkalar (beton qorg'ichlar) va qurilish texnikasi",
+      h1: "Betonomeshalkalar (beton qorg'ichlar)",
       sections: [
         {
           h2: "120–180 litrli betonomeshalkalar",
           ul: [
             "BISON BS-CM120 va BS-CM140 — xususiy uy, dacha, kichik quyishlar.",
             "BISON BS-CM160 va BS-CM180 — poydevor, styajka, brigada ishi.",
-            "Chuqurlik vibratorining benzinli yuritmasi BISON BS-VH (Honda GX160) — elektrsiz betonni zichlash uchun.",
           ],
         },
         {
