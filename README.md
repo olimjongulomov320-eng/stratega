@@ -171,8 +171,7 @@ Run it again after a big import, so new products get their filter values. It nev
 2. When a website user with the same phone number logs in, they see "Sizning narxingiz" on product cards and product pages, and in the downloadable price list.
 
 **New pages and buttons:**
-- `/yuridik-shaxslar`: VAT invoice, contract, tenders, bank details, price-list download.
-- `/api/price-list?lang=uz|ru|en`: all prices as Excel.
+- `/yuridik-shaxslar`: VAT invoice, contract, tenders, bank details.
 - Floating Telegram and WhatsApp buttons. Change or hide them in `COMPANY.messengers` in `src/lib/site.ts`. **Check the WhatsApp number.**
 - A "Warranty and payment" block on every product page. Instalments show only if `CLAIMS.installments = true`.
 

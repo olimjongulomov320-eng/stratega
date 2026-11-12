@@ -5,6 +5,7 @@ Local changes until deployed. "Deployed" is stated explicitly when it happens.
 ## 2026-11-12 — buyer guides (local, not deployed)
 
 - New section /qollanma (uz) and /ru/qollanma: 4 guides — choosing a PE pipe welder, butt welding step by step, choosing a pallet truck, manual vs electric stacker. Each has FAQ, Article + FAQPage structured data, live product cards (no prices in the text) and a call/Telegram/WhatsApp block.
+- Removed the public Excel price-list download (/api/price-list, footer link, button and card on the business-customers page). Customer price groups in the admin are unchanged.
 - Linked from the footer, from the welder / pallet-truck / stacker category pages, the sitemap and /llms.txt. No English version (English pages are not indexed).
 
 ## 2026-11-12 — search phrases (local, not deployed)
