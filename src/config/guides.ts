@@ -46,6 +46,7 @@ export const GUIDES: Guide[] = [
     updated: "2026-11-12",
     products: [
       "polietilen-quvur-payvandlash-apparati-turan-cn-63200-63200-mm",
+      "polietilen-quvur-payvandlash-apparati-turan-cn-63250-63250-mm",
       "gidravlik-quvur-payvandlash-apparati-turan-cn-90315h-90315-mm",
       "gidravlik-quvur-payvandlash-apparati-turan-cn-160450h-160450-mm",
       "gidravlik-quvur-payvandlash-apparati-turan-cn-160500h-160500-mm",
@@ -76,7 +77,8 @@ export const GUIDES: Guide[] = [
             rows: [
               ["20–63 мм (PPR)", "Паяльник", "CN-026"],
               ["50–110 мм", "Паяльник, комплект", "CN-013A"],
-              ["63–200 мм", "Стыковой, гидравлический", "TURAN CN-63/200"],
+              ["63–200 мм", "Стыковой, механический", "TURAN CN-63/200"],
+              ["63–250 мм", "Стыковой, механический", "TURAN CN-63/250"],
               ["90–315 мм", "Стыковой, гидравлический", "TURAN CN-90/315H"],
               ["160–450 мм", "Стыковой, гидравлический", "TURAN CN-160/450H"],
               ["160–500 мм", "Стыковой, гидравлический", "TURAN CN-160/500H"],
@@ -122,7 +124,8 @@ export const GUIDES: Guide[] = [
             rows: [
               ["20–63 mm (PPR)", "Payka", "CN-026"],
               ["50–110 mm", "Payka, to'plam", "CN-013A"],
-              ["63–200 mm", "Stykovoy, gidravlik", "TURAN CN-63/200"],
+              ["63–200 mm", "Stykovoy, mexanik", "TURAN CN-63/200"],
+              ["63–250 mm", "Stykovoy, mexanik", "TURAN CN-63/250"],
               ["90–315 mm", "Stykovoy, gidravlik", "TURAN CN-90/315H"],
               ["160–450 mm", "Stykovoy, gidravlik", "TURAN CN-160/450H"],
               ["160–500 mm", "Stykovoy, gidravlik", "TURAN CN-160/500H"],

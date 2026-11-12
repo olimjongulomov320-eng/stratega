@@ -185,7 +185,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
           ul: [
             "20–63 mm, polipropilen (PPR) — CN-026 paykasi.",
             "50–110 mm — CN-013A paykasi, nasadkalar to'plami bilan.",
-            "63–200 va 63–250 mm — gidrostansiyali TURAN CN-63/200 va CN-63/250 stykovoy apparatlari, 220 V.",
+            "63–200 va 63–250 mm — mexanik (gidrostansiyasiz) TURAN CN-63/200 va CN-63/250, 220 V.",
             "90–315 mm — gidravlik TURAN CN-90/315H, 220 V.",
             "160–450 va 160–500 mm — gidravlik TURAN CN-160/450H va CN-160/500H.",
             "315–630 mm — TURAN CN-315/630H, 380 V kerak.",
@@ -211,7 +211,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
           ul: [
             "20–63 мм, полипропилен (PPR) — паяльник CN-026.",
             "50–110 мм — паяльник CN-013A с комплектом насадок.",
-            "63–200 и 63–250 мм — стыковые TURAN CN-63/200 и CN-63/250 с гидростанцией, 220 В.",
+            "63–200 и 63–250 мм — механические (без гидростанции) TURAN CN-63/200 и CN-63/250, 220 В.",
             "90–315 мм — гидравлическая TURAN CN-90/315H, 220 В.",
             "160–450 и 160–500 мм — гидравлические TURAN CN-160/450H и CN-160/500H.",
             "315–630 мм — TURAN CN-315/630H, нужно 380 В.",
