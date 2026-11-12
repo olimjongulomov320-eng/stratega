@@ -521,12 +521,12 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
   "qurilish-texnikasi": {
     uz: {
       title: "Betonomeshalka va qurilish texnikasi narxi Toshkentda | Stratega",
-      description: "Betonomeshalka (beton qorg'ich) 120–180 L va qurilish texnikasi. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      description: "Betonomeshalka (beton qorg'ich) 120–180 L — uy, dacha va qurilish uchun. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
       intro: "Qurilish va obodonlashtirish uchun texnika: betonomeshalkalar (beton qorgich) 120–180 L, vibroplitalar, vibrotrambovkalar, zatirka mashinalari.",
     },
     ru: {
       title: "Бетономешалки и строительная техника купить в Ташкенте | Stratega",
-      description: "Бетономешалки (бетоносмесители) 120–180 л и строительная техника. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      description: "Бетономешалки (бетоносмесители) 120–180 л для дома, дачи и стройки. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
       intro: "Строительная техника для стройки и благоустройства: бетономешалки 120–180 л, виброплиты, вибротрамбовки, затирочные машины.",
     },
     en: {
