@@ -5,6 +5,7 @@ import { localName, localDescription } from "@/lib/localize";
 import { productFacts, productLocales } from "@/lib/product-seo";
 import { COMPANY } from "@/lib/site";
 import { isAvailable } from "@/lib/sourcing";
+import { CATEGORY_SEO } from "@/config/category-seo";
 
 type LlmsCategory = { slug: string; name: string; nameRu: string | null; nameEn: string | null };
 type LlmsProduct = Parameters<typeof productFacts>[0] & {
@@ -33,6 +34,8 @@ export function buildLlmsTxt(categories: LlmsCategory[], products: LlmsProduct[]
     "",
     "> B2B supplier of warehouse equipment, floor-cleaning machines, PE pipe welding machines and related equipment in Tashkent, Uzbekistan. Prices in Uzbek so'm (UZS); the site is in Uzbek (default), Russian (/ru) and English (/en).",
     "",
+    "Buyers in Uzbekistan search by the kind of machine, not by brand (for example «рохля купить в Ташкенте», «генератор цена», «karcher narxi»). Products are in stock in Tashkent or delivered across Uzbekistan; prices include VAT, with a contract and VAT invoice for companies.",
+    "",
     "## Contacts",
     `- Phone: ${COMPANY.phone}`,
     `- Telegram: ${COMPANY.messengers.telegram}`,
@@ -45,7 +48,11 @@ export function buildLlmsTxt(categories: LlmsCategory[], products: LlmsProduct[]
   for (const c of categories) {
     const items = products.filter((p) => p.categorySlug === c.slug);
     if (!items.length) continue;
-    lines.push(`## ${c.nameRu || c.name} / ${c.name}`, "", `Category page: ${absoluteUrl(localePath("ru", `/category/${c.slug}`))}`, "");
+    lines.push(`## ${c.nameRu || c.name} / ${c.name}`, "", `Category page: ${absoluteUrl(localePath("ru", `/category/${c.slug}`))}`);
+    const seo = CATEGORY_SEO[c.slug];
+    if (seo?.aka?.length) lines.push(`Also searched as: ${seo.aka.join(", ")}`);
+    if (seo?.ru.intro) lines.push(seo.ru.intro);
+    lines.push("");
     for (const p of items) {
       const ru = productLocales(p).includes("ru");
       const title = ru ? localName(p, "ru") : p.name;

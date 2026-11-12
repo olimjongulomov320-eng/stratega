@@ -84,13 +84,17 @@ describe("productMetaDescription", () => {
   const base = { name: "Shtabeler X", price: 9220000, priceOnRequest: false, stock: 0, sourcing: "OWN_STOCK" as const, leadTimeDays: null };
   test("starts with price and stock, drops the repeated name, stays within 160 chars", () => {
     const d = productMetaDescription({ ...base, stock: 3 }, "ru", "Штабелёр X", "Штабелёр X. Для подъёма паллет на стеллажи. " + "Очень длинный текст ".repeat(20));
-    assert.match(d, /^Штабелёр X\. Цена 9 220 000 сум с НДС\. В наличии на складе в Ташкенте\. Для подъёма паллет/);
+    assert.match(d, /^Штабелёр X\. Цена 9 220 000 сум с НДС\. В наличии в Ташкенте, доставка по всему Узбекистану\. Для подъёма паллет/);
     assert.ok(d.length <= 160, String(d.length));
     assert.ok(d.endsWith("…"));
   });
   test("shows the lead time for own stock that is on the way, and supplier stock as available", () => {
-    assert.match(productMetaDescription({ ...base, leadTimeDays: 51 }, "uz", "X", ""), /Buyurtma asosida, ~51 kun\.$/);
-    assert.match(productMetaDescription({ ...base, sourcing: "SUPPLIER_STOCK" }, "en", "X", ""), /Price 9 220 000 UZS incl\. VAT\. Available\.$/);
+    assert.match(productMetaDescription({ ...base, leadTimeDays: 51 }, "uz", "X", ""), /Buyurtma asosida, ~51 kun; O'zbekiston bo'ylab yetkazib beramiz\.$/);
+    assert.match(productMetaDescription({ ...base, sourcing: "SUPPLIER_STOCK" }, "en", "X", ""), /Price 9 220 000 UZS incl\. VAT\. In stock in Tashkent, delivery across Uzbekistan\.$/);
+  });
+  test("every product says where it is: Tashkent stock or delivery across Uzbekistan", () => {
+    for (const p of [{ ...base, stock: 2 }, { ...base, sourcing: "SUPPLIER_STOCK" as const }, base, { ...base, leadTimeDays: 30 }])
+      assert.match(productMetaDescription(p, "ru", "X", ""), /доставка по всему Узбекистану/);
   });
   test("says price on request instead of a zero price", () => {
     assert.match(productMetaDescription({ ...base, price: 0 }, "ru", "X", ""), /Цена по запросу/);
