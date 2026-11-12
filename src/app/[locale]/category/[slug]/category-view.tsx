@@ -24,6 +24,7 @@ import { SPEC_FILTERS } from "@/lib/product-specs";
 import { directionOfCategory } from "@/lib/focus";
 import { CATEGORY_SEO } from "@/config/category-seo";
 import { categoryFaq, faqJsonLd } from "@/lib/category-faq";
+import { guidesForCategory, isGuideLocale } from "@/config/guides";
 
 const getCategory = cache(async (slug: string) => {
   const category = await prisma.category.findUnique({ where: { slug } });
@@ -163,6 +164,15 @@ export async function CategoryView({ locale, slug, sp }: { locale: Locale; slug:
         <h1 className="text-2xl font-bold text-slate-800">{name}</h1>
       </div>
       {intro && <p className="mt-2 max-w-3xl whitespace-pre-line text-slate-600">{intro}</p>}
+      {isGuideLocale(locale) && guidesForCategory(slug).length > 0 && (
+        <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+          {guidesForCategory(slug).map((g) => (
+            <Link key={g.slug} href={localePath(locale, `/qollanma/${g.slug}`)} className="font-medium text-indigo-600 hover:underline">
+              📖 {g.text[locale].title}
+            </Link>
+          ))}
+        </p>
+      )}
 
       <div className="mt-6 grid gap-8 md:grid-cols-[220px_1fr]">
         <CatalogAside label={t.catalog.categoriesAndFilters}>

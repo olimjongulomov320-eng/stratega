@@ -77,11 +77,13 @@ export function Footer({ categories, locale }: { categories: HeaderCategory[]; l
                 </Link>
               </li>
             ))}
-            <li>
-              <a href={`/api/price-list?lang=${locale}`} className="hover:text-indigo-600">
-                {t.focus.priceList}
-              </a>
-            </li>
+            {locale !== "en" && (
+              <li>
+                <Link href={lp("/qollanma")} className="hover:text-indigo-600">
+                  {locale === "ru" ? "Полезные статьи" : "Foydali maqolalar"}
+                </Link>
+              </li>
+            )}
           </ul>
         </div>
 

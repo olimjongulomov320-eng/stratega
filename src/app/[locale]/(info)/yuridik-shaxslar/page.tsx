@@ -41,10 +41,7 @@ export default async function B2bPage(props: PageProps<"/[locale]/yuridik-shaxsl
       <p className="mt-3 text-lg text-slate-700">{f.b2bLead}</p>
 
       <div className="mt-6 flex flex-wrap gap-3">
-        <a href={`/api/price-list?lang=${locale}`} className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500">
-          ⬇ {f.priceList}
-        </a>
-        <Link href={lp("/korzina")} className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+        <Link href={lp("/korzina")} className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-500">
           {f.requestOffer}
         </Link>
         <GuestOnly>
