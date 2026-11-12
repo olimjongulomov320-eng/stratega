@@ -105,11 +105,13 @@ export async function submitRfq(
   const t = getDictionary(loc(locale));
   if (!rateLimit(await ipKey("rfq"), 5, 10 * 60 * 1000)) return { ok: false, error: t.quickRfq.errorRate };
 
-  const companyName = clip(input.companyName ?? "", 200);
+  // Private buyers have no company: only the name and phone are required.
+  const company = clip(input.companyName ?? "", 200);
   const contactName = clip(input.contactName ?? "", 200);
+  const companyName = company || contactName;
   const phone = clip(input.phone ?? "", 30);
-  const requestType = clip(input.requestType ?? "", 200);
-  if (!companyName || !contactName || phone.replace(/\D/g, "").length < 9 || !requestType) {
+  const requestType = clip(input.requestType ?? "", 200) || t.quickRfq.defaultType;
+  if (!contactName || phone.replace(/\D/g, "").length < 9) {
     return { ok: false, error: t.cart.errorRequired };
   }
   const items = (input.items ?? []).slice(0, 100);
@@ -140,7 +142,7 @@ export async function submitRfq(
     },
   });
   await notifyRfqCreated(request.id);
-  if (user && !user.companyName) {
+  if (user && !user.companyName && company) {
     await prisma.user.update({ where: { id: user.id }, data: { companyName, contactName } });
   }
   return { ok: true, requestId: request.id };

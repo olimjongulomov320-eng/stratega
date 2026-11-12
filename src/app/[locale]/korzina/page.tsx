@@ -131,16 +131,16 @@ export default function KorzinaPage() {
 
       <form onSubmit={handleSubmit} className="mt-8 flex flex-col gap-4">
         <div>
-          <label htmlFor="c-company" className="mb-1 block text-sm font-medium text-slate-600">{t.cart.company} *</label>
-          <input id="c-company" required maxLength={200} value={companyName} onChange={(e) => setCompanyName(e.target.value)} className={input} placeholder={t.quickRfq.companyPlaceholder} />
-        </div>
-        <div>
           <label htmlFor="c-contact" className="mb-1 block text-sm font-medium text-slate-600">{t.cart.contact} *</label>
           <input id="c-contact" required maxLength={200} value={contactName} onChange={(e) => setContactName(e.target.value)} className={input} placeholder={t.cart.contactPlaceholder} autoComplete="name" />
         </div>
         <div>
           <label htmlFor="c-phone" className="mb-1 block text-sm font-medium text-slate-600">{t.cart.phone} *</label>
           <input id="c-phone" required type="tel" maxLength={30} value={phone} onChange={(e) => setPhone(e.target.value)} className={input} autoComplete="tel" />
+        </div>
+        <div>
+          <label htmlFor="c-company" className="mb-1 block text-sm font-medium text-slate-600">{t.cart.company}</label>
+          <input id="c-company" maxLength={200} value={companyName} onChange={(e) => setCompanyName(e.target.value)} className={input} placeholder={t.quickRfq.companyPlaceholder} autoComplete="organization" />
         </div>
         <div>
           <label htmlFor="c-type" className="mb-1 block text-sm font-medium text-slate-600">{t.cart.type} *</label>

@@ -2,7 +2,18 @@
 
 Local changes until deployed. "Deployed" is stated explicitly when it happens.
 
-## 2026-11-13 — «пайка» and «рохли» on category pages (local, not deployed)
+## 2026-11-13 — search phrases on every category, smarter site search, simpler cart
+
+- Keyword crawl (Google gl=uz and Yandex Tashkent autocomplete, 1 746 queries, ~9 600 phrases) for all 28 product categories.
+- Every category now has a search-led heading, a short "what we have / how to choose" text built from the real stock, and one or two extra FAQ questions, in Uzbek and Russian (config/category-content.ts). Five Russian titles now start with the main search word.
+- Buyer names per category (`aka`) rewritten from the crawl: керхер / karcher / kerxer, пайка / дазмол / payka dazmol, рохля / rohlya, вертолёт для бетона, арматурогиб, мотоблок нархлари…
+- Site search: a query that is just a product type («керхер», «пайка», «rohlya narxi», «генератор 5 квт») opens that category; other queries show links to the categories they mention, and fall back to those categories' products instead of an empty page. The search dropdown suggests the category too.
+- Category snippets show the lowest live price («Цены от 2 500 000 сум с НДС»); category pages add CollectionPage structured data with the other names.
+- /llms.txt: "How to order" and "Which page to open for a search" sections, so AI assistants link the right category.
+- Cart: only name and phone are required; company is optional (private buyers of generators, karchers, pallet trucks).
+- Live admin (2026-11-13): welder names now lead with «Пайка для ПЭ труб»; CN-63/200 and CN-63/250 marked mechanical (no hydraulic unit, per the owner) and hydraulic lines removed from their descriptions.
+
+## 2026-11-13 — «пайка» and «рохли» on category pages (deployed)
 
 - Competitors ranking first (munu.uz, mest.uz — one company; promet.uz) use the words buyers type: «пайка», «утюг», «дазмол», «рохли». Our welder page used none of them.
 - Welder category (uz/ru): title, description and heading now start with «Пайка для ПЭ и ПНД труб» / «PE va PND quvurlar uchun payka»; new text block explaining the other names and which model fits which diameter; one extra FAQ question.

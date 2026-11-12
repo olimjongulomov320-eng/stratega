@@ -8,6 +8,7 @@
 // These are code, so they show even when the admin has written its own intro.
 
 import type { Locale } from "@/i18n/config";
+import { CATEGORY_CONTENT } from "./category-content";
 
 export type CategorySeoSection = { h2: string; p?: string; ul?: string[] };
 export type CategorySeoText = {
@@ -82,7 +83,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Hand pallet trucks in Tashkent — prices | Stratega",
       description: "Hand pallet trucks 2–3 t, with scale and for rolls. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["рохля", "гидравлическая тележка", "транспалет", "тележка для паллет", "rohlya", "telejka"],
+    aka: ["рохля", "рохли", "гидравлическая тележка", "тележка для паллет", "тележка для паллетов", "транспалет", "рохля с весами", "весовая рохля", "rohlya", "gidravlik telejka", "palet telejkasi", "рохля нархи"],
   },
   "qol-shtabelerlari": {
     uz: {
@@ -99,7 +100,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Manual hydraulic stackers in Tashkent — prices | Stratega",
       description: "Manual hydraulic stackers 2 t, lift up to 1.6 m. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["ручной штабелер", "гидравлический штабелер", "shtabeler"],
+    aka: ["штабелер", "штабелёр", "shtabeler", "ручной штабелер", "гидравлический штабелер", "ручной гидравлический штабелер", "qo'l shtabeleri"],
   },
   "elektr-shtabelerlar": {
     uz: {
@@ -108,7 +109,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       intro: "Elektr shtabeler paletlarni akkumulyator yordamida stellajlarga ko'taradi. Yuk ko'tarish 1,5–2 t, ko'tarish balandligi 1,6 m dan 4,5 m gacha bo'lgan modellar.",
     },
     ru: {
-      title: "Электрические штабелеры купить в Ташкенте — цены | Stratega",
+      title: "Штабелеры электрические (электроштабелеры) купить в Ташкенте | Stratega",
       description: "Электроштабелеры 1,5–2 т, подъём 1,6–4,5 м, полуавтомат и самоходные. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
       intro: "Электрический штабелер (электроштабелер) поднимает паллеты на стеллажи на аккумуляторе. Полуавтоматические и самоходные модели грузоподъёмностью 1,5–2 т и высотой подъёма от 1,6 до 4,5 м.",
     },
@@ -116,7 +117,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Electric stackers in Tashkent — prices | Stratega",
       description: "Electric stackers 1.5–2 t, lift 1.6–4.5 m. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["штабелер", "электрический штабелер", "электроштабелер", "shtabeler"],
+    aka: ["штабелер", "штабелёр", "shtabeler", "электроштабелер", "электрический штабелер", "самоходный штабелер", "полуэлектрический штабелер", "elektr shtabeler"],
   },
   "pol-yuvish-mashinalari": {
     uz: {
@@ -125,7 +126,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       intro: "Pol yuvish mashinasi ombor, do'kon, ofis va sexlarda polni yuvadi va darhol quritadi. Akkumulyatorli va tarmoqdan ishlaydigan, qo'lda va o'rindiqli modellar.",
     },
     ru: {
-      title: "Поломоечные машины купить в Ташкенте — цены | Stratega",
+      title: "Поломоечные машины (поломойки) купить в Ташкенте — цены | Stratega",
       description: "Поломоечные машины (поломойки) для склада, магазина и цеха: ручные и с сиденьем. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
       intro: "Поломоечная машина (поломойка) моет и сразу высушивает пол на складах, в магазинах, офисах и цехах. Аккумуляторные и сетевые модели, ручные и с сиденьем.",
     },
@@ -133,7 +134,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Floor scrubbers in Tashkent — prices | Stratega",
       description: "Floor scrubbers, walk-behind and ride-on. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["поломоечная машина", "поломойка", "pol yuvish mashinasi"],
+    aka: ["поломоечная машина", "поломойка", "скраббер", "pol yuvish mashinasi", "polomoyka"],
   },
   "supurish-mashinalari": {
     uz: {
@@ -150,7 +151,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Floor sweepers in Tashkent — prices | Stratega",
       description: "Ride-on and cab sweepers. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["подметальная машина", "supurish mashinasi"],
+    aka: ["подметальная машина", "подметальная машина для улицы", "supurish mashinasi"],
   },
   "sanoat-changyutgichlari": {
     uz: {
@@ -167,7 +168,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Industrial vacuum cleaners in Tashkent | Stratega",
       description: "Wet and dry vacuums, 20–80 L. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["промышленный пылесос", "строительный пылесос", "changyutgich"],
+    aka: ["промышленный пылесос", "строительный пылесос", "пылесос для сухой и влажной уборки", "sanoat changyutgichi", "changyutgich"],
   },
   "payvandlash-apparatlari": {
     uz: {
@@ -226,7 +227,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "PE and PPR pipe welding machines in Tashkent | Stratega",
       description: "Butt fusion machines 63–630 mm and socket welders. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["пайка для пэ труб", "утюг для труб", "дазмол", "аппарат для сварки пнд труб", "сварка пнд труб", "аппарат стыковой сварки", "паяльник для пластиковых труб", "payka", "dazmol", "payvandlash apparati"],
+    aka: ["пайка", "пайка для пэ труб", "пайка аппарат", "утюг для труб", "утюг для пайки труб", "дазмол", "паяльник для труб", "паяльник для пластиковых труб", "аппарат для сварки пнд труб", "сварка пнд труб", "аппарат стыковой сварки", "payka", "payka aparati", "payka dazmol", "truba dazmol", "dazmol", "quvur payvandlash apparati", "пайка аппарат нархи"],
   },
   "generatorlar": {
     uz: {
@@ -235,7 +236,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       intro: "Benzinli generator uy, do'kon, dacha va qurilish maydonini zaxira elektr bilan ta'minlaydi. Quvvati 0,65 dan 10 kVt gacha, 220 V, qo'l va elektr starterli modellar.",
     },
     ru: {
-      title: "Бензиновые генераторы купить в Ташкенте — цены | Stratega",
+      title: "Генераторы бензиновые для дома купить в Ташкенте — цены | Stratega",
       description: "Бензогенераторы 0,65–10 кВт для дома, дачи и стройки, с электростартером. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
       intro: "Бензиновый генератор (бензогенератор) даёт резервное электричество для дома, магазина, дачи и стройки. Мощность от 0,65 до 10 кВт, однофазные 220 В, модели с ручным и электростартером.",
     },
@@ -243,7 +244,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Petrol generators in Tashkent — prices | Stratega",
       description: "Petrol generators 0.65–10 kW. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["генератор", "бензиновый генератор", "бензогенератор", "генератор для дома", "generator", "generator narxi"],
+    aka: ["генератор", "генераторы", "бензиновый генератор", "бензогенератор", "генератор для дома", "генератор 5 квт", "генератор 10 квт", "generator", "generatorlar", "benzinli generator", "генератор нархи"],
   },
   "invertorli-generatorlar": {
     uz: {
@@ -260,7 +261,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Inverter generators in Tashkent — prices | Stratega",
       description: "Inverter generators 0.9–10 kW. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["инверторный генератор", "тихий генератор", "invertorli generator"],
+    aka: ["инверторный генератор", "тихий генератор", "бесшумный генератор", "invertorli generator", "invertor generator"],
   },
   "dizel-generatorlar": {
     uz: {
@@ -277,7 +278,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Diesel generators in Tashkent — prices | Stratega",
       description: "Diesel generators 2.8–11 kVA. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["дизельный генератор", "дизель генератор", "dizel generator"],
+    aka: ["дизельный генератор", "дизель генератор", "дизельная электростанция", "dizel generator", "dizel generatori"],
   },
   "payvandlash-generatorlari": {
     uz: {
@@ -294,7 +295,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Welder generators in Tashkent — prices | Stratega",
       description: "Petrol welder generators 130–160 A. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["сварочный генератор", "генератор со сваркой", "svarka generator"],
+    aka: ["сварочный генератор", "генератор сварочный", "генератор со сваркой", "генератор сварка", "svarka generator", "svarkali generator"],
   },
   "motoblok-va-kultivatorlar": {
     uz: {
@@ -311,7 +312,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Walk-behind tractors and tillers in Tashkent | Stratega",
       description: "Petrol and diesel tillers. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["мотоблок", "культиватор", "мотокультиватор", "minitraktor", "motoblok", "kultivator"],
+    aka: ["мотоблок", "мотоблоки", "культиватор", "мотокультиватор", "мини трактор", "motoblok", "kultivator", "minitraktor", "мотоблок нархлари"],
   },
   "yuqori-bosimli-yuvish-apparatlari": {
     uz: {
@@ -328,7 +329,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Pressure washers in Tashkent — prices | Stratega",
       description: "Electric and petrol pressure washers. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["мойка высокого давления", "керхер", "минимойка", "автомойка аппарат", "karcher", "moyka apparati"],
+    aka: ["мойка высокого давления", "керхер", "кёрхер", "минимойка", "автомойка аппарат", "мойка", "karcher", "kerxer", "moyka", "moyka apparati", "керхер нархи", "karcher narxi"],
   },
   "yuvish-apparati-nasoslari": {
     uz: {
@@ -345,7 +346,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Pressure washer pumps in Tashkent | Stratega",
       description: "Plunger and axial pumps 190–275 bar. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["насос для мойки высокого давления", "плунжерный насос", "насос для керхера"],
+    aka: ["насос для мойки высокого давления", "помпа для мойки", "плунжерный насос", "насос для керхера", "moyka nasosi"],
   },
   "yuvish-apparati-aksessuarlari": {
     uz: {
@@ -362,7 +363,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Pressure washer accessories in Tashkent | Stratega",
       description: "Guns, hoses, foam lances, nozzles. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["пистолет для мойки высокого давления", "шланг высокого давления", "пенная насадка", "karcher pistolet"],
+    aka: ["пистолет для мойки высокого давления", "пистолет для мойки", "шланг высокого давления", "пенная насадка", "пеногенератор", "moyka pistoleti", "karcher pistolet"],
   },
   "beton-silliqlash-mashinalari": {
     uz: {
@@ -379,7 +380,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Concrete power trowels in Tashkent | Stratega",
       description: "Power trowels 60–100 cm. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["затирочная машина", "вертолет для бетона", "затирка бетона", "vertolyot"],
+    aka: ["затирочная машина", "вертолет для бетона", "вертолёт для бетона", "затирка бетона", "zatirka", "zatirka aparat", "vertolyot"],
   },
   "shov-kesgichlar": {
     uz: {
@@ -396,7 +397,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Floor saws in Tashkent — prices | Stratega",
       description: "Concrete and asphalt saws up to 500 mm. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["швонарезчик", "нарезчик швов", "резчик швов", "shvonarezchik"],
+    aka: ["швонарезчик", "шванорезчик", "нарезчик швов", "резчик швов", "shvonarezchik", "shov kesgich"],
   },
   "vibroplita-va-vibrotrambovkalar": {
     uz: {
@@ -413,7 +414,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Plate compactors and rammers in Tashkent | Stratega",
       description: "Plate compactors and tamping rammers. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["виброплита", "вибротрамбовка", "трамбовка", "vibroplita"],
+    aka: ["виброплита", "вибротрамбовка", "трамбовка", "vibroplita", "vibrotrambovka", "trambovka"],
   },
   "armatura-dastgohlari": {
     uz: {
@@ -422,7 +423,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       intro: "Armatura stanoklari: egish (armatura va xomut egish), kesish va to'g'rilash stanoklari, shu jumladan CNC, 50 mm gacha armatura uchun.",
     },
     ru: {
-      title: "Станки для гибки и резки арматуры купить в Ташкенте | Stratega",
+      title: "Станки для гибки и резки арматуры (арматурогиб) в Ташкенте | Stratega",
       description: "Станки для гибки, резки и правки арматуры до 50 мм, гибка хомутов, ЧПУ. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
       intro: "Станки для арматуры: гибочные (гибка арматуры и хомутов), резочные (резка арматуры) и правильные станки, в том числе с ЧПУ, для арматуры до 50 мм.",
     },
@@ -430,7 +431,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Rebar bending and cutting machines in Tashkent | Stratega",
       description: "Rebar benders, cutters and straighteners. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["станок для гибки арматуры", "станок для резки арматуры", "гибочный станок", "armatura stanok"],
+    aka: ["станок для гибки арматуры", "станок для резки арматуры", "арматурогиб", "хомутогиб", "гибочный станок", "armatura stanok", "armatura egish stanogi"],
   },
   "beton-frezalash-va-silliqlash": {
     uz: {
@@ -447,7 +448,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Concrete grinders and scarifiers in Tashkent | Stratega",
       description: "Mosaic grinders and scarifiers. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["мозаично шлифовальная машина", "фрезеровальная машина по бетону", "mozaika"],
+    aka: ["мозаично шлифовальная машина", "мозаичная машина", "шлифовальная машина по бетону", "фрезеровальная машина по бетону", "mozaika stanok", "mozaika"],
   },
   "vibroreyka-va-beton-asboblari": {
     uz: {
@@ -464,7 +465,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Vibrating screeds in Tashkent — prices | Stratega",
       description: "Petrol and electric screeds. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["виброрейка", "правило для бетона", "vibroreyka"],
+    aka: ["виброрейка", "виброправило", "правило для бетона", "гладилка для бетона", "vibroreyka"],
   },
   "beton-vibratorlari": {
     uz: {
@@ -473,7 +474,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       intro: "Beton vibratori qolipdagi betonni zichlaydi. Qo'l elektr vibratorlari, benzinli yuritmalar, vibro tayoqlar va 1–12 m shlanglar.",
     },
     ru: {
-      title: "Глубинные вибраторы для бетона купить в Ташкенте | Stratega",
+      title: "Вибраторы для бетона глубинные купить в Ташкенте | Stratega",
       description: "Глубинные вибраторы для бетона, вибробулавы и рукава 1–12 м. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
       intro: "Глубинный вибратор (вибратор для бетона) уплотняет бетон в опалубке. Ручные электрические вибраторы, бензиновые приводы, вибробулавы и рукава от 1 до 12 метров.",
     },
@@ -481,7 +482,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Concrete vibrators in Tashkent | Stratega",
       description: "Poker vibrators and shafts. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["глубинный вибратор", "вибратор для бетона", "beton vibrator"],
+    aka: ["вибратор для бетона", "глубинный вибратор", "вибратор бетона", "вибробулава", "beton vibrator", "beton vibratori"],
   },
   "motopompa-va-dvigatellar": {
     uz: {
@@ -498,7 +499,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Water pumps in Tashkent — prices | Stratega",
       description: "Petrol and diesel water pumps 1–4 inch. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["мотопомпа", "водяной насос бензиновый", "motopompa", "suv nasosi"],
+    aka: ["мотопомпа", "мотопомпы", "водяной насос бензиновый", "мотопомпа для грязной воды", "motopompa", "suv nasosi", "мотопомпа нархлари"],
   },
   "dvigatellar": {
     uz: {
@@ -515,24 +516,24 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Petrol and diesel engines in Tashkent | Stratega",
       description: "Small petrol and diesel engines. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["бензиновый двигатель", "дизельный двигатель", "двигатель 170f", "dvigatel"],
+    aka: ["бензиновый двигатель", "дизельный двигатель", "двигатель 170f", "двигатель для мотоблока", "dvigatel", "benzinli dvigatel", "dizel dvigatel"],
   },
   "qurilish-texnikasi": {
     uz: {
       title: "Betonomeshalka va qurilish texnikasi narxi Toshkentda | Stratega",
-      description: "Betonomeshalkalar 120–180 L, vibroplitalar, zatirka mashinalari va boshqa qurilish texnikasi. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      description: "Betonomeshalka (beton qorg'ich) 120–180 L va qurilish texnikasi. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
       intro: "Qurilish va obodonlashtirish uchun texnika: betonomeshalkalar (beton qorgich) 120–180 L, vibroplitalar, vibrotrambovkalar, zatirka mashinalari.",
     },
     ru: {
       title: "Бетономешалки и строительная техника купить в Ташкенте | Stratega",
-      description: "Бетономешалки 120–180 л, виброплиты, затирочные машины и другая строительная техника. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      description: "Бетономешалки (бетоносмесители) 120–180 л и строительная техника. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
       intro: "Строительная техника для стройки и благоустройства: бетономешалки 120–180 л, виброплиты, вибротрамбовки, затирочные машины.",
     },
     en: {
       title: "Concrete mixers and construction machinery in Tashkent | Stratega",
       description: "Concrete mixers and site machinery. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["бетономешалка", "строительная техника", "betonomeshalka"],
+    aka: ["бетономешалка", "бетоносмеситель", "строительная техника", "betonomeshalka", "beton qorgich", "бетономешалка нархи"],
   },
   "havo-kompressorlari": {
     uz: {
@@ -549,7 +550,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Air compressors in Tashkent — prices | Stratega",
       description: "Oil-free, belt-driven, petrol and diesel compressors. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["компрессор", "воздушный компрессор", "безмасляный компрессор", "kompressor"],
+    aka: ["компрессор", "воздушный компрессор", "безмасляный компрессор", "компрессор для покраски", "kompressor", "havo kompressori", "компрессор нархлари"],
   },
   "qurilish-texnikasi-ehtiyot-qismlari": {
     uz: {
@@ -566,7 +567,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Construction machinery spare parts in Tashkent | Stratega",
       description: "Spare parts for compactors, trowels, saws. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["запчасти для виброплиты", "запчасти для затирочной машины", "ehtiyot qismlar"],
+    aka: ["запчасти для виброплиты", "запчасти для затирочной машины", "qurilish texnikasi ehtiyot qismlari"],
   },
   "dvigatel-va-generator-ehtiyot-qismlari": {
     uz: {
@@ -583,7 +584,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Engine and generator spare parts in Tashkent | Stratega",
       description: "Carburettors, starters, filters, AVR. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["запчасти для генератора", "карбюратор", "ehtiyot qismlar"],
+    aka: ["запчасти для генератора", "карбюратор для генератора", "generator ehtiyot qismlari"],
   },
   // Categories without products at the moment.
   "avtokotargichlar": {
@@ -740,3 +741,31 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
     },
   },
 };
+
+// Headings, buying texts and extra FAQ from config/category-content.ts.
+for (const [slug, content] of Object.entries(CATEGORY_CONTENT)) {
+  const seo = CATEGORY_SEO[slug];
+  if (!seo) throw new Error(`category-content: unknown category ${slug}`);
+  for (const l of ["uz", "ru"] as const) {
+    if (seo[l].h1 || seo[l].sections) throw new Error(`category-content: ${slug} ${l} is already written in category-seo.ts`);
+    Object.assign(seo[l], content[l]);
+  }
+}
+
+/** Puts the lowest live price into the search snippet: "Цены с НДС." → "Цены от 1 670 000 сум с НДС.". */
+export function withFromPrice(description: string, locale: Locale, from: string | null, max = 165): string {
+  if (!from) return description;
+  let out =
+    locale === "ru"
+      ? description.replace("Цены с НДС.", `Цены от ${from} сум с НДС.`)
+      : locale === "uz"
+        ? description.replace("Narxlar QQS bilan.", `Narxlar ${from} so'mdan, QQS bilan.`)
+        : description.replace("Prices incl. VAT.", `From ${from} UZS incl. VAT.`);
+  // Too long for the snippet: drop whole closing sentences rather than cut one in half.
+  while (out.length > max) {
+    const cut = out.lastIndexOf(". ", out.length - 2);
+    if (cut < 60) break;
+    out = out.slice(0, cut + 1);
+  }
+  return out;
+}

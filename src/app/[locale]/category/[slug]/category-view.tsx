@@ -22,7 +22,7 @@ import { pageMetadata, absoluteUrl, jsonLd, fitTitle } from "@/lib/seo";
 import type { Prisma } from "@/generated/prisma/client";
 import { SPEC_FILTERS } from "@/lib/product-specs";
 import { directionOfCategory } from "@/lib/focus";
-import { CATEGORY_SEO } from "@/config/category-seo";
+import { CATEGORY_SEO, withFromPrice } from "@/config/category-seo";
 import { categoryFaq, faqJsonLd } from "@/lib/category-faq";
 import { guidesForCategory, isGuideLocale } from "@/config/guides";
 
@@ -49,7 +49,7 @@ export async function categoryMetadata(locale: string, slug: string): Promise<Me
     path: `/category/${slug}`,
     title: seo?.title ?? fitTitle(fmt(t.meta.categoryTitle, { name }), `${name} | Stratega`),
     description:
-      (seo?.description && excerpt(seo.description, 165)) ??
+      (seo?.description && excerpt(withFromPrice(seo.description, locale, data.minPrice !== null && data.minPrice > 0 ? formatNumber(data.minPrice) : null), 165)) ??
       (own
         ? excerpt(own)
         : data.minPrice !== null
@@ -117,7 +117,17 @@ export async function CategoryView({ locale, slug, sp }: { locale: Locale; slug:
   const sections = seoText?.sections ?? [];
   const pageUrl = absoluteUrl(lp(`/category/${slug}`));
   const faq = [...(seoText?.faq ?? []), ...categoryFaq(locale, name, data.count, data.minPrice)];
+  const aka = CATEGORY_SEO[slug]?.aka ?? [];
   const structuredData = [
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: heading,
+      url: pageUrl,
+      inLanguage: locale,
+      ...(aka.length > 0 && { alternateName: aka }),
+      isPartOf: { "@type": "WebSite", url: absoluteUrl("/") },
+    },
     faqJsonLd(faq),
     {
       "@context": "https://schema.org",

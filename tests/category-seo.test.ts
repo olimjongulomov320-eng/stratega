@@ -40,3 +40,12 @@ test("welding and pallet-truck pages use the words buyers type", () => {
   assert.match(CATEGORY_SEO["gidravlik-telejkalar"].ru.h1 ?? "", /^Рохли/);
   assert.match(CATEGORY_SEO["gidravlik-telejkalar"].uz.h1 ?? "", /^Rohlya/);
 });
+
+test("the snippet shows the lowest price and stays whole", async () => {
+  const { withFromPrice } = await import("../src/config/category-seo");
+  const ru = withFromPrice("Генераторы 1–10 кВт. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.", "ru", "2 500 000");
+  assert.match(ru, /Цены от 2 500 000 сум с НДС\./);
+  const long = withFromPrice("A".repeat(100) + ". Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.", "uz", "2 200 000");
+  assert.ok(long.length <= 165 && long.endsWith("."), long);
+  assert.equal(withFromPrice("Цены с НДС.", "ru", null), "Цены с НДС.");
+});
