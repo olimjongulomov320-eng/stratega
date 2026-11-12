@@ -6,6 +6,7 @@ import { productFacts, productLocales } from "@/lib/product-seo";
 import { COMPANY } from "@/lib/site";
 import { isAvailable } from "@/lib/sourcing";
 import { CATEGORY_SEO } from "@/config/category-seo";
+import { GUIDES } from "@/config/guides";
 
 type LlmsCategory = { slug: string; name: string; nameRu: string | null; nameEn: string | null };
 type LlmsProduct = Parameters<typeof productFacts>[0] & {
@@ -43,6 +44,10 @@ export function buildLlmsTxt(categories: LlmsCategory[], products: LlmsProduct[]
     `- Shop: ${COMPANY.shop.en} (${COMPANY.hours.en})`,
     `- Legal entity: ${COMPANY.legalName}, INN ${COMPANY.inn}`,
     `- Website: ${absoluteUrl("/")}`,
+    "",
+    "## Buyer guides",
+    "",
+    ...GUIDES.map((g) => `- [${g.text.ru.title}](${absoluteUrl(localePath("ru", `/qollanma/${g.slug}`))}): ${g.text.ru.description}`),
     "",
   ];
   for (const c of categories) {

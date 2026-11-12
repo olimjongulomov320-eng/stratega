@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { LOCALES, localePath } from "@/i18n/config";
 import { absoluteUrl } from "@/lib/seo";
 import { FOCUS } from "@/lib/focus";
+import { GUIDES, GUIDE_LOCALES } from "@/config/guides";
 import { productLocales } from "@/lib/product-seo";
 import type { Locale } from "@/i18n/config";
 
@@ -36,6 +37,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Direction landing pages that have at least one category with products on sale.
     ...FOCUS.filter((f) => f.categories.some((s) => categories.some((c) => c.slug === s))).flatMap((f) => entry(`/yonalish/${f.slug}`, now, 0.95)),
     ...categories.flatMap((c) => entry(`/category/${c.slug}`, c.updatedAt, 0.9)),
+    // Buyer guides (Uzbek and Russian only).
+    ...entry("/qollanma", now, 0.6, GUIDE_LOCALES),
+    ...GUIDES.flatMap((g) => entry(`/qollanma/${g.slug}`, new Date(g.updated), 0.7, GUIDE_LOCALES)),
     ...products.flatMap((p) => entry(`/product/${p.slug}`, p.updatedAt, 0.8, productLocales(p))),
     ...["/yuridik-shaxslar", "/about", "/delivery", "/payment", "/returns", "/faq", "/contacts"].flatMap((p) => entry(p, now, 0.4)),
   ];
