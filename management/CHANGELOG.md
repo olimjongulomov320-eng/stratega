@@ -2,6 +2,11 @@
 
 Local changes until deployed. "Deployed" is stated explicitly when it happens.
 
+## 2026-11-12 — search and AI visibility (local, not deployed)
+
+- Sitemap cached for an hour and cleared on every catalogue save (was ~30 s per request).
+- Product meta description: name, price with VAT, availability, then the description.
+
 ## 2026-11-10 — own stock focus (local, not deployed)
 
 - Import column `tavsiya` sets "featured".

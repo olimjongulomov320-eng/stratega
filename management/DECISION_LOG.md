@@ -49,3 +49,8 @@ Numbers are not continuous: some decisions are recorded privately (D-14).
 - **D-28 Own stock is only the TURAN welders and the NIULI order (owner's instruction, replaces the D-21 split).** Everything else is supplier stock. The NIULI items show "to order" with a delivery time until the goods arrive and are received into stock; their cost is estimated from the factory price plus the expense share of the last TURAN shipment until the real landed cost is known. Prices already on the site are kept where they are above cost + 20%; new pages use cost + 20%.
 - **D-29 New product photos ship with the site (`public/products/`)** and are linked from the import file. Uploads to Vercel Blob were failing, so this avoids depending on it. The admin photo upload still uses Blob.
 - **D-30 The import sets "featured" (column `tavsiya`)** so the products the business is pushing come first on the home page and in lists.
+
+## 2026-11-12
+
+- **D-31 The sitemap is cached again (reverses the per-request sitemap).** Built per request it took about 30 seconds with 600+ products in three languages, which crawlers give up on. It is now cached for an hour and cleared by the same call that clears the storefront after every catalogue save, so new products still appear at once.
+- **D-32 Product meta descriptions start with price and availability.** Search snippets and AI answers quote this text; the description used to repeat the product name and stop before any price. The figures are the same ones the page shows.
