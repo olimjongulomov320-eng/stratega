@@ -2,7 +2,12 @@
 
 Local changes until deployed. "Deployed" is stated explicitly when it happens.
 
-## 2026-11-12 — search and AI visibility (local, not deployed)
+## 2026-11-12 — search phrases (local, not deployed)
+
+- Titles, descriptions and intros for all 28 categories with products, from Google/Yandex autocomplete for Uzbekistan; other names buyers use («керхер», «рохля», «вертолёт»…) listed in /llms.txt.
+- Product descriptions: "in stock in Tashkent, delivery across Uzbekistan"; Uzbek product titles mention Toshkent.
+
+## 2026-11-12 — search and AI visibility (deployed, PR #7)
 
 - Sitemap cached for an hour and cleared on every catalogue save (was ~30 s per request).
 - Product meta description: name, price with VAT, availability, then the description.

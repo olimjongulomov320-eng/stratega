@@ -67,9 +67,9 @@ type MetaProduct = {
 };
 
 const META_TEXT: Record<Locale, { price: (p: string) => string; onRequest: string; inStock: string; available: string; lead: (n: number) => string; toOrder: string }> = {
-  uz: { price: (p) => `Narxi ${p} so'm (QQS bilan)`, onRequest: "Narxi so'rov bo'yicha", inStock: "Toshkentdagi omborda mavjud", available: "Mavjud", lead: (n) => `Buyurtma asosida, ~${n} kun`, toOrder: "Buyurtma asosida" },
-  ru: { price: (p) => `Цена ${p} сум с НДС`, onRequest: "Цена по запросу", inStock: "В наличии на складе в Ташкенте", available: "В наличии", lead: (n) => `Под заказ, ~${n} дн.`, toOrder: "Под заказ" },
-  en: { price: (p) => `Price ${p} UZS incl. VAT`, onRequest: "Price on request", inStock: "In stock in Tashkent", available: "Available", lead: (n) => `To order, ~${n} days`, toOrder: "To order" },
+  uz: { price: (p) => `Narxi ${p} so'm (QQS bilan)`, onRequest: "Narxi so'rov bo'yicha", inStock: "Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz", available: "Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz", lead: (n) => `Buyurtma asosida, ~${n} kun; O'zbekiston bo'ylab yetkazib beramiz`, toOrder: "Buyurtma asosida; O'zbekiston bo'ylab yetkazib beramiz" },
+  ru: { price: (p) => `Цена ${p} сум с НДС`, onRequest: "Цена по запросу", inStock: "В наличии в Ташкенте, доставка по всему Узбекистану", available: "В наличии в Ташкенте, доставка по всему Узбекистану", lead: (n) => `Под заказ, ~${n} дн.; доставка по всему Узбекистану`, toOrder: "Под заказ; доставка по всему Узбекистану" },
+  en: { price: (p) => `Price ${p} UZS incl. VAT`, onRequest: "Price on request", inStock: "In stock in Tashkent, delivery across Uzbekistan", available: "In stock in Tashkent, delivery across Uzbekistan", lead: (n) => `To order, ~${n} days; delivery across Uzbekistan`, toOrder: "To order; delivery across Uzbekistan" },
 };
 
 /**

@@ -4,7 +4,7 @@ const uz = {
     homeTitle: "Shtabelerlar, rohlyalar, quvur payvandlash apparatlari | Stratega",
     homeDescription:
       "Elektr va qo'l shtabelerlar, gidravlik telejkalar (rohlya), PE quvur payvandlash apparatlari. Toshkentda omborda, QQS bilan, O'zbekiston bo'ylab yetkazib berish.",
-    productTitle: "{name} — narxi {price} so'm | Stratega",
+    productTitle: "{name} — narxi {price} so'm, Toshkent | Stratega",
     productTitleNoPrice: "{name} — narxi so'rov bo'yicha | Stratega",
     productTitleShort: "{name} — {price} so'm | Stratega",
     categoryTitle: "{name} narxi Toshkentda | Stratega",

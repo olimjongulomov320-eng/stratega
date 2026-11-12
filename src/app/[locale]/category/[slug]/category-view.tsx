@@ -109,7 +109,8 @@ export async function CategoryView({ locale, slug, sp }: { locale: Locale; slug:
   const direction = directionOfCategory(category.slug);
 
   const name = localName(category, locale);
-  const intro = localDescription(category, locale);
+  // The admin intro wins; otherwise the search-phrase intro from config/category-seo.ts.
+  const intro = localDescription(category, locale) || CATEGORY_SEO[slug]?.[locale]?.intro || null;
   const pageUrl = absoluteUrl(lp(`/category/${slug}`));
   const faq = categoryFaq(locale, name, data.count, data.minPrice);
   const structuredData = [

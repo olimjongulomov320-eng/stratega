@@ -1,63 +1,491 @@
-// Search titles and descriptions for the main categories, keyed by category slug.
-// A category that is not listed here uses the generic template from the dictionaries
-// (meta.categoryTitle / meta.categoryDescription) or its own SEO text from the admin panel.
+// Search texts for categories, keyed by category slug: <title>, meta description, and an intro shown under the
+// heading when the category has no intro of its own in the admin. Built from the phrases people in Uzbekistan
+// actually type (Google and Yandex autocomplete for Uzbekistan / Tashkent, 12.11.2026): product type first,
+// "купить в Ташкенте", "цена", "narxi". Brand names are left out: buyers search for the kind of machine.
+// `aka` lists other names buyers use; /llms.txt shows them to AI assistants.
 
 import type { Locale } from "@/i18n/config";
 
-type CategorySeo = Record<Locale, { title: string; description: string }>;
+type CategorySeo = Record<Locale, { title: string; description: string; intro?: string }> & { aka?: string[] };
 
 export const CATEGORY_SEO: Record<string, CategorySeo> = {
-  "elektr-shtabelerlar": {
-    uz: {
-      title: "Elektr shtabelerlar narxi Toshkentda, 1.6–4.5 m | Stratega",
-      description:
-        "Elektr shtabelerlar (yarim avtomat va avtomat), 2 tonna, ko'tarish balandligi 1.6–4.5 m. Narxlar QQS bilan. Toshkentda mavjud.",
-    },
-    ru: {
-      title: "Электрические штабелеры в Ташкенте — цены, 1,6–4,5 м | Stratega",
-      description:
-        "Электрические штабелеры (полуавтомат и самоходные) 2 т, высота подъёма 1,6–4,5 м. Цены с НДС. В наличии в Ташкенте.",
-    },
-    en: {
-      title: "Electric stackers in Tashkent — prices, 1.6–4.5 m | Stratega",
-      description:
-        "Electric stackers (semi-electric and self-propelled), 2 t, lift height 1.6–4.5 m. Prices incl. VAT. In stock in Tashkent.",
-    },
-  },
   "gidravlik-telejkalar": {
     uz: {
-      title: "Gidravlik telejka (rohlya) narxi Toshkentda | Stratega",
-      description:
-        "Gidravlik telejkalar (rohlya) 3 tonna: oddiy, tarozili va rulon uchun. Narxlar QQS bilan. Toshkentda mavjud, yetkazib berish.",
+      title: "Rohlya (gidravlik telejka) narxi Toshkentda | Stratega",
+      description: "Rohlya — paletlar uchun gidravlik telejkalar 2–3 t, tarozili va rulon uchun. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Rohlya (gidravlik telejka) — ombor, do'kon va sexda paletlarni tashish uchun qo'l telejkasi. 2 va 3 tonnalik, 1150 va 1220 mm vilkali, tarozili va rulon uchun modellar.",
     },
     ru: {
-      title: "Гидравлические тележки (рохли) в Ташкенте — цены | Stratega",
-      description:
-        "Гидравлические тележки (рохли, транспалеты) 3 т: стандартные, с весами, для рулонов. Цены с НДС. В наличии в Ташкенте.",
+      title: "Рохли (гидравлические тележки) купить в Ташкенте — цены | Stratega",
+      description: "Рохли — гидравлические тележки для паллет 2–3 т, с весами и для рулонов. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Рохля (гидравлическая тележка, транспалет) — ручная тележка для перевозки паллет по складу, магазину и цеху. Модели на 2 и 3 тонны, с вилами 1150 и 1220 мм, с весами и для рулонов.",
     },
     en: {
-      title: "Hydraulic pallet trucks in Tashkent — prices | Stratega",
-      description:
-        "Hydraulic hand pallet trucks, 3 t: standard, with scales and for rolls. Prices incl. VAT. In stock in Tashkent, with delivery.",
+      title: "Hand pallet trucks in Tashkent — prices | Stratega",
+      description: "Hand pallet trucks 2–3 t, with scale and for rolls. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
+    aka: ["рохля", "гидравлическая тележка", "транспалет", "тележка для паллет", "rohlya", "telejka"],
+  },
+  "qol-shtabelerlari": {
+    uz: {
+      title: "Qo'l gidravlik shtabeler narxi Toshkentda | Stratega",
+      description: "Qo'lda boshqariladigan gidravlik shtabelerlar 2 t, 1,6 m gacha ko'tarish. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Qo'l shtabeleri paletlarni elektrsiz, dasta va oyoq pedali bilan stellajga ko'taradi. Kichik omborlar va do'konlar uchun qulay.",
+    },
+    ru: {
+      title: "Ручные гидравлические штабелеры купить в Ташкенте — цены | Stratega",
+      description: "Ручные гидравлические штабелеры 2 т, подъём до 1,6 м, без электричества. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Ручной (гидравлический) штабелер поднимает паллеты на стеллажи без электричества: подъём ручкой и ножной педалью. Подходит для небольших складов и магазинов.",
+    },
+    en: {
+      title: "Manual hydraulic stackers in Tashkent — prices | Stratega",
+      description: "Manual hydraulic stackers 2 t, lift up to 1.6 m. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["ручной штабелер", "гидравлический штабелер", "shtabeler"],
+  },
+  "elektr-shtabelerlar": {
+    uz: {
+      title: "Elektr shtabeler narxi Toshkentda | Stratega",
+      description: "Elektr shtabelerlar 1,5–2 t, ko'tarish 1,6–4,5 m, yarim avtomat va o'zi yuradigan. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Elektr shtabeler paletlarni akkumulyator yordamida stellajlarga ko'taradi. Yuk ko'tarish 1,5–2 t, ko'tarish balandligi 1,6 m dan 4,5 m gacha bo'lgan modellar.",
+    },
+    ru: {
+      title: "Электрические штабелеры купить в Ташкенте — цены | Stratega",
+      description: "Электроштабелеры 1,5–2 т, подъём 1,6–4,5 м, полуавтомат и самоходные. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Электрический штабелер (электроштабелер) поднимает паллеты на стеллажи на аккумуляторе. Полуавтоматические и самоходные модели грузоподъёмностью 1,5–2 т и высотой подъёма от 1,6 до 4,5 м.",
+    },
+    en: {
+      title: "Electric stackers in Tashkent — prices | Stratega",
+      description: "Electric stackers 1.5–2 t, lift 1.6–4.5 m. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["штабелер", "электрический штабелер", "электроштабелер", "shtabeler"],
+  },
+  "pol-yuvish-mashinalari": {
+    uz: {
+      title: "Pol yuvish mashinasi narxi Toshkentda | Stratega",
+      description: "Ombor, do'kon va sex uchun pol yuvish mashinalari: qo'lda boshqariladigan va o'rindiqli. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Pol yuvish mashinasi ombor, do'kon, ofis va sexlarda polni yuvadi va darhol quritadi. Akkumulyatorli va tarmoqdan ishlaydigan, qo'lda va o'rindiqli modellar.",
+    },
+    ru: {
+      title: "Поломоечные машины купить в Ташкенте — цены | Stratega",
+      description: "Поломоечные машины (поломойки) для склада, магазина и цеха: ручные и с сиденьем. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Поломоечная машина (поломойка) моет и сразу высушивает пол на складах, в магазинах, офисах и цехах. Аккумуляторные и сетевые модели, ручные и с сиденьем.",
+    },
+    en: {
+      title: "Floor scrubbers in Tashkent — prices | Stratega",
+      description: "Floor scrubbers, walk-behind and ride-on. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["поломоечная машина", "поломойка", "pol yuvish mashinasi"],
+  },
+  "supurish-mashinalari": {
+    uz: {
+      title: "Supurish mashinasi narxi Toshkentda | Stratega",
+      description: "Ombor, hudud va ko'cha uchun supurish mashinalari, o'rindiqli va kabinali. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Supurish mashinasi ombor, avtoturargoh va korxona hududidagi chiqindi va changni yig'adi. O'rindiqli va kabinali modellar, tozalash kengligi 2 m gacha.",
+    },
+    ru: {
+      title: "Подметальные машины купить в Ташкенте — цены | Stratega",
+      description: "Подметальные машины для склада, территории и улицы, с сиденьем и кабиной. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Подметальная машина собирает мусор и пыль на складах, парковках и территориях предприятий. Модели с сиденьем и с кабиной, ширина уборки до 2 м.",
+    },
+    en: {
+      title: "Floor sweepers in Tashkent — prices | Stratega",
+      description: "Ride-on and cab sweepers. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["подметальная машина", "supurish mashinasi"],
+  },
+  "sanoat-changyutgichlari": {
+    uz: {
+      title: "Sanoat (qurilish) changyutgichi narxi Toshkentda | Stratega",
+      description: "Quruq va ho'l tozalash uchun sanoat changyutgichlari, 20–80 L. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Sanoat (qurilish) changyutgichi quruq va ho'l tozalash uchun: chang, suv, qurilish chiqindisi. Baki 20 dan 80 litrgacha, 1–3 motorli.",
+    },
+    ru: {
+      title: "Промышленные и строительные пылесосы купить в Ташкенте | Stratega",
+      description: "Промышленные (строительные) пылесосы для сухой и влажной уборки, 20–80 л. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Промышленный (строительный) пылесос для сухой и влажной уборки: пыль, вода, строительный мусор. Баки от 20 до 80 литров, 1–3 мотора.",
+    },
+    en: {
+      title: "Industrial vacuum cleaners in Tashkent | Stratega",
+      description: "Wet and dry vacuums, 20–80 L. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["промышленный пылесос", "строительный пылесос", "changyutgich"],
   },
   "payvandlash-apparatlari": {
     uz: {
-      title: "PE (PND) quvur payvandlash apparatlari narxi | Stratega",
-      description:
-        "PE, PND va HDPE quvurlarni uchma-uch payvandlash (stykovka) apparatlari 63–630 mm va PPR payka. Narxlar QQS bilan. Toshkentda mavjud.",
+      title: "Quvur payvandlash apparati (payka) narxi Toshkentda | Stratega",
+      description: "PND quvurlar uchun stykovoy payvandlash apparatlari 63–630 mm va plastik quvur paykalari. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Polietilen (PND) quvurlarni payvandlash apparatlari: 63 dan 630 mm gacha mexanik va gidravlik stykovoy apparatlar, suv va isitish uchun plastik (PPR) quvur paykalari 20–110 mm.",
     },
     ru: {
-      title: "Аппараты для стыковой сварки ПНД труб в Ташкенте | Stratega",
-      description:
-        "Аппараты стыковой сварки ПНД (PE, HDPE) труб 63–630 мм и паяльники для PPR. Цены с НДС. В наличии в Ташкенте, доставка по Узбекистану.",
+      title: "Аппараты для сварки ПНД и ППР труб купить в Ташкенте | Stratega",
+      description: "Аппараты стыковой сварки ПНД труб 63–630 мм и паяльники для пластиковых труб. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Аппараты для сварки полиэтиленовых (ПНД, ПЭ) труб: механические и гидравлические аппараты стыковой сварки от 63 до 630 мм, а также паяльники для пластиковых (ППР) труб 20–110 мм для водопровода и отопления.",
     },
     en: {
-      title: "PE (HDPE) pipe butt-fusion welders in Tashkent | Stratega",
-      description:
-        "Butt-fusion welding machines for PE (HDPE) pipes, 63–630 mm, and PPR socket welders. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+      title: "PE and PPR pipe welding machines in Tashkent | Stratega",
+      description: "Butt fusion machines 63–630 mm and socket welders. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
+    aka: ["аппарат для сварки пнд труб", "сварка пнд труб", "аппарат стыковой сварки", "паяльник для пластиковых труб", "payka", "payvandlash apparati"],
   },
+  "generatorlar": {
+    uz: {
+      title: "Generator narxi Toshkentda — benzinli generatorlar | Stratega",
+      description: "Uy, dacha va qurilish uchun benzinli generatorlar 0,65–10 kVt, elektr starterli. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Benzinli generator uy, do'kon, dacha va qurilish maydonini zaxira elektr bilan ta'minlaydi. Quvvati 0,65 dan 10 kVt gacha, 220 V, qo'l va elektr starterli modellar.",
+    },
+    ru: {
+      title: "Бензиновые генераторы купить в Ташкенте — цены | Stratega",
+      description: "Бензогенераторы 0,65–10 кВт для дома, дачи и стройки, с электростартером. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Бензиновый генератор (бензогенератор) даёт резервное электричество для дома, магазина, дачи и стройки. Мощность от 0,65 до 10 кВт, однофазные 220 В, модели с ручным и электростартером.",
+    },
+    en: {
+      title: "Petrol generators in Tashkent — prices | Stratega",
+      description: "Petrol generators 0.65–10 kW. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["генератор", "бензиновый генератор", "бензогенератор", "генератор для дома", "generator", "generator narxi"],
+  },
+  "invertorli-generatorlar": {
+    uz: {
+      title: "Invertorli generator narxi Toshkentda | Stratega",
+      description: "Invertorli benzinli generatorlar 0,9–10 kVt: shovqinsiz, elektronika va qozonlar uchun. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Invertorli generator kompyuter, kassa, qozon va boshqa sezgir texnika uchun barqaror kuchlanish beradi. Shovqinsiz g'ilofli va ochiq modellar, 0,9–10 kVt.",
+    },
+    ru: {
+      title: "Инверторные генераторы купить в Ташкенте — цены | Stratega",
+      description: "Инверторные бензогенераторы 0,9–10 кВт: тихие, для электроники и котлов. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Инверторный генератор выдаёт стабильное напряжение для компьютеров, касс, котлов и другой чувствительной техники. Тихие модели в кожухе и открытые, 0,9–10 кВт.",
+    },
+    en: {
+      title: "Inverter generators in Tashkent — prices | Stratega",
+      description: "Inverter generators 0.9–10 kW. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["инверторный генератор", "тихий генератор", "invertorli generator"],
+  },
+  "dizel-generatorlar": {
+    uz: {
+      title: "Dizel generator narxi Toshkentda | Stratega",
+      description: "Dizel generatorlar 2,8–11 kVA, ochiq va shovqin himoyali g'ilofda, elektr starterli. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Dizel generator uzoq ishlash uchun: uy, korxona, qurilish. Ochiq va shovqin himoyali g'ilofda, elektr starterli, 2,8–11 kVA.",
+    },
+    ru: {
+      title: "Дизельные генераторы купить в Ташкенте — цены | Stratega",
+      description: "Дизель генераторы 2,8–11 кВА, открытые и в шумозащитном кожухе, электростарт. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Дизельный генератор (дизель генератор) для долгой работы: дом, предприятие, стройка. Открытые и в шумозащитном кожухе, с электростартером, 2,8–11 кВА.",
+    },
+    en: {
+      title: "Diesel generators in Tashkent — prices | Stratega",
+      description: "Diesel generators 2.8–11 kVA. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["дизельный генератор", "дизель генератор", "dizel generator"],
+  },
+  "payvandlash-generatorlari": {
+    uz: {
+      title: "Svarka generator narxi Toshkentda | Stratega",
+      description: "Payvandlash funksiyali benzinli generatorlar 130–160 A. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Payvandlash funksiyali generator — elektr tarmog'i yo'q joyda ham tok beradi va 130–160 A payvandlash imkonini beradi.",
+    },
+    ru: {
+      title: "Сварочные генераторы купить в Ташкенте — цены | Stratega",
+      description: "Бензиновые генераторы со сваркой 130–160 А: ток и сварка в одном. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Сварочный генератор — бензиновый инверторный генератор с функцией сварки 130–160 А. Даёт электричество и позволяет варить там, где нет сети.",
+    },
+    en: {
+      title: "Welder generators in Tashkent — prices | Stratega",
+      description: "Petrol welder generators 130–160 A. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["сварочный генератор", "генератор со сваркой", "svarka generator"],
+  },
+  "motoblok-va-kultivatorlar": {
+    uz: {
+      title: "Motoblok va kultivator narxi Toshkentda | Stratega",
+      description: "Benzinli va dizel motobloklar, motokultivatorlar va mini traktorlar. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Tomorqa, bog' va dalada yer haydash va yumshatish uchun motobloklar, motokultivatorlar va mini traktorlar. Benzinli va dizel.",
+    },
+    ru: {
+      title: "Мотоблоки и культиваторы купить в Ташкенте — цены | Stratega",
+      description: "Бензиновые и дизельные мотоблоки, мотокультиваторы и минитракторы. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Мотоблоки, мотокультиваторы и мини-тракторы для вспашки и рыхления земли на огороде, в саду и на поле. Бензиновые и дизельные.",
+    },
+    en: {
+      title: "Walk-behind tractors and tillers in Tashkent | Stratega",
+      description: "Petrol and diesel tillers. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["мотоблок", "культиватор", "мотокультиватор", "minitraktor", "motoblok", "kultivator"],
+  },
+  "yuqori-bosimli-yuvish-apparatlari": {
+    uz: {
+      title: "Karcher (yuqori bosimli moyka) narxi Toshkentda | Stratega",
+      description: "Avtomoyka va tozalash uchun yuqori bosimli yuvish apparatlari (karcher): elektr va benzinli. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Yuqori bosimli yuvish apparati (karcher) — avtomoyka, texnika, hovli va fasadlarni yuvish uchun. 220 va 380 V elektr, 500 bar gacha benzinli va dizel sanoat modellari.",
+    },
+    ru: {
+      title: "Мойки высокого давления (керхер) купить в Ташкенте | Stratega",
+      description: "Аппараты высокого давления (керхер) для автомойки и уборки: электрические и бензиновые. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Мойка высокого давления (в народе «керхер») — аппарат для автомойки, мойки техники, дворов и фасадов. Электрические на 220 и 380 В, бензиновые и дизельные промышленные модели до 500 бар.",
+    },
+    en: {
+      title: "Pressure washers in Tashkent — prices | Stratega",
+      description: "Electric and petrol pressure washers. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["мойка высокого давления", "керхер", "минимойка", "автомойка аппарат", "karcher", "moyka apparati"],
+  },
+  "yuvish-apparati-nasoslari": {
+    uz: {
+      title: "Moyka (karcher) nasosi narxi Toshkentda | Stratega",
+      description: "Yuqori bosimli moykalar uchun plunjerli va aksial nasoslar 190–275 bar. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Yuqori bosimli moykalar (karcher) uchun nasoslar: plunjerli (latun) va aksial, bosim 190–275 bar, 12–18 L/min.",
+    },
+    ru: {
+      title: "Насосы для моек высокого давления купить в Ташкенте | Stratega",
+      description: "Плунжерные и аксиальные насосы для моек высокого давления 190–275 бар. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Насосы для моек высокого давления (керхеров): плунжерные (латунные) и аксиальные, давление 190–275 бар, производительность 12–18 л/мин.",
+    },
+    en: {
+      title: "Pressure washer pumps in Tashkent | Stratega",
+      description: "Plunger and axial pumps 190–275 bar. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["насос для мойки высокого давления", "плунжерный насос", "насос для керхера"],
+  },
+  "yuvish-apparati-aksessuarlari": {
+    uz: {
+      title: "Karcher uchun aksessuarlar Toshkentda | Stratega",
+      description: "Yuqori bosimli moykalar uchun pistoletlar, shlanglar, ko'pik nasadkalari va soplolar. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Yuqori bosimli moykalar (karcher) uchun aksessuarlar: pistoletlar, yuqori bosimli shlanglar, ko'pik nasadkalari, soplolar, tag va yuzalarni yuvish nasadkalari.",
+    },
+    ru: {
+      title: "Аксессуары для моек высокого давления в Ташкенте | Stratega",
+      description: "Пистолеты, шланги высокого давления, пенные насадки и форсунки для керхеров. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Аксессуары для моек высокого давления (керхеров): пистолеты, шланги высокого давления, пенные насадки (пеногенераторы), форсунки, насадки для мойки днища и поверхностей.",
+    },
+    en: {
+      title: "Pressure washer accessories in Tashkent | Stratega",
+      description: "Guns, hoses, foam lances, nozzles. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["пистолет для мойки высокого давления", "шланг высокого давления", "пенная насадка", "karcher pistolet"],
+  },
+  "beton-silliqlash-mashinalari": {
+    uz: {
+      title: "Beton zatirka mashinasi (vertolyot) narxi Toshkentda | Stratega",
+      description: "Beton uchun zatirka mashinalari «vertolyot» 60–100 sm, benzinli va o'rindiqli. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Beton zatirka (silliqlash) mashinasi — «vertolyot» — beton polni tekislaydi va silliqlaydi. Diski 60–100 sm benzinli mashinalar, chetlar uchun va o'rindiqli ikki rotorli modellar.",
+    },
+    ru: {
+      title: "Затирочные машины (вертолет) по бетону купить в Ташкенте | Stratega",
+      description: "Затирочные машины «вертолёт» для бетона 60–100 см, бензиновые и с сиденьем. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Затирочная машина по бетону (в народе «вертолёт») выравнивает и заглаживает бетонный пол. Бензиновые машины с диском 60–100 см, кромочные и двухроторные с сиденьем, лопасти и диски.",
+    },
+    en: {
+      title: "Concrete power trowels in Tashkent | Stratega",
+      description: "Power trowels 60–100 cm. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["затирочная машина", "вертолет для бетона", "затирка бетона", "vertolyot"],
+  },
+  "shov-kesgichlar": {
+    uz: {
+      title: "Shov kesgich (shvonarezchik) narxi Toshkentda | Stratega",
+      description: "Beton va asfalt uchun shov kesgichlar, 500 mm gacha disk, benzinli va dizel. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Shov kesgich (shvonarezchik) beton va asfaltni kesadi. 500 mm gacha diskli benzinli va dizel modellar, olmosli disklar va ehtiyot qismlar.",
+    },
+    ru: {
+      title: "Швонарезчики и алмазные диски купить в Ташкенте | Stratega",
+      description: "Нарезчики швов по бетону и асфальту, диск до 500 мм, бензиновые и дизельные. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Швонарезчик (нарезчик швов, резчик швов) режет бетон и асфальт. Бензиновые и дизельные модели под диск до 500 мм, алмазные диски и запчасти.",
+    },
+    en: {
+      title: "Floor saws in Tashkent — prices | Stratega",
+      description: "Concrete and asphalt saws up to 500 mm. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["швонарезчик", "нарезчик швов", "резчик швов", "shvonarezchik"],
+  },
+  "vibroplita-va-vibrotrambovkalar": {
+    uz: {
+      title: "Vibroplita va vibrotrambovka narxi Toshkentda | Stratega",
+      description: "Grunt, shag'al va asfalt uchun vibroplitalar va vibrotrambovkalar, benzinli va elektr. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Vibroplita va vibrotrambovka plitka, beton va yo'l qoplamasi oldidan grunt, qum, shag'al va asfaltni zichlaydi. Benzinli va elektr, to'g'ri va reversiv modellar.",
+    },
+    ru: {
+      title: "Виброплиты и вибротрамбовки купить в Ташкенте — цены | Stratega",
+      description: "Виброплиты и вибротрамбовки для грунта, щебня и асфальта, бензиновые и электрические. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Виброплита и вибротрамбовка уплотняют грунт, песок, щебень и асфальт перед укладкой плитки, бетона и дорожного покрытия. Бензиновые и электрические, прямоходные и реверсивные.",
+    },
+    en: {
+      title: "Plate compactors and rammers in Tashkent | Stratega",
+      description: "Plate compactors and tamping rammers. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["виброплита", "вибротрамбовка", "трамбовка", "vibroplita"],
+  },
+  "armatura-dastgohlari": {
+    uz: {
+      title: "Armatura egish va kesish stanogi narxi Toshkentda | Stratega",
+      description: "Armatura egish, kesish va to'g'rilash stanoklari 50 mm gacha, xomut egish, CNC. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Armatura stanoklari: egish (armatura va xomut egish), kesish va to'g'rilash stanoklari, shu jumladan CNC, 50 mm gacha armatura uchun.",
+    },
+    ru: {
+      title: "Станки для гибки и резки арматуры купить в Ташкенте | Stratega",
+      description: "Станки для гибки, резки и правки арматуры до 50 мм, гибка хомутов, ЧПУ. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Станки для арматуры: гибочные (гибка арматуры и хомутов), резочные (резка арматуры) и правильные станки, в том числе с ЧПУ, для арматуры до 50 мм.",
+    },
+    en: {
+      title: "Rebar bending and cutting machines in Tashkent | Stratega",
+      description: "Rebar benders, cutters and straighteners. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["станок для гибки арматуры", "станок для резки арматуры", "гибочный станок", "armatura stanok"],
+  },
+  "beton-frezalash-va-silliqlash": {
+    uz: {
+      title: "Mozaika silliqlash va beton frezalash mashinasi Toshkentda | Stratega",
+      description: "Beton uchun mozaik-silliqlash va frezalash mashinalari, olmosli disklar. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Mozaik-silliqlash mashinasi beton va mozaik pollarni silliqlaydi, frezalash mashinasi betonning ustki qatlamini oladi. Elektr va benzinli modellar, olmosli disklar.",
+    },
+    ru: {
+      title: "Мозаично-шлифовальные и фрезеровальные машины в Ташкенте | Stratega",
+      description: "Мозаично-шлифовальные машины по бетону и фрезеровальные машины, алмазные диски. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Мозаично-шлифовальная машина шлифует бетонные и мозаичные полы, фрезеровальная машина снимает верхний слой бетона. Электрические и бензиновые модели, алмазные диски.",
+    },
+    en: {
+      title: "Concrete grinders and scarifiers in Tashkent | Stratega",
+      description: "Mosaic grinders and scarifiers. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["мозаично шлифовальная машина", "фрезеровальная машина по бетону", "mozaika"],
+  },
+  "vibroreyka-va-beton-asboblari": {
+    uz: {
+      title: "Vibroreyka va beton asboblari narxi Toshkentda | Stratega",
+      description: "Benzinli va elektr vibroreykalar, beton uchun qoidalar va gladilkalar. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Vibroreyka pol va maydonchalardagi yangi betonni zichlaydi va tekislaydi. Benzinli va elektr vibroreykalar, 1–6 m alyuminiy profillar, qoidalar va gladilkalar.",
+    },
+    ru: {
+      title: "Виброрейки и инструмент для бетона купить в Ташкенте | Stratega",
+      description: "Виброрейки бензиновые и электрические, правила, гладилки для бетона. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Виброрейка уплотняет и выравнивает свежий бетон на полах и площадках. Бензиновые и электрические виброрейки, алюминиевые профили 1–6 м, правила и гладилки.",
+    },
+    en: {
+      title: "Vibrating screeds in Tashkent — prices | Stratega",
+      description: "Petrol and electric screeds. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["виброрейка", "правило для бетона", "vibroreyka"],
+  },
+  "beton-vibratorlari": {
+    uz: {
+      title: "Beton vibratori narxi Toshkentda | Stratega",
+      description: "Beton uchun chuqurlik vibratorlari, vibro tayoqlar va shlanglar 1–12 m. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Beton vibratori qolipdagi betonni zichlaydi. Qo'l elektr vibratorlari, benzinli yuritmalar, vibro tayoqlar va 1–12 m shlanglar.",
+    },
+    ru: {
+      title: "Глубинные вибраторы для бетона купить в Ташкенте | Stratega",
+      description: "Глубинные вибраторы для бетона, вибробулавы и рукава 1–12 м. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Глубинный вибратор (вибратор для бетона) уплотняет бетон в опалубке. Ручные электрические вибраторы, бензиновые приводы, вибробулавы и рукава от 1 до 12 метров.",
+    },
+    en: {
+      title: "Concrete vibrators in Tashkent | Stratega",
+      description: "Poker vibrators and shafts. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["глубинный вибратор", "вибратор для бетона", "beton vibrator"],
+  },
+  "motopompa-va-dvigatellar": {
+    uz: {
+      title: "Motopompa (suv nasosi) narxi Toshkentda | Stratega",
+      description: "Toza, iflos suv va kimyo uchun motopompalar 1–4 dyuym, yuqori bosimli. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Motopompa (benzinli suv nasosi) sug'orish, suvni chiqarish va balandga uzatish uchun. Toza va iflos suv, kimyo uchun, yuqori bosimli 1–4 dyuymli modellar.",
+    },
+    ru: {
+      title: "Мотопомпы бензиновые купить в Ташкенте — цены | Stratega",
+      description: "Мотопомпы для чистой, грязной воды и химии 1–4 дюйма, пожарные высоконапорные. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Мотопомпа (бензиновый водяной насос) для полива, откачки воды и подачи на высоту. Модели для чистой и грязной воды, химии, высоконапорные 1–4 дюйма.",
+    },
+    en: {
+      title: "Water pumps in Tashkent — prices | Stratega",
+      description: "Petrol and diesel water pumps 1–4 inch. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["мотопомпа", "водяной насос бензиновый", "motopompa", "suv nasosi"],
+  },
+  "dvigatellar": {
+    uz: {
+      title: "Dvigatel narxi Toshkentda — benzinli va dizel | Stratega",
+      description: "168F, 170F, 177F, 188F, 190F, 192F benzinli va 178F–192F dizel dvigatellar. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Motoblok, motopompa, generator va qurilish texnikasi uchun benzinli va dizel dvigatellar: 168F, 170F, 177F, 188F, 190F, 192F va 170F–195F dizel.",
+    },
+    ru: {
+      title: "Бензиновые и дизельные двигатели купить в Ташкенте | Stratega",
+      description: "Двигатели 168F, 170F, 177F, 188F, 190F, 192F и дизельные 178F–192F для техники. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Бензиновые и дизельные двигатели для мотоблоков, мотопомп, генераторов и строительной техники: 168F, 170F, 177F, 188F, 190F, 192F и дизельные 170F–195F.",
+    },
+    en: {
+      title: "Petrol and diesel engines in Tashkent | Stratega",
+      description: "Small petrol and diesel engines. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["бензиновый двигатель", "дизельный двигатель", "двигатель 170f", "dvigatel"],
+  },
+  "qurilish-texnikasi": {
+    uz: {
+      title: "Betonomeshalka va qurilish texnikasi narxi Toshkentda | Stratega",
+      description: "Betonomeshalkalar 120–180 L, vibroplitalar, zatirka mashinalari va boshqa qurilish texnikasi. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Qurilish va obodonlashtirish uchun texnika: betonomeshalkalar (beton qorgich) 120–180 L, vibroplitalar, vibrotrambovkalar, zatirka mashinalari.",
+    },
+    ru: {
+      title: "Бетономешалки и строительная техника купить в Ташкенте | Stratega",
+      description: "Бетономешалки 120–180 л, виброплиты, затирочные машины и другая строительная техника. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Строительная техника для стройки и благоустройства: бетономешалки 120–180 л, виброплиты, вибротрамбовки, затирочные машины.",
+    },
+    en: {
+      title: "Concrete mixers and construction machinery in Tashkent | Stratega",
+      description: "Concrete mixers and site machinery. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["бетономешалка", "строительная техника", "betonomeshalka"],
+  },
+  "havo-kompressorlari": {
+    uz: {
+      title: "Kompressor narxi Toshkentda — havo kompressorlari | Stratega",
+      description: "Kompressorlar 6–300 L: moysiz, tasmali porshenli, benzinli va dizel. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Havo kompressori pnevmatik asboblar, bo'yash, shinomontaj va ustaxona uchun. Moysiz (shovqinsiz), tasmali porshenli, benzinli va dizel, resiver 6–300 L.",
+    },
+    ru: {
+      title: "Воздушные компрессоры купить в Ташкенте — цены | Stratega",
+      description: "Компрессоры 6–300 л: безмасляные, поршневые ременные, бензиновые и дизельные. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Воздушный компрессор для пневмоинструмента, покраски, шиномонтажа и мастерской. Безмасляные (бесшумные), поршневые с ременным приводом, бензиновые и дизельные, ресивер 6–300 л.",
+    },
+    en: {
+      title: "Air compressors in Tashkent — prices | Stratega",
+      description: "Oil-free, belt-driven, petrol and diesel compressors. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["компрессор", "воздушный компрессор", "безмасляный компрессор", "kompressor"],
+  },
+  "qurilish-texnikasi-ehtiyot-qismlari": {
+    uz: {
+      title: "Qurilish texnikasi ehtiyot qismlari Toshkentda | Stratega",
+      description: "Vibroplita, vibrotrambovka, zatirka mashinasi, shov kesgich va stanoklar uchun ehtiyot qismlar. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Qurilish texnikasi ehtiyot qismlari: vibroplita, vibrotrambovka, vibroreyka, zatirka mashinasi, shov kesgich, vibrator va armatura stanoklari uchun.",
+    },
+    ru: {
+      title: "Запчасти для строительной техники в Ташкенте | Stratega",
+      description: "Запчасти для виброплит, вибротрамбовок, затирочных машин, швонарезчиков и станков. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Запчасти для строительной техники: виброплит, вибротрамбовок, виброреек, затирочных машин, швонарезчиков, вибраторов и станков для арматуры.",
+    },
+    en: {
+      title: "Construction machinery spare parts in Tashkent | Stratega",
+      description: "Spare parts for compactors, trowels, saws. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["запчасти для виброплиты", "запчасти для затирочной машины", "ehtiyot qismlar"],
+  },
+  "dvigatel-va-generator-ehtiyot-qismlari": {
+    uz: {
+      title: "Dvigatel va generator ehtiyot qismlari Toshkentda | Stratega",
+      description: "Karbyurator, starter, filtr, AVR, rozetka va boshqa dvigatel va generator ehtiyot qismlari. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+      intro: "Benzinli va dizel dvigatellar va generatorlar uchun ehtiyot qismlar: karbyuratorlar, qo'l va elektr starterlar, filtrlar, AVR kuchlanish regulyatorlari, bak qopqoqlari, rozetkalar.",
+    },
+    ru: {
+      title: "Запчасти для двигателей и генераторов в Ташкенте | Stratega",
+      description: "Карбюраторы, стартеры, фильтры, AVR, розетки и другие запчасти для двигателей и генераторов. В наличии в Ташкенте, доставка по всему Узбекистану.",
+      intro: "Запчасти для бензиновых и дизельных двигателей и генераторов: карбюраторы, ручные и электростартеры, фильтры, регуляторы напряжения AVR, крышки баков, розетки и автоматы.",
+    },
+    en: {
+      title: "Engine and generator spare parts in Tashkent | Stratega",
+      description: "Carburettors, starters, filters, AVR. In stock in Tashkent, delivery across Uzbekistan.",
+    },
+    aka: ["запчасти для генератора", "карбюратор", "ehtiyot qismlar"],
+  },
+  // Categories without products at the moment.
   "avtokotargichlar": {
     uz: {
       title: "Avtoko'targich narxi Toshkentda — ikki va to'rt ustunli | Stratega",
@@ -209,40 +637,6 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Manual chain hoists in Tashkent — prices | Stratega",
       description:
         "TOR manual chain hoists, 0.5–10 t. Prices incl. VAT.",
-    },
-  },
-  "generatorlar": {
-    uz: {
-      title: "Generator narxi Toshkentda — benzinli va dizel | Stratega",
-      description:
-        "Benzinli va dizel generatorlar 2,8–10 kVt, elektr starterli modellar. Narxlar QQS bilan, O'zbekiston bo'ylab yetkazib berish.",
-    },
-    ru: {
-      title: "Генераторы в Ташкенте — цены, бензиновые и дизельные | Stratega",
-      description:
-        "Бензиновые и дизельные генераторы 2,8–10 кВт, модели с электростартером. Цены с НДС, доставка по Узбекистану.",
-    },
-    en: {
-      title: "Generators in Tashkent — prices | Stratega",
-      description:
-        "Petrol and diesel generators, 2.8–10 kW. Prices incl. VAT.",
-    },
-  },
-  "pol-yuvish-mashinalari": {
-    uz: {
-      title: "Pol yuvish mashinasi narxi Toshkentda | Stratega",
-      description:
-        "Akkumulyatorli va kabelli pol yuvish mashinalari, o'tirib boshqariladigan modellar 330–860 mm. Narxlar QQS bilan.",
-    },
-    ru: {
-      title: "Поломоечные машины в Ташкенте — цены | Stratega",
-      description:
-        "Аккумуляторные и сетевые поломоечные машины, модели с сиденьем, ширина 330–860 мм. Цены с НДС, доставка по Узбекистану.",
-    },
-    en: {
-      title: "Floor scrubbers in Tashkent — prices | Stratega",
-      description:
-        "Battery and corded floor scrubbers, walk-behind and ride-on, 330–860 mm. Prices incl. VAT.",
     },
   },
 };
