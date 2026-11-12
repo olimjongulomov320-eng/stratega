@@ -226,7 +226,7 @@ const en: Dictionary = {
     title: "Cart — quotation request",
     subtitle: "A manager will contact you with exact prices incl. VAT.",
     estimated: "Estimated total",
-    company: "Company name",
+    company: "Company (optional)",
     contact: "Contact person",
     contactPlaceholder: "Full name",
     phone: "Phone",

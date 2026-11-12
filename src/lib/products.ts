@@ -68,12 +68,12 @@ export function sortToOrderBy(sort: SortOption): Prisma.ProductOrderByWithRelati
 
 /** Search across all language fields and SKU (case-insensitive). */
 // Cyrillic (Russian and Uzbek) → Uzbek Latin, so "штабелер" also finds "shtabeler".
-const CYR_TO_LAT: Record<string, string> = {
+export const CYR_TO_LAT: Record<string, string> = {
   а: "a", б: "b", в: "v", г: "g", д: "d", е: "e", ё: "yo", ж: "j", з: "z", и: "i", й: "y", к: "k", л: "l", м: "m", н: "n", о: "o",
   п: "p", р: "r", с: "s", т: "t", у: "u", ф: "f", х: "x", ц: "ts", ч: "ch", ш: "sh", щ: "sh", ъ: "", ы: "i", ь: "", э: "e", ю: "yu",
   я: "ya", ў: "o'", қ: "q", ғ: "g'", ҳ: "h",
 };
-const transliterate = (t: string) => [...t.toLowerCase()].map((c) => CYR_TO_LAT[c] ?? c).join("");
+export const transliterate = (t: string) => [...t.toLowerCase()].map((c) => CYR_TO_LAT[c] ?? c).join("");
 
 // Word stems buyers use for the same product type in Russian, Uzbek and English.
 const SYNONYMS: string[][] = [

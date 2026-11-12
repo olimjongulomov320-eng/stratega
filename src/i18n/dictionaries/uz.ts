@@ -224,7 +224,7 @@ const uz = {
     title: "Korzina — tijorat taklifi uchun ariza",
     subtitle: "Menejerimiz siz bilan bog'lanadi va QQS bilan aniq narxlarni taqdim etadi.",
     estimated: "Taxminiy summa",
-    company: "Kompaniya nomi",
+    company: "Kompaniya (bo'lsa)",
     contact: "Aloqa shaxsi",
     contactPlaceholder: "Ism Familiya",
     phone: "Telefon raqam",

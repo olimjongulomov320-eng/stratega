@@ -1,8 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { headers } from "next/headers";
 import type { Metadata } from "next";
 import { getDictionary } from "@/i18n";
-import { isLocale } from "@/i18n/config";
+import { isLocale, localePath } from "@/i18n/config";
+import { exactCategory } from "@/lib/category-match";
 import { pageMetadata } from "@/lib/seo";
 import { SearchView } from "../search-view";
 import { FILTERED_REWRITE_HEADER } from "@/lib/catalog-route";
@@ -21,5 +22,10 @@ export async function generateMetadata(props: PageProps<"/[locale]/search/filter
 export default async function FilteredSearchPage(props: PageProps<"/[locale]/search/filtered">) {
   const { locale } = await props.params;
   if (!isLocale(locale) || !(await headers()).has(FILTERED_REWRITE_HEADER)) notFound();
-  return <SearchView locale={locale} sp={await props.searchParams} />;
+  const sp = await props.searchParams;
+  // A search that is just a product type ("рохля", "пайка", "керхер") opens that category.
+  const onlyQuery = Object.keys(sp).every((k) => k === "q");
+  const slug = onlyQuery && typeof sp.q === "string" ? exactCategory(sp.q) : null;
+  if (slug) redirect(localePath(locale, `/category/${slug}`));
+  return <SearchView locale={locale} sp={sp} />;
 }
