@@ -100,3 +100,16 @@ describe("productMetaDescription", () => {
     assert.match(productMetaDescription({ ...base, price: 0 }, "ru", "X", ""), /Цена по запросу/);
   });
 });
+
+describe("buildLlmsTxt summary (/llms.txt)", () => {
+  const products = [
+    { ...base, description: null, descriptionRu: null, slug: "stacker", name: "Elektr shtabeler", nameRu: "Электрический штабелёр", brand: "NIULI", sku: "CTQB", price: 37500000, priceOnRequest: false, stock: 2, categorySlug: "stackers" },
+    { ...base, description: null, descriptionRu: null, slug: "stacker2", name: "Shtabeler 2", nameRu: "Штабелёр 2", brand: null, sku: null, price: 23240000, priceOnRequest: false, stock: 0, categorySlug: "stackers" },
+  ];
+  const text = buildLlmsTxt([{ slug: "stackers", name: "Elektr shtabelerlar", nameRu: "Электроштабелёры", nameEn: null }], products, { full: false });
+  test("points to the full list and gives counts and price range instead of every product", () => {
+    assert.match(text, /\/llms-full\.txt/);
+    assert.match(text, /2 models, 23 240 000–37 500 000 UZS\./);
+    assert.doesNotMatch(text, /\/product\/stacker/);
+  });
+});
