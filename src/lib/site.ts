@@ -50,6 +50,10 @@ export const COMPANY = {
     youtube: "https://youtube.com/@stratega_uz",
     facebook: "https://facebook.com/stratega.uz",
   },
+  /** Our seller profiles on marketplaces: linked as the same business in structured data (not shown as icons). */
+  marketplaces: {
+    olx: "https://www.olx.uz/list/user/AtKAM/",
+  },
 };
 
 // Marketing claims live in src/config/site-claims.ts (all off until proven).

@@ -120,7 +120,7 @@ export default async function Home(props: PageProps<"/[locale]">) {
         addressLocality: COMPANY.city,
         addressCountry: COMPANY.country,
       },
-      sameAs: Object.values(COMPANY.socials),
+      sameAs: [...Object.values(COMPANY.socials), ...Object.values(COMPANY.marketplaces)],
       department: {
         "@type": "Store",
         name: `${COMPANY.brand} — INDEX`,
