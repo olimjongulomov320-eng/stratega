@@ -107,11 +107,16 @@ export default async function Home(props: PageProps<"/[locale]">) {
       "@context": "https://schema.org",
       "@type": "Organization",
       "@id": `${SITE_URL}/#organization`,
-      name: COMPANY.brand,
+      name: COMPANY.listingName,
+      alternateName: [COMPANY.brand, "Stratega"],
       legalName: COMPANY.legalName,
       url: SITE_URL,
       logo: absoluteUrl("/logo.png"),
       telephone: COMPANY.phone,
+      contactPoint: [
+        { "@type": "ContactPoint", telephone: COMPANY.phone, contactType: "sales", areaServed: "UZ", availableLanguage: ["uz", "ru"] },
+        { "@type": "ContactPoint", telephone: COMPANY.phone2, contactType: "sales", areaServed: "UZ", availableLanguage: ["uz", "ru"] },
+      ],
       email: COMPANY.email,
       taxID: COMPANY.inn,
       address: {
@@ -123,7 +128,7 @@ export default async function Home(props: PageProps<"/[locale]">) {
       sameAs: [...Object.values(COMPANY.socials), ...Object.values(COMPANY.marketplaces)],
       department: {
         "@type": "Store",
-        name: `${COMPANY.brand} — INDEX`,
+        name: `${COMPANY.listingName} — INDEX`,
         telephone: COMPANY.phone,
         address: { "@type": "PostalAddress", streetAddress: COMPANY.shop[locale], addressLocality: COMPANY.city, addressCountry: COMPANY.country },
         hasMap: COMPANY.shopMapUrl,

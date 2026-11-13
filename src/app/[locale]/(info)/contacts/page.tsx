@@ -26,7 +26,10 @@ export default async function ContactsPage(props: PageProps<"/[locale]/contacts"
         <section className="rounded-xl border border-slate-200 p-5">
           <h2 className="font-semibold text-slate-800">{p.contactTitle}</h2>
           <ul className="mt-3 space-y-2 text-sm text-slate-600">
-            <li>{t.footer.phone}: <a className="font-medium text-indigo-600" href={`tel:${COMPANY.phoneHref}`}>{COMPANY.phone}</a></li>
+            <li>
+              {t.footer.phone}: <a className="font-medium text-indigo-600" href={`tel:${COMPANY.phoneHref}`}>{COMPANY.phone}</a>,{" "}
+              <a className="font-medium text-indigo-600" href={`tel:${COMPANY.phone2Href}`}>{COMPANY.phone2}</a>
+            </li>
             <li>Email: <a className="font-medium text-indigo-600" href={`mailto:${COMPANY.email}`}>{COMPANY.email}</a></li>
             <li>
               {t.trust.shop}: <span className="font-medium text-slate-800">{COMPANY.shop[locale]}</span> ·{" "}
