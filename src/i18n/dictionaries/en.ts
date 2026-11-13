@@ -95,7 +95,7 @@ const en: Dictionary = {
   },
   parts: {
     title: "Spare parts",
-    metaTitle: "Spare parts for pallet trucks, stackers, generators and machinery | Stratega",
+    metaTitle: "Spare parts for pallet trucks, stackers, generators | Stratega",
     metaDescription: "Spare parts for warehouse and construction machinery: wheels, hydraulics, seals, engine parts. Search by model, VAT invoice, delivery across Uzbekistan.",
     intro: "Enter your machine model or a part code to see matching spare parts. Not listed? Send a request and we will order it from the factory.",
     searchPlaceholder: "Model or code, e.g. CBY-AC, BS3500, G65",

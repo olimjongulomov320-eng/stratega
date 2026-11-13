@@ -11,7 +11,7 @@ export async function generateMetadata(props: PageProps<"/[locale]/yuridik-shaxs
   const { locale } = await props.params;
   if (!isLocale(locale)) return {};
   const f = getDictionary(locale).focus;
-  return pageMetadata({ locale, path: "/yuridik-shaxslar", title: `${f.b2bTitle} | Stratega`, description: f.b2bLead });
+  return pageMetadata({ locale, path: "/yuridik-shaxslar", title: { uz: "Yuridik shaxslarga — shartnoma, QQS, Didox orqali ESF | Stratega", ru: "Юридическим лицам — договор, НДС, ЭСФ через Didox | Stratega", en: "For companies — contract, VAT, e-invoices via Didox | Stratega" }[locale], description: f.b2bLead });
 }
 
 export default async function B2bPage(props: PageProps<"/[locale]/yuridik-shaxslar">) {

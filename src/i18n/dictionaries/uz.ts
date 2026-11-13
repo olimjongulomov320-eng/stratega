@@ -93,7 +93,7 @@ const uz = {
   },
   parts: {
     title: "Ehtiyot qismlar",
-    metaTitle: "Ehtiyot qismlar — rohlya, shtabeler, generator va boshqa texnika uchun | Stratega",
+    metaTitle: "Ehtiyot qismlar: rohlya, shtabeler, generator uchun | Stratega",
     metaDescription: "Ombor va qurilish texnikasi uchun ehtiyot qismlar: g'ildiraklar, gidravlika, zichlagichlar, dvigatel qismlari. Model bo'yicha qidiring, QQS bilan, O'zbekiston bo'ylab yetkazib berish.",
     intro: "Texnikangiz modelini yoki qism kodini kiriting — mos keladigan ehtiyot qismlarni ko'rsatamiz. Topilmasa, so'rov yuboring: zavoddan buyurtma qilamiz.",
     searchPlaceholder: "Model yoki kod, masalan: CBY-AC, BS3500, G65",

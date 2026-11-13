@@ -20,7 +20,7 @@ export async function generateMetadata(props: PageProps<"/[locale]/yonalish/[slu
   if (!isLocale(locale)) return {};
   const dir = getFocus(slug);
   if (!dir) return { title: getDictionary(locale).notFound.title, robots: { index: false } };
-  return pageMetadata({ locale, path: `/yonalish/${slug}`, title: fitTitle(`${dir.name[locale]} — ${dir.tagline[locale]} | Stratega`, `${dir.name[locale]} — ${dir.tagline[locale]}`), description: excerpt(dir.intro[locale]) });
+  return pageMetadata({ locale, path: `/yonalish/${slug}`, title: fitTitle(`${dir.name[locale]} — ${dir.tagline[locale]} | Stratega`, `${dir.name[locale]} — ${dir.tagline[locale]}`, `${dir.name[locale]} | Stratega`), description: excerpt(dir.intro[locale]) });
 }
 
 export default async function DirectionPage(props: PageProps<"/[locale]/yonalish/[slug]">) {
