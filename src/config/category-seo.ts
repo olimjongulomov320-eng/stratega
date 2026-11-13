@@ -705,23 +705,25 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       description:
         "TOR textile, chain and wire-rope slings, 1–10 t. Prices incl. VAT.",
     },
+    aka: ["строп", "стропы", "строп текстильный", "строп цепной", "строп канатный", "такелаж", "strop", "stroplar"],
   },
   "elektr-tallar": {
     uz: {
       title: "Elektr tal narxi Toshkentda | Stratega",
       description:
-        "Elektr arqonli va zanjirli tallar TOR 200 kg – 5 t, 220/380 V. Narxlar QQS bilan, O'zbekiston bo'ylab yetkazib berish.",
+        "Elektr zanjirli tallar 0,5 dan 10 t gacha, ko'tarish balandligi 6 va 9 m, pult bilan. Narxlar QQS bilan. O'zbekiston bo'ylab yetkazib beramiz.",
     },
     ru: {
       title: "Тали электрические в Ташкенте — цены | Stratega",
       description:
-        "Электрические канатные и цепные тали TOR от 200 кг до 5 т, 220/380 В. Цены с НДС, доставка по Узбекистану.",
+        "Электрические цепные тали от 0,5 до 10 т, высота подъёма 6 и 9 м, с пультом. Цены с НДС. Доставка по всему Узбекистану.",
     },
     en: {
       title: "Electric hoists in Tashkent — prices | Stratega",
       description:
-        "TOR electric wire-rope and chain hoists, 200 kg – 5 t. Prices incl. VAT.",
+        "Electric chain hoists, 0.5–10 t, lift 6 or 9 m. Prices incl. VAT.",
     },
+    aka: ["таль электрическая", "электротельфер", "тельфер", "электрическая таль", "elektr tal", "telfer"],
   },
   "qol-zanjirli-tallar": {
     uz: {
@@ -739,6 +741,52 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       description:
         "TOR manual chain hoists, 0.5–10 t. Prices incl. VAT.",
     },
+    aka: ["таль ручная", "таль цепная", "ручная таль", "таль ручная цепная", "лебедка ручная", "qo'l tal", "zanjirli tal"],
+  },
+  "richagli-tallar": {
+    uz: {
+      title: "Richagli tal narxi Toshkentda | Stratega",
+      description: "Richagli (qo'l) tallar TOR TRR 0,75–6 t, zanjir 1,5 va 3 m — yukni tortish va ko'tarish uchun. Narxlar QQS bilan. Toshkentda mavjud.",
+    },
+    ru: {
+      title: "Тали рычажные в Ташкенте — цены | Stratega",
+      description: "Рычажные тали TOR ТРР 0,75–6 т, цепь 1,5 и 3 м — для подъёма и натяжения грузов. Цены с НДС. В наличии в Ташкенте, доставка по Узбекистану.",
+    },
+    en: {
+      title: "Lever hoists in Tashkent — prices | Stratega",
+      description: "TOR lever hoists, 0.75–6 t, chain 1.5 or 3 m. Prices incl. VAT.",
+    },
+    aka: ["таль рычажная", "рычажная таль", "лебедка рычажная", "richagli tal"],
+  },
+  "tal-aravachalari": {
+    uz: {
+      title: "Tal aravachasi (koshka) narxi Toshkentda | Stratega",
+      description: "Tal uchun aravachalar (koshka) TOR GCT 0,5–5 t — dvutavr balka bo'ylab yukni surish uchun. Narxlar QQS bilan. Toshkentda mavjud.",
+    },
+    ru: {
+      title: "Тележки для талей (кошки) в Ташкенте — цены | Stratega",
+      description: "Холостые тележки (кошки) для талей TOR GCT 0,5–5 т — перемещение груза по двутавровой балке. Цены с НДС. В наличии в Ташкенте.",
+    },
+    en: {
+      title: "Hoist trolleys in Tashkent — prices | Stratega",
+      description: "TOR plain trolleys for hoists, 0.5–5 t, for I-beams. Prices incl. VAT.",
+    },
+    aka: ["тележка для тали", "кошка для тали", "каретка для тали", "tal aravachasi", "koshka"],
+  },
+  "kotarish-stollari": {
+    uz: {
+      title: "Ko'tarish stoli narxi Toshkentda — gidravlik va elektr | Stratega",
+      description: "Gidravlik va elektr ko'tarish stollari TOR 150–2000 kg, ko'tarish 720 dan 1700 mm gacha. Narxlar QQS bilan. Toshkentda mavjud.",
+    },
+    ru: {
+      title: "Подъёмные столы в Ташкенте — гидравлические и электрические | Stratega",
+      description: "Подъёмные столы TOR гидравлические и электрические, 150–2000 кг, высота подъёма до 1700 мм. Цены с НДС. В наличии в Ташкенте.",
+    },
+    en: {
+      title: "Lift tables in Tashkent — prices | Stratega",
+      description: "TOR hydraulic and electric lift tables, 150–2000 kg. Prices incl. VAT.",
+    },
+    aka: ["подъемный стол", "подъёмный стол", "стол подъемный гидравлический", "ножничный подъемный стол", "ko'tarish stoli"],
   },
 };
 
