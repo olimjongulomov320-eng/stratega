@@ -29,7 +29,7 @@ type LlmsProduct = Parameters<typeof productFacts>[0] & {
  * /llms.txt (llmstxt.org): a plain-text map of the shop for AI assistants — who we are, where to buy, and every
  * product with its page, price and key specs. States only what the product pages already show.
  */
-export function buildLlmsTxt(categories: LlmsCategory[], products: LlmsProduct[]): string {
+export function buildLlmsTxt(categories: LlmsCategory[], products: LlmsProduct[], { full = true }: { full?: boolean } = {}): string {
   const lines: string[] = [
     `# ${COMPANY.brand} (stratega.uz)`,
     "",
@@ -37,6 +37,7 @@ export function buildLlmsTxt(categories: LlmsCategory[], products: LlmsProduct[]
     "",
     "Buyers in Uzbekistan search by the kind of machine, not by brand (for example «рохля купить в Ташкенте», «генератор цена», «karcher narxi»). Products are in stock in Tashkent or delivered across Uzbekistan; prices include VAT, with a contract and VAT invoice for companies.",
     "",
+    ...(full ? [] : [`Full product list with every model, price and key specs: ${absoluteUrl("/llms-full.txt")}`, ""]),
     "## Contacts",
     `- Phone: ${COMPANY.phone}`,
     `- Telegram: ${COMPANY.messengers.telegram}`,
@@ -71,6 +72,13 @@ export function buildLlmsTxt(categories: LlmsCategory[], products: LlmsProduct[]
     const seo = CATEGORY_SEO[c.slug];
     if (seo?.aka?.length) lines.push(`Also searched as: ${seo.aka.join(", ")}`);
     if (seo?.ru.intro) lines.push(seo.ru.intro);
+    if (!full) {
+      // Short file: how many models and the price range; the models themselves are in /llms-full.txt.
+      const prices = items.filter((p) => !p.priceOnRequest && p.price > 0).map((p) => p.price);
+      const range = prices.length ? `, ${formatNumber(Math.min(...prices)).replace(/\u00a0/g, " ")}–${formatNumber(Math.max(...prices)).replace(/\u00a0/g, " ")} UZS` : "";
+      lines.push(`${items.length} models${range}.`, "");
+      continue;
+    }
     lines.push("");
     for (const p of items) {
       const ru = productLocales(p).includes("ru");
