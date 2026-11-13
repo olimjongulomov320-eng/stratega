@@ -7,6 +7,7 @@ import { getDictionary, fmt } from "@/i18n";
 import { localePath, type Locale } from "@/i18n/config";
 import { pageMetadata } from "@/lib/seo";
 import { COMPANY } from "@/lib/site";
+import { CatalogPagination } from "@/components/catalog-pagination";
 
 export async function sparePartsMetadata(locale: Locale, hasQuery: boolean) {
   const t = getDictionary(locale);
@@ -15,16 +16,21 @@ export async function sparePartsMetadata(locale: Locale, hasQuery: boolean) {
   return pageMetadata({ locale, path: "/ehtiyot-qismlar", title: t.parts.metaTitle, description: t.parts.metaDescription, noindex: hasQuery || empty });
 }
 
-/** Spare parts: part types + search by machine model / part code. `q` is empty on the cached plain URL. */
-export async function SparePartsView({ locale, q }: { locale: Locale; q: string }) {
+const PAGE_SIZE = 24;
+
+/** Spare parts: part types + search by machine model / part code, 24 per page. `q` is empty and `page` 1 on the cached plain URL. */
+export async function SparePartsView({ locale, q, page = 1 }: { locale: Locale; q: string; page?: number }) {
   const t = getDictionary(locale);
   const lp = (p: string) => localePath(locale, p);
 
-  const [categories, products] = await Promise.all([
+  const where = { isActive: true, category: { isSparePart: true }, ...(q ? searchWhere(q) : {}) };
+  const orderBy = q
+    ? [{ stock: "desc" as const }, { price: "asc" as const }, { id: "asc" as const }]
+    : [{ isFeatured: "desc" as const }, { stock: "desc" as const }, { id: "asc" as const }];
+  const [categories, products, total] = await Promise.all([
     getSparePartCategories(locale),
-    q
-      ? prisma.product.findMany({ where: { isActive: true, category: { isSparePart: true }, ...searchWhere(q) }, orderBy: [{ stock: "desc" }, { price: "asc" }], take: 120 })
-      : prisma.product.findMany({ where: { isActive: true, category: { isSparePart: true } }, orderBy: [{ isFeatured: "desc" }, { stock: "desc" }], take: 24 }),
+    prisma.product.findMany({ where, orderBy, take: PAGE_SIZE, skip: (page - 1) * PAGE_SIZE }),
+    prisma.product.count({ where }),
   ]);
 
   return (
@@ -73,6 +79,14 @@ export async function SparePartsView({ locale, q }: { locale: Locale; q: string 
             ))}
           </div>
         )}
+        <CatalogPagination
+          pathname={lp("/ehtiyot-qismlar")}
+          page={page}
+          pageSize={PAGE_SIZE}
+          total={total}
+          params={q ? { q } : {}}
+          labels={{ previous: t.catalog.previous, next: t.catalog.next, page: t.catalog.page }}
+        />
       </section>
     </div>
   );

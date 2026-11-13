@@ -68,6 +68,7 @@ const en: Dictionary = {
     quickView: "Quick view",
     fullInfo: "Details",
     addToWishlist: "Add to wishlist",
+    zoomPhoto: "Enlarge photo",
     inStock: "In stock: {n} pcs",
     inStockShort: "In stock",
     availableNow: "Available",

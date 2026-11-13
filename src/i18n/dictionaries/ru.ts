@@ -68,6 +68,7 @@ const ru: Dictionary = {
     quickView: "Быстрый просмотр",
     fullInfo: "Подробнее",
     addToWishlist: "В избранное",
+    zoomPhoto: "Открыть фото крупно",
     inStock: "На складе: {n} шт.",
     inStockShort: "В наличии",
     availableNow: "В наличии",
