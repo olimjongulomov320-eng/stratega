@@ -4,12 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/i18n/client";
 import { stripLocale } from "@/i18n/config";
+import { DEALER_PAGE, SERVICE_PAGE } from "@/config/service-pages";
 
 export function InfoNav() {
-  const { t, href } = useI18n();
+  const { t, href, locale } = useI18n();
   const current = stripLocale(usePathname());
   const items = [
     ["/yuridik-shaxslar", t.focus.b2bNav],
+    ["/dilerlar", DEALER_PAGE[locale].nav],
+    ["/servis", SERVICE_PAGE[locale].nav],
     ["/about", t.info.nav.about],
     ["/delivery", t.info.nav.delivery],
     ["/payment", t.info.nav.payment],
