@@ -18,7 +18,7 @@ import { SPEC_FILTERS, parseSpecRows, specLabel, youTubeId } from "@/lib/product
 import { productLocales, productFacts, productMetaDescription } from "@/lib/product-seo";
 import { isAvailable } from "@/lib/sourcing";
 import { BuyerPriceBox } from "@/components/buyer-price-box";
-import { ProductImage } from "@/components/product-image";
+import { ProductGallery } from "@/components/product-gallery";
 import { QuickOrder } from "@/components/quick-order";
 
 // No page is built ahead: each one is rendered on its first visit, then cached (time limit: [locale]/layout.tsx).
@@ -189,31 +189,24 @@ export default async function ProductPage(props: PageProps<"/[locale]/product/[s
       </nav>
 
       <div className="grid gap-10 md:grid-cols-2">
-        <div className="flex flex-col gap-3">
+        {images.length > 0 ? (
+          <ProductGallery
+            images={images.slice(0, 10)}
+            alt={name}
+            labels={{ open: t.product.zoomPhoto, close: t.quickOrder.close, previous: t.catalog.previous, next: t.catalog.next }}
+            badge={
+              discount !== null && discount > 0 ? (
+                <span className="absolute left-4 top-4 z-10 rounded-md bg-rose-500 px-2.5 py-1 text-sm font-bold text-white">{fmt(t.product.discount, { n: discount })}</span>
+              ) : undefined
+            }
+          />
+        ) : (
           <div className="relative flex aspect-square items-center justify-center rounded-2xl bg-slate-50 p-10">
-            {discount !== null && discount > 0 && (
-              <span className="absolute left-4 top-4 rounded-md bg-rose-500 px-2.5 py-1 text-sm font-bold text-white">
-                {fmt(t.product.discount, { n: discount })}
-              </span>
-            )}
-            {images[0] ? (
-              <ProductImage src={images[0]} alt={name} sizes="(min-width: 1024px) 50vw, 100vw" eager />
-            ) : (
-              <span className="text-6xl" role="img" aria-label={name}>
-                📦
-              </span>
-            )}
+            <span className="text-6xl" role="img" aria-label={name}>
+              📦
+            </span>
           </div>
-          {images.length > 1 && (
-            <div className="grid grid-cols-4 gap-2">
-              {images.slice(1, 9).map((src, i) => (
-                <a key={src} href={src} target="_blank" rel="noopener" className="flex aspect-square items-center justify-center rounded-xl bg-slate-50 p-2">
-                  <ProductImage src={src} alt={`${name} — ${i + 2}`} sizes="120px" />
-                </a>
-              ))}
-            </div>
-          )}
-        </div>
+        )}
 
         <div className="flex flex-col gap-4">
           <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">{name}</h1>

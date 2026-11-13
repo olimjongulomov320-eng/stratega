@@ -66,6 +66,7 @@ const uz = {
     quickView: "Tezkor ko'rish",
     fullInfo: "To'liq ma'lumot",
     addToWishlist: "Sevimlilarga qo'shish",
+    zoomPhoto: "Rasmni kattalashtirish",
     inStock: "Omborda: {n} dona",
     inStockShort: "Omborda bor",
     availableNow: "Mavjud",
