@@ -487,6 +487,7 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
             "Дизельный мотоблок BISON BS1050FD (4 кВт, 1000 мм) — для тяжёлой земли и долгой работы.",
             "Мотокультиваторы BISON BS450FG (3,1 кВт) и BS1G-80-2 (4 кВт) — огород, теплица, дача.",
             "Дизельный мини-трактор-культиватор BISON BS-002 с полным приводом — фермы и большие участки.",
+            "Почвофреза для трактора RX220H — навесная, от вала отбора мощности; другие размеры серии RX — по запросу.",
           ],
         },
         {
@@ -512,6 +513,7 @@ export const CATEGORY_CONTENT: Record<string, { uz: Text; ru: Text }> = {
             "Dizel motoblok BISON BS1050FD (4 kVt, 1000 mm) — og'ir yer va uzoq ishlash uchun.",
             "Motokultivatorlar BISON BS450FG (3,1 kVt) va BS1G-80-2 (4 kVt) — tomorqa, issiqxona, dacha.",
             "To'liq yuritmali dizel mini-traktor-kultivator BISON BS-002 — fermalar va katta yerlar uchun.",
+            "Traktor uchun tuproq frezasi RX220H — osma, VOM orqali ishlaydi; RX seriyasining boshqa o'lchamlari — so'rov bo'yicha.",
           ],
         },
         {
