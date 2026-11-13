@@ -4,6 +4,7 @@ import { TelegramIcon, InstagramIcon, YouTubeIcon, FacebookIcon } from "@/compon
 import { getDictionary } from "@/i18n";
 import { localePath, type Locale } from "@/i18n/config";
 import { COMPANY } from "@/lib/site";
+import { DEALER_PAGE, SERVICE_PAGE } from "@/config/service-pages";
 import { directionsFrom, type HeaderCategory } from "@/lib/categories";
 
 const SOCIALS = [
@@ -20,6 +21,8 @@ export function Footer({ categories, locale }: { categories: HeaderCategory[]; l
   const menu = directions.length > 0 ? directions.map((d) => ({ key: d.slug, path: `/yonalish/${d.slug}`, name: d.name })) : categories.map((c) => ({ key: c.id, path: `/category/${c.slug}`, name: c.name }));
   const info = [
     ["/yuridik-shaxslar", t.focus.b2bNav],
+    ["/dilerlar", DEALER_PAGE[locale].nav],
+    ["/servis", SERVICE_PAGE[locale].nav],
     ["/about", t.info.nav.about],
     ["/delivery", t.info.nav.delivery],
     ["/payment", t.info.nav.payment],

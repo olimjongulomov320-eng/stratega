@@ -48,6 +48,8 @@ export function buildLlmsTxt(categories: LlmsCategory[], products: LlmsProduct[]
     "## How to order",
     "- On any product page: «В корзину» (add to cart, then send the request with name and phone) or «Купить в 1 клик» (name and phone only); a manager calls back.",
     `- Or call ${COMPANY.phone} / write in Telegram ${COMPANY.messengers.telegram}.`,
+    `- Dealers and wholesale buyers (individual price list, contract, VAT, regional delivery): ${absoluteUrl(localePath("ru", "/dilerlar"))}`,
+    `- Warranty, spare parts and repair requests for equipment bought here: ${absoluteUrl(localePath("ru", "/servis"))}`,
     "",
     "## Which page to open for a search",
     "",

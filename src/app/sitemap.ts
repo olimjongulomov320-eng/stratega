@@ -41,6 +41,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...entry("/qollanma", now, 0.6, GUIDE_LOCALES),
     ...GUIDES.flatMap((g) => entry(`/qollanma/${g.slug}`, new Date(g.updated), 0.7, GUIDE_LOCALES)),
     ...products.flatMap((p) => entry(`/product/${p.slug}`, p.updatedAt, 0.8, productLocales(p))),
-    ...["/yuridik-shaxslar", "/about", "/delivery", "/payment", "/returns", "/faq", "/contacts"].flatMap((p) => entry(p, now, 0.4)),
+    ...["/yuridik-shaxslar", "/dilerlar", "/servis", "/about", "/delivery", "/payment", "/returns", "/faq", "/contacts"].flatMap((p) => entry(p, now, 0.4)),
   ];
 }

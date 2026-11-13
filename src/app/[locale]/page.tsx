@@ -22,6 +22,7 @@ import { COMPANY, CLAIMS, TRUST_BADGES, SITE_URL } from "@/lib/site";
 import { ProductImage } from "@/components/product-image";
 import { localName } from "@/lib/localize";
 import { formatSum } from "@/lib/format";
+import { HOME_WARRANTY } from "@/config/service-pages";
 import { TrustStrip, ShopBlock } from "@/components/trust-strip";
 
 export async function generateMetadata(
@@ -446,6 +447,22 @@ export default async function Home(props: PageProps<"/[locale]">) {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 pb-10 sm:px-6">
+        <h2 className="mb-5 text-xl font-bold text-slate-800">{HOME_WARRANTY[locale].title}</h2>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {HOME_WARRANTY[locale].items.map((item) => (
+            <Link key={item.href} href={localePath(locale, item.href)} className="group flex items-start gap-3 rounded-xl border border-slate-200 p-4 transition hover:border-indigo-300">
+              <span className="text-2xl" aria-hidden="true">{item.icon}</span>
+              <span>
+                <span className="block font-semibold text-slate-800">{item.title}</span>
+                <span className="mt-1 block text-sm text-slate-500">{item.text}</span>
+                <span className="mt-2 block text-sm font-semibold text-indigo-600 group-hover:underline">{item.link} →</span>
+              </span>
+            </Link>
+          ))}
+        </div>
       </section>
 
       <OrderFlowShowcase />
