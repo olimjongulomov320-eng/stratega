@@ -312,7 +312,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Walk-behind tractors and tillers in Tashkent | Stratega",
       description: "Petrol and diesel tillers. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["мотоблок", "мотоблоки", "культиватор", "мотокультиватор", "мини трактор", "motoblok", "kultivator", "minitraktor", "мотоблок нархлари"],
+    aka: ["мотоблок", "мотоблоки", "культиватор", "мотокультиватор", "мини трактор", "motoblok", "kultivator", "minitraktor", "мотоблок нархлари", "почвофреза", "фреза для трактора", "почвофреза для трактора", "pochva freza", "tuproq frezasi"],
   },
   "yuqori-bosimli-yuvish-apparatlari": {
     uz: {
