@@ -48,11 +48,13 @@ export async function generateMetadata(props: PageProps<"/[locale]/product/[slug
     locales,
     noindex: !locales.includes(locale),
     title: product.priceOnRequest
-      ? fitTitle(fmt(t.meta.productTitleNoPrice, { name }), `${name} | Stratega`)
+      ? fitTitle(fmt(t.meta.productTitleNoPrice, { name }), `${name} | Stratega`, name)
       : fitTitle(
           fmt(t.meta.productTitle, { name, price: formatNumber(product.price) }),
           fmt(t.meta.productTitleShort, { name, price: formatNumber(product.price) }),
-          `${name} | Stratega`
+          `${name} | Stratega`,
+          // A long product name keeps its full name rather than the brand suffix.
+          name
         ),
     description: productMetaDescription(product, locale, name, localDescription(product, locale) || ""),
     image: product.imageUrl,
