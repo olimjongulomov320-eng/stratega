@@ -161,7 +161,7 @@ export const GUIDES: Guide[] = [
     text: {
       ru: {
         title: "Стыковая сварка ПНД труб: порядок работы",
-        seoTitle: "Стыковая сварка ПНД труб: порядок работы и таблица параметров",
+        seoTitle: "Стыковая сварка ПНД труб: порядок работы и параметры",
         description:
           "Как варить ПНД трубы встык: подготовка, торцевание, нагрев, осадка, охлаждение. Где брать таблицу параметров и какие ошибки портят шов.",
         lead: "Пошаговый порядок стыковой сварки полиэтиленовых труб и типичные ошибки, из-за которых шов течёт.",
@@ -380,7 +380,7 @@ export const GUIDES: Guide[] = [
       },
       uz: {
         title: "Shtabeler: qo'lda yoki elektr — qaysi birini tanlash",
-        seoTitle: "Shtabeler qo'lda yoki elektr: qaysi birini tanlash | Toshkent",
+        seoTitle: "Shtabeler qo'lda yoki elektr: qaysi birini tanlash",
         description:
           "Qo'l gidravlik, yarim elektr va o'zi yuradigan elektr shtabelerning farqi. Ko'tarish balandligi, paddon og'irligi va kunlik operatsiyalar soniga qarab tanlash.",
         lead: "Qo'lda, yarim elektr yoki o'zi yuradigan — shtabelerni stellaj balandligi va kuniga nechta paddon ko'tarishingizga qarab tanlaymiz.",

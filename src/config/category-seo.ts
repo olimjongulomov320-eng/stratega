@@ -109,7 +109,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       intro: "Elektr shtabeler paletlarni akkumulyator yordamida stellajlarga ko'taradi. Yuk ko'tarish 1,5–2 t, ko'tarish balandligi 1,6 m dan 4,5 m gacha bo'lgan modellar.",
     },
     ru: {
-      title: "Штабелеры электрические (электроштабелеры) купить в Ташкенте | Stratega",
+      title: "Штабелеры электрические купить в Ташкенте — цены | Stratega",
       description: "Электроштабелеры 1,5–2 т, подъём 1,6–4,5 м, полуавтомат и самоходные. Цены с НДС. В наличии в Ташкенте, доставка по всему Узбекистану.",
       intro: "Электрический штабелер (электроштабелер) поднимает паллеты на стеллажи на аккумуляторе. Полуавтоматические и самоходные модели грузоподъёмностью 1,5–2 т и высотой подъёма от 1,6 до 4,5 м.",
     },
