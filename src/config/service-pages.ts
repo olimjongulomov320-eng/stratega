@@ -12,7 +12,7 @@ export const DEALER_PAGE: Record<Locale, PageText> = {
   ru: {
     nav: "Дилерам",
     title: "Дилерам и оптовым покупателям",
-    seoTitle: "Дилерам — складская и строительная техника оптом в Узбекистане | Stratega",
+    seoTitle: "Дилерам — складская и строительная техника оптом | Stratega",
     description: "Станьте дилером Stratega: рохли, штабелеры, генераторы, мойки, строительная техника и запчасти по индивидуальным ценам. Договор, НДС, доставка по Узбекистану.",
     lead: "Магазинам техники, строительным базам, сервисам и компаниям в регионах Узбекистана: рохли, штабелеры, аппараты для сварки ПЭ труб, генераторы, мойки высокого давления, строительная техника и запчасти — по индивидуальным ценам.",
     sections: [
@@ -53,7 +53,7 @@ export const DEALER_PAGE: Record<Locale, PageText> = {
   uz: {
     nav: "Dilerlarga",
     title: "Dilerlar va ulgurji xaridorlar uchun",
-    seoTitle: "Dilerlarga — ombor va qurilish texnikasi ulgurji, O'zbekiston | Stratega",
+    seoTitle: "Dilerlarga — ombor va qurilish texnikasi ulgurji | Stratega",
     description: "Stratega dileri bo'ling: rohlya, shtabeler, generator, moyka, qurilish texnikasi va ehtiyot qismlar individual narxlarda. Shartnoma, QQS, O'zbekiston bo'ylab yetkazish.",
     lead: "Texnika do'konlari, qurilish bazalari, servislar va viloyatlardagi kompaniyalar uchun: rohlya, shtabeler, PE quvur payvandlash apparatlari, generatorlar, moykalar, qurilish texnikasi va ehtiyot qismlar — individual narxlarda.",
     sections: [
@@ -138,7 +138,7 @@ export const SERVICE_PAGE: Record<Locale, PageText> = {
   ru: {
     nav: "Сервис и ремонт",
     title: "Сервис, ремонт и запчасти",
-    seoTitle: "Сервис, ремонт и запчасти для техники Stratega в Ташкенте | Stratega",
+    seoTitle: "Сервис, ремонт и запчасти в Ташкенте | Stratega",
     description: "Гарантийный ремонт и замена по договору, запчасти для рохлей, штабелеров, генераторов и строительной техники, заявка на ремонт и консультацию.",
     lead: "Помогаем с техникой, купленной у нас: гарантия по договору, запчасти, заявки на ремонт и ответы на вопросы по эксплуатации.",
     sections: [
@@ -176,7 +176,7 @@ export const SERVICE_PAGE: Record<Locale, PageText> = {
   uz: {
     nav: "Servis va ta'mirlash",
     title: "Servis, ta'mirlash va ehtiyot qismlar",
-    seoTitle: "Stratega texnikasi uchun servis, ta'mirlash va ehtiyot qismlar | Stratega",
+    seoTitle: "Servis, ta'mirlash va ehtiyot qismlar Toshkentda | Stratega",
     description: "Shartnoma bo'yicha kafolatli ta'mirlash va almashtirish, rohlya, shtabeler, generator va qurilish texnikasi uchun ehtiyot qismlar, ta'mirlash va maslahat uchun ariza.",
     lead: "Bizdan sotib olingan texnika bo'yicha yordam beramiz: shartnoma bo'yicha kafolat, ehtiyot qismlar, ta'mirlash arizalari va foydalanish bo'yicha savollarga javob.",
     sections: [
