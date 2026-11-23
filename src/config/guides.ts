@@ -51,8 +51,6 @@ export const GUIDES: Guide[] = [
       "gidravlik-quvur-payvandlash-apparati-turan-cn-160450h-160450-mm",
       "gidravlik-quvur-payvandlash-apparati-turan-cn-160500h-160500-mm",
       "gidravlik-quvur-payvandlash-apparati-turan-cn-315630h-315630-mm",
-      "quvur-payvandlash-apparati-payka-cn-013a-50-110-mm-toplam",
-      "ppr-quvur-payvandlash-apparati-cn-026-2063-mm",
     ],
     categories: ["payvandlash-apparatlari"],
     text: {
@@ -75,8 +73,6 @@ export const GUIDES: Guide[] = [
           { table: {
             head: ["Диаметр труб", "Тип", "Модель в наличии"],
             rows: [
-              ["20–63 мм (PPR)", "Паяльник", "CN-026"],
-              ["50–110 мм", "Паяльник, комплект", "CN-013A"],
               ["63–200 мм", "Стыковой, механический", "TURAN CN-63/200"],
               ["63–250 мм", "Стыковой, механический", "TURAN CN-63/250"],
               ["90–315 мм", "Стыковой, гидравлический", "TURAN CN-90/315H"],
@@ -97,9 +93,9 @@ export const GUIDES: Guide[] = [
           { p: "Не уверены, какой аппарат нужен? Напишите диаметр и материал труб и примерный объём работ — подберём модель и скажем срок доставки в ваш регион." },
         ],
         faq: [
-          { q: "Какой аппарат нужен для сварки ПНД трубы 110 мм?", a: "Для стыковой сварки 110 мм подойдёт аппарат с диапазоном 63–200 мм (TURAN CN-63/200). Для раструбной сварки — паяльник на 50–110 мм (CN-013A)." },
+          { q: "Какой аппарат нужен для сварки ПНД трубы 110 мм?", a: "Для стыковой сварки 110 мм подойдёт аппарат с диапазоном 63–200 мм (TURAN CN-63/200). Для раструбной сварки нужен паяльник с насадками на 110 мм — уточните наличие у менеджера." },
           { q: "Можно ли варить ПНД трубы паяльником для полипропилена?", a: "Только трубы и фитинги малого диаметра и с насадками нужного размера. Для магистральных ПНД труб от 63 мм правильнее стыковая сварка." },
-          { q: "Есть ли аппараты в наличии в Ташкенте?", a: "Да, стыковые аппараты TURAN и паяльники CN-013A и CN-026 есть на нашем складе в Ташкенте. Доставляем по всему Узбекистану." },
+          { q: "Есть ли аппараты в наличии в Ташкенте?", a: "Да, стыковые аппараты TURAN есть на нашем складе в Ташкенте. Доставляем по всему Узбекистану." },
           { q: "Нужен ли 380 В?", a: "Аппаратам до 315 мм достаточно 220 В. Аппаратам на 315–630 мм нужно 380 В." },
         ],
       },
@@ -122,8 +118,6 @@ export const GUIDES: Guide[] = [
           { table: {
             head: ["Quvur diametri", "Turi", "Mavjud model"],
             rows: [
-              ["20–63 mm (PPR)", "Payka", "CN-026"],
-              ["50–110 mm", "Payka, to'plam", "CN-013A"],
               ["63–200 mm", "Stykovoy, mexanik", "TURAN CN-63/200"],
               ["63–250 mm", "Stykovoy, mexanik", "TURAN CN-63/250"],
               ["90–315 mm", "Stykovoy, gidravlik", "TURAN CN-90/315H"],
@@ -144,9 +138,9 @@ export const GUIDES: Guide[] = [
           { p: "Qaysi apparat kerakligini bilmaysizmi? Quvur diametri, materiali va ish hajmini yozing — modelni tanlab, viloyatingizga yetkazib berish muddatini aytamiz." },
         ],
         faq: [
-          { q: "110 mm PND quvur uchun qaysi apparat kerak?", a: "110 mm ni stykovoy payvandlash uchun 63–200 mm oraliqli apparat (TURAN CN-63/200) mos keladi. Rastrubli payvandlash uchun — 50–110 mm payka (CN-013A)." },
+          { q: "110 mm PND quvur uchun qaysi apparat kerak?", a: "110 mm ni stykovoy payvandlash uchun 63–200 mm oraliqli apparat (TURAN CN-63/200) mos keladi. Rastrubli payvandlash uchun 110 mm nasadkali payka kerak — mavjudligini menejerdan so'rang." },
           { q: "PND quvurni polipropilen paykasi bilan payvandlasa bo'ladimi?", a: "Faqat kichik diametrli quvur va fitinglarni, mos o'lchamdagi nasadkalar bilan. 63 mm dan katta magistral PND quvurlar uchun stykovoy payvandlash to'g'riroq." },
-          { q: "Apparatlar Toshkentda mavjudmi?", a: "Ha, TURAN stykovoy apparatlari va CN-013A, CN-026 paykalari Toshkentdagi omborimizda bor. O'zbekiston bo'ylab yetkazib beramiz." },
+          { q: "Apparatlar Toshkentda mavjudmi?", a: "Ha, TURAN stykovoy apparatlari Toshkentdagi omborimizda bor. O'zbekiston bo'ylab yetkazib beramiz." },
           { q: "380 V kerakmi?", a: "315 mm gacha apparatlarga 220 V yetarli. 315–630 mm apparatlarga 380 V kerak." },
         ],
       },

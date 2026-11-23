@@ -173,8 +173,8 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
   "payvandlash-apparatlari": {
     uz: {
       title: "PE va PND quvur paykasi (dazmol) narxi Toshkentda | Stratega",
-      description: "PE va PND quvurlar uchun payka (dazmol, utyug): 63–630 mm stykovoy payvandlash apparatlari va 20–110 mm paykalar. Narxlar QQS bilan, Toshkentda mavjud.",
-      intro: "Polietilen (PND) quvurlarni payvandlash apparatlari: 63 dan 630 mm gacha mexanik va gidravlik stykovoy apparatlar, suv va isitish uchun plastik (PPR) quvur paykalari 20–110 mm.",
+      description: "PE va PND quvurlar uchun payka (dazmol, utyug): 63–630 mm stykovoy payvandlash apparatlari, mexanik va gidravlik. Narxlar QQS bilan, Toshkentda mavjud.",
+      intro: "Polietilen (PND) quvurlarni payvandlash apparatlari: 63 dan 630 mm gacha mexanik va gidravlik stykovoy apparatlar.",
       h1: "PE va PND quvurlar uchun payka — payvandlash apparatlari",
       sections: [
         {
@@ -184,8 +184,6 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
         {
           h2: "Diametringizga qaysi payka kerak",
           ul: [
-            "20–63 mm, polipropilen (PPR) — CN-026 paykasi.",
-            "50–110 mm — CN-013A paykasi, nasadkalar to'plami bilan.",
             "63–200 va 63–250 mm — mexanik (gidrostansiyasiz) TURAN CN-63/200 va CN-63/250, 220 V.",
             "90–315 mm — gidravlik TURAN CN-90/315H, 220 V.",
             "160–450 va 160–500 mm — gidravlik TURAN CN-160/450H va CN-160/500H.",
@@ -199,8 +197,8 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
     },
     ru: {
       title: "Пайка для ПЭ и ПНД труб — аппараты сварки в Ташкенте | Stratega",
-      description: "Пайка для ПЭ и ПНД труб (утюг, дазмол): аппараты стыковой сварки 63–630 мм и паяльники 20–110 мм. Цены с НДС. В наличии в Ташкенте, доставка по Узбекистану.",
-      intro: "Аппараты для сварки полиэтиленовых (ПНД, ПЭ) труб: механические и гидравлические аппараты стыковой сварки от 63 до 630 мм, а также паяльники для пластиковых (ППР) труб 20–110 мм для водопровода и отопления.",
+      description: "Пайка для ПЭ и ПНД труб (утюг, дазмол): механические и гидравлические аппараты стыковой сварки 63–630 мм. Цены с НДС. В наличии в Ташкенте, доставка по Узбекистану.",
+      intro: "Аппараты для сварки полиэтиленовых (ПНД, ПЭ) труб: механические и гидравлические аппараты стыковой сварки от 63 до 630 мм.",
       h1: "Пайка для ПЭ и ПНД труб — аппараты сварки",
       sections: [
         {
@@ -210,8 +208,6 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
         {
           h2: "Какая пайка нужна под ваш диаметр",
           ul: [
-            "20–63 мм, полипропилен (PPR) — паяльник CN-026.",
-            "50–110 мм — паяльник CN-013A с комплектом насадок.",
             "63–200 и 63–250 мм — механические (без гидростанции) TURAN CN-63/200 и CN-63/250, 220 В.",
             "90–315 мм — гидравлическая TURAN CN-90/315H, 220 В.",
             "160–450 и 160–500 мм — гидравлические TURAN CN-160/450H и CN-160/500H.",
