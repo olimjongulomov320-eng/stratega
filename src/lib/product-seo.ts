@@ -81,7 +81,9 @@ export function productMetaDescription(p: MetaProduct, locale: Locale, name: str
   const price = p.priceOnRequest || p.price <= 0 ? t.onRequest : t.price(formatNumber(p.price).replace(/\u00a0/g, " "));
   const stock =
     p.sourcing === "SUPPLIER_STOCK" ? t.available : p.stock > 0 ? t.inStock : p.leadTimeDays ? t.lead(p.leadTimeDays) : t.toOrder;
-  const head = `${name}. ${price}. ${stock}.`;
+  let head = `${name}. ${price}. ${stock}.`;
+  // Long names push the snippet past what search shows: drop the delivery clause before anything else.
+  if (head.length > max) head = `${name}. ${price}. ${stock.replace(/[;,]\s*(O'zbekiston|доставка|delivery).*$/, "")}.`;
   const body = description.replace(/\s+/g, " ").trim();
   const rest = body.startsWith(name) ? body.slice(name.length).replace(/^[\s.,:;—–-]+/, "") : body;
   if (!rest || head.length >= max - 20) return head;
