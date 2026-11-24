@@ -1,0 +1,483 @@
+// Five more buyer guides (23.11.2026), written for the questions in the keyword crawl: choosing a home generator,
+// a pressure washer, a hoist (and «телфер или лебёдка»), a plate compactor or rammer, and an air compressor.
+// Same rules as config/guides.ts: no prices (product cards show them), only models the catalogue holds.
+
+import type { Guide } from "./guides";
+
+export const MORE_GUIDES: Guide[] = [
+  {
+    slug: "generator-tanlash",
+    icon: "⚡",
+    published: "2026-11-23",
+    updated: "2026-11-23",
+    products: [
+      "benzinli-generator-sdl-3-kvt",
+      "benzinli-generator-xs-5-kvt",
+      "elektr-starterli-benzinli-generator-xs-8-kvt-220v",
+      "invertorli-benzinli-generator-bison-bs2000is-1-8-kvt-shovqinsiz",
+      "invertorli-benzinli-generator-bison-bs6250ie-5-kvt-shovqinsiz-elektr-starter",
+      "dizel-generator-bison-bs7500dce-5-kva-elektr-starter",
+      "dizel-generator-xs-10-kvt-220v-bir-fazali",
+      "shovqin-himoyali-gilofdagi-dizel-generator-bison-bs7500dse-5-kva",
+    ],
+    categories: ["generatorlar", "invertorli-generatorlar", "dizel-generatorlar"],
+    text: {
+      ru: {
+        title: "Как выбрать генератор для дома: мощность, бензин, инвертор или дизель",
+        seoTitle: "Как выбрать генератор для дома: мощность и тип",
+        description: "Какой генератор нужен для дома, дачи или магазина: как посчитать мощность, бензиновый, инверторный или дизельный, ручной запуск или электростартер.",
+        lead: "Сначала считаем мощность приборов, потом выбираем тип: бензиновый, инверторный или дизельный. Ниже — по шагам и с примерами.",
+        body: [
+          { p: "Генератор подбирают под нагрузку: какие приборы будут работать одновременно и как долго. Ошибка в мощности — самая частая: слабый генератор отключается при запуске насоса или кондиционера, а слишком мощный зря расходует топливо." },
+          { h2: "1. Посчитайте мощность" },
+          { ul: [
+            "Сложите мощность всех приборов, которые работают одновременно (она указана на табличке или в паспорте).",
+            "Для насосов, холодильников, кондиционеров и электроинструмента учитывайте пусковой ток: при запуске они берут в 2–3 раза больше номинала.",
+            "Добавьте запас 20–30 %: генератор не должен постоянно работать на пределе.",
+            "У дизельных генераторов мощность часто пишут в кВА. Чтобы получить кВт, умножьте кВА на 0,8.",
+          ] },
+          { table: {
+            head: ["Что подключаете", "Ориентир по мощности"],
+            rows: [
+              ["Свет, телефон, ноутбук, роутер", "до 1–2 кВт"],
+              ["Холодильник, свет, телевизор, насос", "3–5 кВт"],
+              ["Весь частный дом с кондиционером и бойлером", "6–10 кВт"],
+              ["Магазин, мастерская, стройка", "8–10 кВт и выше"],
+            ],
+          } },
+          { h2: "2. Бензиновый, инверторный или дизельный" },
+          { ul: [
+            "Бензиновый — самый доступный вариант для дома, дачи и стройки. Подходит для света, насосов и инструмента.",
+            "Инверторный — выдаёт ровное напряжение без скачков, работает тише и экономичнее при малой нагрузке. Нужен для газовых котлов с электроникой, компьютеров и техники с платами.",
+            "Дизельный — для долгой работы по многу часов: расходует меньше топлива, рассчитан на постоянную нагрузку. Модели в шумозащитном кожухе тише — для дома и офиса.",
+          ] },
+          { h2: "3. Запуск, фазы и шум" },
+          { ul: [
+            "Электростартер — запуск кнопкой или ключом; удобно, если генератор включают часто.",
+            "Однофазный 220 В подходит для дома и большинства магазинов. Трёхфазный нужен только под оборудование на 380 В.",
+            "Если генератор будет стоять у жилых комнат, выбирайте инверторный в кожухе или дизельный в шумозащитном кожухе.",
+          ] },
+          { p: "Пришлите список приборов, которые нужно подключить, — посчитаем мощность и подберём модель. Договор и счёт-фактура с НДС для юрлиц, доставка по Ташкенту и Узбекистану." },
+        ],
+        faq: [
+          { q: "Какой генератор нужен для частного дома?", a: "Обычно 5–8 кВт: этого хватает на свет, холодильник, насос и кондиционер. Сложите мощность приборов, которые работают одновременно, и добавьте 20–30 % запаса." },
+          { q: "Подойдёт ли обычный бензиновый генератор для газового котла?", a: "Для котлов с электронной платой лучше инверторный генератор: он даёт стабильное напряжение без скачков." },
+          { q: "Что выгоднее при долгой работе — бензин или дизель?", a: "Если генератор работает много часов каждый день, дизельный обычно выгоднее по топливу и рассчитан на постоянную нагрузку." },
+        ],
+      },
+      uz: {
+        title: "Uy uchun generator qanday tanlanadi: quvvat, benzin, invertor yoki dizel",
+        seoTitle: "Uy uchun generator qanday tanlanadi: quvvat va turi",
+        description: "Uy, dacha yoki do'kon uchun qanday generator kerak: quvvatni qanday hisoblash, benzinli, invertorli yoki dizel, qo'lda yoki elektr starter bilan yoqish.",
+        lead: "Avval asboblar quvvatini hisoblaymiz, keyin turini tanlaymiz: benzinli, invertorli yoki dizel. Quyida — qadamma-qadam va misollar bilan.",
+        body: [
+          { p: "Generator yukka qarab tanlanadi: qaysi asboblar bir vaqtda va qancha vaqt ishlaydi. Eng ko'p xato — quvvatda: kuchsiz generator nasos yoki konditsioner yoqilganda o'chib qoladi, juda kuchlisi esa yoqilg'ini behuda sarflaydi." },
+          { h2: "1. Quvvatni hisoblang" },
+          { ul: [
+            "Bir vaqtda ishlaydigan barcha asboblar quvvatini qo'shing (u yorliqda yoki pasportda yozilgan).",
+            "Nasos, muzlatkich, konditsioner va elektr asboblar uchun ishga tushirish tokini hisobga oling: yoqilganda ular nominaldan 2–3 baravar ko'p oladi.",
+            "20–30 % zaxira qo'shing: generator doim chegarada ishlamasligi kerak.",
+            "Dizel generatorlarda quvvat ko'pincha kVA da yoziladi. kVt ni olish uchun kVA ni 0,8 ga ko'paytiring.",
+          ] },
+          { table: {
+            head: ["Nimani ulaysiz", "Taxminiy quvvat"],
+            rows: [
+              ["Chiroq, telefon, noutbuk, router", "1–2 kVt gacha"],
+              ["Muzlatkich, chiroq, televizor, nasos", "3–5 kVt"],
+              ["Konditsioner va boylerli butun xususiy uy", "6–10 kVt"],
+              ["Do'kon, ustaxona, qurilish", "8–10 kVt va undan yuqori"],
+            ],
+          } },
+          { h2: "2. Benzinli, invertorli yoki dizel" },
+          { ul: [
+            "Benzinli — uy, dacha va qurilish uchun eng qulay narxdagi variant. Chiroq, nasos va asboblar uchun mos.",
+            "Invertorli — sakrashlarsiz tekis kuchlanish beradi, jimroq va kam yukda tejamliroq ishlaydi. Elektronikali gaz qozonlari, kompyuterlar va platali texnika uchun kerak.",
+            "Dizel — ko'p soat uzluksiz ishlash uchun: yoqilg'ini kamroq sarflaydi, doimiy yukka mo'ljallangan. Shovqindan himoya korpusidagi modellar jimroq — uy va ofis uchun.",
+          ] },
+          { h2: "3. Yoqish, fazalar va shovqin" },
+          { ul: [
+            "Elektr starter — tugma yoki kalit bilan yoqish; generator tez-tez yoqilsa qulay.",
+            "Bir fazali 220 V uy va ko'pchilik do'konlar uchun mos. Uch fazali faqat 380 V li uskunalar uchun kerak.",
+            "Generator yashash xonalari yonida tursa, korpusli invertorli yoki shovqindan himoyalangan dizel modelni tanlang.",
+          ] },
+          { p: "Ulanadigan asboblar ro'yxatini yuboring — quvvatni hisoblab, model tanlaymiz. Yuridik shaxslarga shartnoma va QQS bilan hisob-faktura, Toshkent va O'zbekiston bo'ylab yetkazib berish." },
+        ],
+        faq: [
+          { q: "Xususiy uy uchun qanday generator kerak?", a: "Odatda 5–8 kVt: chiroq, muzlatkich, nasos va konditsionerga yetadi. Bir vaqtda ishlaydigan asboblar quvvatini qo'shing va 20–30 % zaxira qo'shing." },
+          { q: "Oddiy benzinli generator gaz qozoni uchun mos keladimi?", a: "Elektron platali qozonlar uchun invertorli generator yaxshiroq: u sakrashlarsiz barqaror kuchlanish beradi." },
+          { q: "Uzoq ishlashda nima tejamliroq — benzin yoki dizel?", a: "Generator har kuni ko'p soat ishlasa, dizel odatda yoqilg'i bo'yicha tejamliroq va doimiy yukka mo'ljallangan." },
+        ],
+      },
+    },
+  },
+
+  {
+    slug: "moyka-tanlash",
+    icon: "💦",
+    published: "2026-11-23",
+    updated: "2026-11-23",
+    products: [
+      "elektr-yuqori-bosimli-yuvish-apparati-bison-es2-5-2-100-bar-1-8-kvt",
+      "elektr-yuqori-bosimli-yuvish-apparati-bison-ies3-2bh-120-bar-chastotali-motor",
+      "elektr-yuqori-bosimli-yuvish-apparati-bison-es3-7-4-160-bar-3-kvt",
+      "elektr-yuqori-bosimli-yuvish-apparati-bison-et4-4-180-bar-4-kvt-380v",
+      "benzinli-yuqori-bosimli-yuvish-apparati-bison-bs-g200-200-bar-13-o-k",
+      "dizel-yuqori-bosimli-yuvish-apparati-bison-bs-de250b-250-bar",
+    ],
+    categories: ["yuqori-bosimli-yuvish-apparatlari", "yuvish-apparati-aksessuarlari"],
+    text: {
+      ru: {
+        title: "Как выбрать мойку высокого давления (керхер): давление, расход, помпа",
+        seoTitle: "Как выбрать мойку высокого давления (керхер)",
+        description: "Какая мойка высокого давления нужна для машины, двора, автомойки или техники: давление в барах, расход воды, электрическая, бензиновая или дизельная.",
+        lead: "Давление, расход воды, тип двигателя и помпа — четыре вещи, которые решают, подойдёт ли мойка под ваши задачи.",
+        body: [
+          { p: "«Керхер» в Узбекистане называют любую мойку высокого давления. Модели отличаются давлением, расходом воды и тем, сколько часов в день они могут работать. Ниже — как выбрать под машину, двор, автомойку или технику." },
+          { h2: "1. Давление (бар)" },
+          { table: {
+            head: ["Задача", "Давление"],
+            rows: [
+              ["Легковая машина, дорожки, мебель", "100–130 бар"],
+              ["Автомойка, грузовики, сельхозтехника", "150–190 бар"],
+              ["Стройка, бетон, тяжёлая грязь", "200–250 бар"],
+              ["Промышленная очистка", "от 350 бар — промышленные модели"],
+            ],
+          } },
+          { h2: "2. Расход воды (л/мин)" },
+          { p: "Давление снимает грязь, а расход её смывает. Чем больше литров в минуту, тем быстрее идёт работа. Для автомойки берите модель с расходом от 11 л/мин и рассчитанную на работу по многу часов." },
+          { h2: "3. Электрическая, бензиновая или дизельная" },
+          { ul: [
+            "Электрическая на 220 В — для дома, двора и небольшой автомойки, где есть розетка.",
+            "Электрическая на 380 В — для автомоек и сервисов с трёхфазной сетью: мощнее и рассчитана на долгую работу.",
+            "Бензиновая — там, где нет электричества: стройка, поле, ферма.",
+            "Дизельная — для ежедневной работы на объектах, где нет сети.",
+          ] },
+          { h2: "4. Помпа и аксессуары" },
+          { ul: [
+            "Латунная помпа служит дольше при ежедневной работе; модели с частотным мотором (IES) работают тише и мягче запускаются.",
+            "Для автомойки понадобятся пенная насадка (пеногенератор) и длинный шланг.",
+            "Для плитки и брусчатки удобна насадка для мойки поверхностей — она не разбрызгивает воду.",
+          ] },
+          { p: "Напишите, что будете мыть и есть ли на месте 220 или 380 В, — подберём мойку и аксессуары." },
+        ],
+        faq: [
+          { q: "Какое давление нужно для мойки машины?", a: "Для легкового автомобиля достаточно 100–130 бар. Слишком высокое давление вблизи может повредить краску и уплотнители." },
+          { q: "Керхер и мойка высокого давления — это одно и то же?", a: "Да. «Керхер» — привычное название любой мойки высокого давления по имени известного бренда." },
+          { q: "Какую мойку взять для автомойки?", a: "Модель на 150–190 бар с расходом от 11 л/мин, рассчитанную на долгую работу; при трёхфазной сети — на 380 В." },
+        ],
+      },
+      uz: {
+        title: "Yuqori bosimli moyka (karcher) qanday tanlanadi: bosim, suv sarfi, pompa",
+        seoTitle: "Yuqori bosimli moyka (karcher) qanday tanlanadi",
+        description: "Mashina, hovli, avtomoyka yoki texnika uchun qanday moyka kerak: bardagi bosim, suv sarfi, elektr, benzinli yoki dizel moyka va pompa turi.",
+        lead: "Bosim, suv sarfi, dvigatel turi va pompa — moyka vazifangizga mos kelishini shu to'rt narsa hal qiladi.",
+        body: [
+          { p: "O'zbekistonda har qanday yuqori bosimli moykani «karcher» deyishadi. Modellar bosimi, suv sarfi va kuniga necha soat ishlay olishi bilan farq qiladi. Quyida — mashina, hovli, avtomoyka yoki texnika uchun qanday tanlash kerakligi." },
+          { h2: "1. Bosim (bar)" },
+          { table: {
+            head: ["Vazifa", "Bosim"],
+            rows: [
+              ["Yengil mashina, yo'laklar, mebel", "100–130 bar"],
+              ["Avtomoyka, yuk mashinalari, qishloq xo'jaligi texnikasi", "150–190 bar"],
+              ["Qurilish, beton, og'ir kir", "200–250 bar"],
+              ["Sanoat tozalash", "350 bardan — sanoat modellari"],
+            ],
+          } },
+          { h2: "2. Suv sarfi (l/min)" },
+          { p: "Bosim kirni ko'chiradi, suv sarfi esa uni yuvib ketadi. Daqiqasiga qancha ko'p litr bo'lsa, ish shuncha tez bo'ladi. Avtomoyka uchun 11 l/min dan yuqori va ko'p soat ishlashga mo'ljallangan modelni oling." },
+          { h2: "3. Elektr, benzinli yoki dizel" },
+          { ul: [
+            "220 V elektr — rozetka bor joyda uy, hovli va kichik avtomoyka uchun.",
+            "380 V elektr — uch fazali tarmoqli avtomoyka va servislar uchun: kuchliroq va uzoq ishlashga mo'ljallangan.",
+            "Benzinli — elektr yo'q joyda: qurilish, dala, ferma.",
+            "Dizel — tarmoq bo'lmagan obyektlarda har kungi ish uchun.",
+          ] },
+          { h2: "4. Pompa va aksessuarlar" },
+          { ul: [
+            "Har kungi ishda latun pompa uzoqroq xizmat qiladi; chastotali motorli modellar (IES) jimroq ishlaydi va yumshoq yoqiladi.",
+            "Avtomoyka uchun ko'pik nasadkasi (penogenerator) va uzun shlang kerak bo'ladi.",
+            "Kafel va bruschatka uchun yuzalarni yuvish nasadkasi qulay — u suvni sachratmaydi.",
+          ] },
+          { p: "Nimani yuvishingizni va joyida 220 yoki 380 V borligini yozing — moyka va aksessuarlarni tanlab beramiz." },
+        ],
+        faq: [
+          { q: "Mashina yuvish uchun qanday bosim kerak?", a: "Yengil avtomobil uchun 100–130 bar yetadi. Yaqindan juda yuqori bosim bo'yoq va zichlagichlarni shikastlashi mumkin." },
+          { q: "Karcher va yuqori bosimli moyka — bir narsami?", a: "Ha. «Karcher» — har qanday yuqori bosimli moykaning mashhur brend nomidan olingan odatiy nomi." },
+          { q: "Avtomoyka uchun qaysi moykani olish kerak?", a: "150–190 bar, 11 l/min dan yuqori va uzoq ishlashga mo'ljallangan model; uch fazali tarmoq bo'lsa — 380 V li." },
+        ],
+      },
+    },
+  },
+
+  {
+    slug: "tal-yoki-lebyodka",
+    icon: "⛓️",
+    published: "2026-11-23",
+    updated: "2026-11-23",
+    products: [
+      "qol-zanjirli-tal-tor-trsh-1-t-3-m",
+      "qol-zanjirli-tal-tor-trsh-2-t-6-m",
+      "richagli-tal-tor-trr-1-5-t-1-5-m",
+      "elektr-zanjirli-tal-1-t-6-9-m",
+      "elektr-zanjirli-tal-3-t-6-9-m",
+      "tal-uchun-aravacha-koshka-tor-gct-1-t",
+    ],
+    categories: ["qol-zanjirli-tallar", "richagli-tallar", "elektr-tallar", "tal-aravachalari", "stroplar"],
+    text: {
+      ru: {
+        title: "Таль, тельфер или лебёдка: что выбрать для подъёма груза",
+        seoTitle: "Таль, тельфер или лебёдка: что выбрать",
+        description: "Чем ручная цепная таль отличается от рычажной, электрической (тельфера) и лебёдки. Как выбрать грузоподъёмность, высоту подъёма и тележку для балки.",
+        lead: "Поднимать груз вертикально, тянуть его по земле или возить по балке — от этого зависит, нужна таль, тельфер или лебёдка.",
+        body: [
+          { p: "Таль поднимает груз вертикально и держит его на весу. Лебёдка в основном тянет груз по горизонтали или по наклону: вытаскивает машину, натягивает трос. Тельфером обычно называют электрическую таль, которая часто ездит по балке на тележке." },
+          { h2: "1. Какая таль нужна" },
+          { ul: [
+            "Ручная цепная (TOR ТРШ) — поднимает груз цепью без электричества. Для склада, СТО, монтажа и стройки.",
+            "Рычажная (TOR ТРР) — работает рычагом в любом положении: подтянуть, натянуть, выровнять груз. Удобна в стеснённых местах.",
+            "Электрическая цепная (тельфер) — для частых подъёмов в цехе и на складе, управление с пульта.",
+            "Тележка (кошка) TOR GCT — чтобы перемещать таль с грузом по двутавровой балке.",
+          ] },
+          { h2: "2. Грузоподъёмность и высота" },
+          { table: {
+            head: ["Что смотреть", "Как выбрать"],
+            rows: [
+              ["Грузоподъёмность", "По самому тяжёлому грузу с запасом: таль не должна работать на пределе"],
+              ["Высота подъёма", "От крюка до точки подвеса плюс запас: ручные — 3 или 6 м, электрические — 6 или 9 м"],
+              ["Тележка", "Той же грузоподъёмности, что и таль, и под ширину полки вашей балки"],
+            ],
+          } },
+          { h2: "3. Таль или лебёдка" },
+          { ul: [
+            "Нужно поднять двигатель, станок или груз на высоту — таль.",
+            "Нужно тянуть груз по земле, вытащить технику или натянуть трос — лебёдка или рычажная таль.",
+            "Поднимаете часто, весь день — электрическая таль экономит время и силы.",
+          ] },
+          { p: "Для строповки груза понадобятся стропы — текстильные, цепные или канатные. Напишите вес груза и высоту подъёма — подберём таль, тележку и стропы." },
+        ],
+        faq: [
+          { q: "Чем таль отличается от тельфера?", a: "Тельфером обычно называют электрическую таль. Ручная таль работает от цепи или рычага без электричества." },
+          { q: "Какую таль выбрать для гаража или СТО?", a: "Чаще всего ручную цепную на 1–2 т с высотой подъёма 3 м: она поднимет двигатель и не требует электричества." },
+          { q: "Есть ли у вас лебёдки?", a: "Сейчас в каталоге — ручные цепные, рычажные и электрические тали, тележки для них и стропы. Для протягивания груза подойдёт рычажная таль; о лебёдках спросите менеджера." },
+        ],
+      },
+      uz: {
+        title: "Tal, telfer yoki lebyodka: yuk ko'tarish uchun nimani tanlash kerak",
+        seoTitle: "Tal, telfer yoki lebyodka: nimani tanlash kerak",
+        description: "Qo'l zanjirli tal richagli, elektr tal (telfer) va lebyodkadan nimasi bilan farq qiladi. Yuk ko'tarish quvvati, balandligi va balka aravachasini qanday tanlash.",
+        lead: "Yukni tikka ko'tarish, yer bo'ylab tortish yoki balka bo'ylab yurgizish — tal, telfer yoki lebyodka kerakligi shunga bog'liq.",
+        body: [
+          { p: "Tal yukni tikka ko'taradi va osilgan holda ushlab turadi. Lebyodka asosan yukni gorizontal yoki qiyalik bo'ylab tortadi: mashinani chiqaradi, trosni tortadi. Telfer deb odatda elektr talni aytishadi, u ko'pincha balka bo'ylab aravachada yuradi." },
+          { h2: "1. Qanday tal kerak" },
+          { ul: [
+            "Qo'l zanjirli (TOR TRSh) — yukni elektrsiz zanjir bilan ko'taradi. Ombor, avtoservis, montaj va qurilish uchun.",
+            "Richagli (TOR TRR) — richag bilan har qanday holatda ishlaydi: yukni tortish, taranglash, tekislash. Tor joylarda qulay.",
+            "Elektr zanjirli (telfer) — sex va omborda tez-tez ko'tarish uchun, pult bilan boshqariladi.",
+            "TOR GCT aravachasi (koshka) — talni yuk bilan dvutavr balka bo'ylab surish uchun.",
+          ] },
+          { h2: "2. Yuk ko'tarish quvvati va balandlik" },
+          { table: {
+            head: ["Nimaga qarash kerak", "Qanday tanlash"],
+            rows: [
+              ["Yuk ko'tarish quvvati", "Eng og'ir yukka zaxira bilan: tal chegarada ishlamasligi kerak"],
+              ["Ko'tarish balandligi", "Ilgakdan osish nuqtasigacha va zaxira: qo'l tallari — 3 yoki 6 m, elektr tallar — 6 yoki 9 m"],
+              ["Aravacha", "Tal bilan bir xil quvvatda va balkangiz tokchasi kengligiga mos"],
+            ],
+          } },
+          { h2: "3. Tal yoki lebyodka" },
+          { ul: [
+            "Dvigatel, stanok yoki yukni balandga ko'tarish kerak — tal.",
+            "Yukni yer bo'ylab tortish, texnikani chiqarish yoki trosni taranglash kerak — lebyodka yoki richagli tal.",
+            "Kun bo'yi tez-tez ko'tarasiz — elektr tal vaqt va kuchni tejaydi.",
+          ] },
+          { p: "Yukni bog'lash uchun stroplar kerak bo'ladi — tekstil, zanjirli yoki arqon. Yuk og'irligi va ko'tarish balandligini yozing — tal, aravacha va stroplarni tanlab beramiz." },
+        ],
+        faq: [
+          { q: "Tal telferdan nimasi bilan farq qiladi?", a: "Telfer deb odatda elektr talni aytishadi. Qo'l tali elektrsiz zanjir yoki richag bilan ishlaydi." },
+          { q: "Garaj yoki avtoservis uchun qanday tal tanlash kerak?", a: "Ko'pincha 1–2 t li, 3 m ko'taradigan qo'l zanjirli tal: u dvigatelni ko'taradi va elektr talab qilmaydi." },
+          { q: "Sizda lebyodkalar bormi?", a: "Hozir katalogda qo'l zanjirli, richagli va elektr tallar, ular uchun aravachalar va stroplar bor. Yukni tortish uchun richagli tal mos keladi; lebyodka haqida menejerdan so'rang." },
+        ],
+      },
+    },
+  },
+
+  {
+    slug: "vibroplita-yoki-vibrotrambovka",
+    icon: "🧱",
+    published: "2026-11-23",
+    updated: "2026-11-23",
+    products: [
+      "benzinli-vibroplita-sdl-c90t",
+      "benzinli-vibroplita-xs-c90t",
+      "vibroplita-bison-bshc80-13-kn",
+      "benzinli-reversiv-ikki-tomonlama-vibroplita-xs-160",
+      "benzinli-vibrotrambovka-xs-100",
+      "elektr-vibrotrambovka-xs-100-220v",
+    ],
+    categories: ["vibroplita-va-vibrotrambovkalar"],
+    text: {
+      ru: {
+        title: "Виброплита или вибротрамбовка: что выбрать для грунта, щебня и плитки",
+        seoTitle: "Виброплита или вибротрамбовка: что выбрать",
+        description: "Чем виброплита отличается от вибротрамбовки, какую взять под тротуарную плитку, щебень, траншею или глину, и когда нужна реверсивная виброплита.",
+        lead: "Широкая площадка или узкая траншея, песок или глина — от этого зависит, нужна виброплита или вибротрамбовка.",
+        body: [
+          { p: "Обе машины уплотняют основание, но по-разному. Виброплита прижимает грунт широкой плитой и ровно проходит большую площадь. Вибротрамбовка («лягушка») бьёт узкой подошвой и уплотняет вглубь — в траншеях, у стен и колодцев." },
+          { h2: "1. Где что работает" },
+          { table: {
+            head: ["Задача", "Что выбрать"],
+            rows: [
+              ["Основание под тротуарную плитку, дорожки, площадки", "Виброплита"],
+              ["Укладка самой плитки (осадка)", "Лёгкая виброплита с резиновым ковриком"],
+              ["Траншеи, засыпка у фундамента и колодцев", "Вибротрамбовка"],
+              ["Глина, толстые слои, большие объекты", "Реверсивная виброплита"],
+            ],
+          } },
+          { h2: "2. Бензин или электричество" },
+          { ul: [
+            "Бензиновые — работают где угодно, без розетки: улица, стройка, частный двор.",
+            "Электрические вибротрамбовки на 220 или 380 В — без выхлопа, для работы в помещении и в закрытых котлованах.",
+          ] },
+          { h2: "3. Как подобрать модель" },
+          { ul: [
+            "Сила удара (кН) и масса — чем больше, тем глубже уплотнение. Для песка и щебня под плитку хватает лёгкой плиты, для глины нужна тяжелее.",
+            "Реверсивная плита едет вперёд и назад — удобно в стеснённых местах и на больших объектах.",
+            "Уплотняйте слоями: каждый слой засыпки — отдельный проход.",
+          ] },
+          { p: "Напишите, что уплотняете — песок, щебень, глину или плитку — и площадь работ: подберём машину." },
+        ],
+        faq: [
+          { q: "Какая виброплита нужна под тротуарную плитку?", a: "Для основания и осадки плитки подходит лёгкая бензиновая виброплита, например C90T. При работе по плитке нужен резиновый коврик." },
+          { q: "Чем вибротрамбовка лучше виброплиты?", a: "Вибротрамбовка уплотняет глубже и работает в узких местах — траншеях и у стен. Для широких площадок удобнее виброплита." },
+          { q: "Можно ли работать вибротрамбовкой в помещении?", a: "Да, для этого есть электрические модели на 220 и 380 В — они не дают выхлопа." },
+        ],
+      },
+      uz: {
+        title: "Vibroplita yoki vibrotrambovka: grunt, shag'al va plitka uchun nimani tanlash",
+        seoTitle: "Vibroplita yoki vibrotrambovka: nimani tanlash kerak",
+        description: "Vibroplita vibrotrambovkadan nimasi bilan farq qiladi, trotuar plitkasi, shag'al, transheya yoki loy uchun qaysini olish va reversli vibroplita qachon kerak.",
+        lead: "Keng maydon yoki tor transheya, qum yoki loy — vibroplita yoki vibrotrambovka kerakligi shunga bog'liq.",
+        body: [
+          { p: "Ikkala mashina ham asosni zichlaydi, lekin turlicha. Vibroplita gruntni keng plita bilan bosadi va katta maydonni tekis o'tadi. Vibrotrambovka («baqa») tor taglik bilan uradi va chuqur zichlaydi — transheyalarda, devor va quduqlar yonida." },
+          { h2: "1. Qayerda nima ishlaydi" },
+          { table: {
+            head: ["Vazifa", "Nimani tanlash"],
+            rows: [
+              ["Trotuar plitkasi asosi, yo'laklar, maydonchalar", "Vibroplita"],
+              ["Plitkaning o'zini yotqizish (cho'ktirish)", "Rezina gilamchali yengil vibroplita"],
+              ["Transheyalar, poydevor va quduqlar yonini ko'mish", "Vibrotrambovka"],
+              ["Loy, qalin qatlamlar, katta obyektlar", "Reversli vibroplita"],
+            ],
+          } },
+          { h2: "2. Benzin yoki elektr" },
+          { ul: [
+            "Benzinli — rozetkasiz har qayerda ishlaydi: ko'cha, qurilish, xususiy hovli.",
+            "220 yoki 380 V elektr vibrotrambovkalar — tutunsiz, bino ichida va yopiq kotlovanlarda ishlash uchun.",
+          ] },
+          { h2: "3. Modelni qanday tanlash" },
+          { ul: [
+            "Zarba kuchi (kN) va og'irlik — qancha katta bo'lsa, shuncha chuqur zichlaydi. Plitka ostidagi qum va shag'al uchun yengil plita yetadi, loy uchun og'irrog'i kerak.",
+            "Reversli plita oldinga va orqaga yuradi — tor joylarda va katta obyektlarda qulay.",
+            "Qatlam-qatlam zichlang: har bir to'kilgan qatlam — alohida o'tish.",
+          ] },
+          { p: "Nimani zichlashingizni — qum, shag'al, loy yoki plitka — va ish maydonini yozing: mashinani tanlab beramiz." },
+        ],
+        faq: [
+          { q: "Trotuar plitkasi uchun qanday vibroplita kerak?", a: "Asos va plitkani cho'ktirish uchun yengil benzinli vibroplita mos, masalan C90T. Plitka ustida ishlaganda rezina gilamcha kerak." },
+          { q: "Vibrotrambovka vibroplitadan nimasi bilan yaxshi?", a: "Vibrotrambovka chuqurroq zichlaydi va tor joylarda — transheya va devor yonida ishlaydi. Keng maydonlar uchun vibroplita qulayroq." },
+          { q: "Vibrotrambovka bilan bino ichida ishlash mumkinmi?", a: "Ha, buning uchun 220 va 380 V li elektr modellar bor — ular tutun chiqarmaydi." },
+        ],
+      },
+    },
+  },
+
+  {
+    slug: "kompressor-tanlash",
+    icon: "🌬️",
+    published: "2026-11-23",
+    updated: "2026-11-23",
+    products: [
+      "havo-kompressori-bison-bs-1100-2-24-moysiz-shovqinsiz-24-l-190-l-daq",
+      "havo-kompressori-bison-bs-1500-2-50-moysiz-shovqinsiz-50-l-250-l-daq",
+      "havo-kompressori-bison-bs-v2047-50-50-l-360-l-daq",
+      "tasmali-porshenli-kompressor-bison-bs-0-25-8-100-100-l-280-l-daq",
+      "tasmali-porshenli-kompressor-bison-bs-0-6-8-200-200-l-730-l-daq",
+      "benzinli-kompressor-bison-bs-h2065-8-50-50-l-250-l-daq",
+    ],
+    categories: ["havo-kompressorlari"],
+    text: {
+      ru: {
+        title: "Как выбрать воздушный компрессор: для покраски, шиномонтажа и инструмента",
+        seoTitle: "Как выбрать воздушный компрессор: литры, л/мин, ресивер",
+        description: "Какой компрессор нужен для покраски, шиномонтажа, пневмоинструмента или цеха: производительность в л/мин, объём ресивера, безмасляный или масляный ременной.",
+        lead: "Производительность, ресивер и тип компрессора — подбираем под инструмент, которым будете работать.",
+        body: [
+          { p: "Компрессор подбирают под потребителя воздуха: краскопульт, гайковёрт, продувку или линию в цехе. Главная цифра — производительность в литрах в минуту, а не объём бака." },
+          { h2: "1. Производительность (л/мин)" },
+          { p: "Посмотрите расход воздуха вашего инструмента (он указан в паспорте) и возьмите компрессор с запасом 20–30 %. Если инструментов несколько и они работают одновременно, их расход складывают." },
+          { h2: "2. Ресивер" },
+          { table: {
+            head: ["Задача", "Ресивер"],
+            rows: [
+              ["Подкачка шин, продувка, аэрограф", "6–24 л"],
+              ["Покраска, небольшая мастерская", "50 л"],
+              ["Шиномонтаж, автосервис, пневмоинструмент", "100 л"],
+              ["Цех, несколько постов", "150–300 л"],
+            ],
+          } },
+          { h2: "3. Безмасляный или масляный ременной" },
+          { ul: [
+            "Безмасляный — чистый воздух и тише работает. Подходит для покраски, аэрографии, небольших мастерских.",
+            "Поршневой ременной (масляный) — рассчитан на долгую работу под нагрузкой: автосервис, шиномонтаж, цех.",
+            "Бензиновый или дизельный — там, где нет электричества.",
+            "Вертикальные модели занимают меньше места на полу.",
+          ] },
+          { h2: "4. Для покраски" },
+          { p: "Для покраски автомобиля обычно берут ресивер от 50 л и производительность от 200 л/мин. Даже с безмасляным компрессором ставьте фильтр-влагоотделитель: влага в воздухе портит покрытие." },
+          { p: "Напишите, какой инструмент будете подключать и сколько постов работает одновременно, — подберём компрессор." },
+        ],
+        faq: [
+          { q: "Какой компрессор нужен для покраски автомобиля?", a: "Обычно ресивер от 50 л и производительность от 200 л/мин, плюс фильтр-влагоотделитель на линии." },
+          { q: "Что важнее — объём ресивера или производительность?", a: "Производительность в л/мин: она показывает, сколько воздуха компрессор даёт. Ресивер сглаживает пики и даёт запас." },
+          { q: "Какой компрессор нужен для шиномонтажа?", a: "Чаще всего поршневой ременной на 100 л: он выдерживает долгую работу и питает гайковёрт и подкачку." },
+        ],
+      },
+      uz: {
+        title: "Havo kompressori qanday tanlanadi: bo'yash, shinomontaj va asboblar uchun",
+        seoTitle: "Havo kompressori qanday tanlanadi: litr, l/min, resiver",
+        description: "Bo'yash, shinomontaj, pnevmoasboblar yoki sex uchun qanday kompressor kerak: l/min da unumdorlik, resiver hajmi, moysiz yoki moyli tasmali kompressor.",
+        lead: "Unumdorlik, resiver va kompressor turi — ishlatadigan asbobingizga qarab tanlaymiz.",
+        body: [
+          { p: "Kompressor havo iste'molchisiga qarab tanlanadi: kraskopult, gaykovyort, puflash yoki sexdagi liniya. Asosiy raqam — bak hajmi emas, daqiqasiga litrdagi unumdorlik." },
+          { h2: "1. Unumdorlik (l/min)" },
+          { p: "Asbobingizning havo sarfiga qarang (u pasportda yozilgan) va 20–30 % zaxirali kompressor oling. Bir nechta asbob bir vaqtda ishlasa, ularning sarfi qo'shiladi." },
+          { h2: "2. Resiver" },
+          { table: {
+            head: ["Vazifa", "Resiver"],
+            rows: [
+              ["Shinaga dam berish, puflash, aerograf", "6–24 l"],
+              ["Bo'yash, kichik ustaxona", "50 l"],
+              ["Shinomontaj, avtoservis, pnevmoasboblar", "100 l"],
+              ["Sex, bir nechta post", "150–300 l"],
+            ],
+          } },
+          { h2: "3. Moysiz yoki moyli tasmali" },
+          { ul: [
+            "Moysiz — toza havo va jimroq ishlaydi. Bo'yash, aerografiya va kichik ustaxonalar uchun mos.",
+            "Porshenli tasmali (moyli) — yuk ostida uzoq ishlashga mo'ljallangan: avtoservis, shinomontaj, sex.",
+            "Benzinli yoki dizel — elektr yo'q joyda.",
+            "Vertikal modellar polda kamroq joy egallaydi.",
+          ] },
+          { h2: "4. Bo'yash uchun" },
+          { p: "Avtomobilni bo'yash uchun odatda 50 l dan resiver va 200 l/min dan unumdorlik olinadi. Moysiz kompressor bilan ham namlik ajratgich filtr qo'ying: havodagi namlik qoplamani buzadi." },
+          { p: "Qanday asbob ulashingizni va bir vaqtda nechta post ishlashini yozing — kompressorni tanlab beramiz." },
+        ],
+        faq: [
+          { q: "Mashina bo'yash uchun qanday kompressor kerak?", a: "Odatda 50 l dan resiver va 200 l/min dan unumdorlik, liniyada esa namlik ajratgich filtr." },
+          { q: "Nima muhimroq — resiver hajmi yoki unumdorlik?", a: "l/min dagi unumdorlik: u kompressor qancha havo berishini ko'rsatadi. Resiver cho'qqilarni tekislaydi va zaxira beradi." },
+          { q: "Shinomontaj uchun qanday kompressor kerak?", a: "Ko'pincha 100 l li porshenli tasmali kompressor: u uzoq ishlashga chidaydi va gaykovyort hamda dam berishni ta'minlaydi." },
+        ],
+      },
+    },
+  },
+];

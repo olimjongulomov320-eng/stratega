@@ -54,7 +54,7 @@ export const DEALER_PAGE: Record<Locale, PageText> = {
     nav: "Dilerlarga",
     title: "Dilerlar va ulgurji xaridorlar uchun",
     seoTitle: "Dilerlarga — ombor va qurilish texnikasi ulgurji | Stratega",
-    description: "Stratega dileri bo'ling: rohlya, shtabeler, generator, moyka, qurilish texnikasi va ehtiyot qismlar individual narxlarda. Shartnoma, QQS, O'zbekiston bo'ylab yetkazish.",
+    description: "Stratega dileri bo'ling: rohlya, shtabeler, generator, moyka, qurilish texnikasi va ehtiyot qismlar individual narxlarda. Shartnoma, QQS, yetkazish.",
     lead: "Texnika do'konlari, qurilish bazalari, servislar va viloyatlardagi kompaniyalar uchun: rohlya, shtabeler, PE quvur payvandlash apparatlari, generatorlar, moykalar, qurilish texnikasi va ehtiyot qismlar — individual narxlarda.",
     sections: [
       {
@@ -95,7 +95,7 @@ export const DEALER_PAGE: Record<Locale, PageText> = {
     nav: "Dealers",
     title: "For dealers and wholesale buyers",
     seoTitle: "Dealers — warehouse and construction equipment wholesale | Stratega",
-    description: "Become a Stratega dealer: pallet trucks, stackers, generators, pressure washers, construction machines and spare parts at individual prices. Contract, VAT, delivery across Uzbekistan.",
+    description: "Become a Stratega dealer: pallet trucks, stackers, generators, pressure washers, construction machines and spare parts at individual prices. Contract, VAT.",
     lead: "For equipment shops, building-supply bases, workshops and companies across Uzbekistan: pallet trucks, stackers, PE pipe welders, generators, pressure washers, construction machines and spare parts at individual prices.",
     sections: [
       {
@@ -177,7 +177,7 @@ export const SERVICE_PAGE: Record<Locale, PageText> = {
     nav: "Servis va ta'mirlash",
     title: "Servis, ta'mirlash va ehtiyot qismlar",
     seoTitle: "Servis, ta'mirlash va ehtiyot qismlar Toshkentda | Stratega",
-    description: "Shartnoma bo'yicha kafolatli ta'mirlash va almashtirish, rohlya, shtabeler, generator va qurilish texnikasi uchun ehtiyot qismlar, ta'mirlash va maslahat uchun ariza.",
+    description: "Shartnoma bo'yicha kafolatli ta'mirlash va almashtirish, rohlya, shtabeler, generator va qurilish texnikasi uchun ehtiyot qismlar, maslahat uchun ariza.",
     lead: "Bizdan sotib olingan texnika bo'yicha yordam beramiz: shartnoma bo'yicha kafolat, ehtiyot qismlar, ta'mirlash arizalari va foydalanish bo'yicha savollarga javob.",
     sections: [
       {

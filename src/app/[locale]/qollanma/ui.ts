@@ -5,7 +5,7 @@ export const GUIDE_UI: Record<GuideLocale, { title: string; intro: string; seoTi
   ru: {
     title: "Полезные статьи",
     seoTitle: "Как выбрать оборудование: статьи и советы | Stratega",
-    description: "Как выбрать аппарат для сварки ПНД труб, рохлю и штабелер: понятные статьи с таблицами и моделями в наличии в Ташкенте. Доставка по Узбекистану.",
+    description: "Как выбрать рохлю, штабелер, генератор, мойку, компрессор и аппарат для сварки ПНД труб: статьи с таблицами и моделями в наличии в Ташкенте.",
     intro: "Помогаем выбрать оборудование до покупки: что важно, чем отличаются модели и какие ошибки встречаются чаще всего.",
     updated: "Обновлено",
     products: "Модели в нашем каталоге",
@@ -19,7 +19,7 @@ export const GUIDE_UI: Record<GuideLocale, { title: string; intro: string; seoTi
   uz: {
     title: "Foydali maqolalar",
     seoTitle: "Uskunani qanday tanlash: maqolalar va maslahatlar | Stratega",
-    description: "PND quvur payvandlash apparati, rohlya va shtabeler qanday tanlanadi: jadvallar va Toshkentda mavjud modellar bilan tushunarli maqolalar. O'zbekiston bo'ylab yetkazib beramiz.",
+    description: "Rohlya, shtabeler, generator, moyka, kompressor va PND payvandlash apparati qanday tanlanadi: jadvallar va Toshkentda mavjud modellar bilan maqolalar.",
     intro: "Sotib olishdan oldin uskunani tanlashga yordam beramiz: nima muhim, modellar qanday farqlanadi va qaysi xatolar ko'p uchraydi.",
     updated: "Yangilangan",
     products: "Katalogimizdagi modellar",

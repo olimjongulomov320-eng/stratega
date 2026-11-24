@@ -1,3 +1,4 @@
+import { MORE_GUIDES } from "./guides-more";
 // Buyer guides (/qollanma/<slug>): articles that answer what people type into Google and Yandex
 // ("как выбрать рохлю", "сварка пнд труб таблица"…) and lead to the products we actually stock.
 // Prices are never written here: the product cards under each guide show the live catalogue price.
@@ -38,7 +39,7 @@ export type Guide = {
   text: Record<GuideLocale, GuideText>;
 };
 
-export const GUIDES: Guide[] = [
+const BASE_GUIDES: Guide[] = [
   {
     slug: "pnd-quvur-payvandlash-apparati-tanlash",
     icon: "🔥",
@@ -103,7 +104,7 @@ export const GUIDES: Guide[] = [
         title: "PND quvur payvandlash apparati: qanday tanlash kerak",
         seoTitle: "PND quvur payvandlash apparati: tanlash va narxi, Toshkent",
         description:
-          "PND va polietilen quvurlar uchun qaysi payvandlash apparati kerak: stykovoy yoki payka, diametr, 220 yoki 380 V. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
+          "PND va polietilen quvurlar uchun qaysi payvandlash apparati kerak: stykovoy yoki payka, diametr, 220 yoki 380 V. Toshkentda mavjud modellar.",
         lead: "Stykovoy apparat yoki payka, diametr, 220/380 V — qadamma-qadam tushuntiramiz va quvuringizga mos modelni tanlaymiz.",
         body: [
           { p: "PND (polietilen, HDPE) quvurlar payvandlash orqali ulanadi: to'g'ri payvandlangan chok quvurning o'zidek mustahkam bo'ladi. Apparat tanlash uchun uchta savolga javob bering: quvur diametri qancha, qaysi usulda payvandlaysiz va obyektda 380 V bormi." },
@@ -254,7 +255,7 @@ export const GUIDES: Guide[] = [
         title: "Как выбрать рохлю (гидравлическую тележку)",
         seoTitle: "Как выбрать рохлю: грузоподъёмность, вилы, колёса | Ташкент",
         description:
-          "Как выбрать гидравлическую тележку (рохлю): 2, 2,5 или 3 тонны, длина и ширина вил под ваши паллеты, полиуретановые или нейлоновые колёса, рохля с весами. Цены в Ташкенте.",
+          "Как выбрать гидравлическую тележку (рохлю): 2, 2,5 или 3 тонны, длина и ширина вил под паллеты, колёса, рохля с весами. Цены в Ташкенте.",
         lead: "Грузоподъёмность, вилы под ваши паллеты и колёса под ваш пол — всё, что нужно знать перед покупкой рохли.",
         body: [
           { p: "Рохля (ручная гидравлическая тележка) — самый простой способ перемещать паллеты по складу, магазину или цеху. Модели похожи внешне, но отличаются грузоподъёмностью, размерами вил и колёсами — от этого зависит, будет ли тележка удобной и долговечной." },
@@ -291,7 +292,7 @@ export const GUIDES: Guide[] = [
         title: "Rohlya (gidravlik telejka) qanday tanlanadi",
         seoTitle: "Rohlya qanday tanlanadi: yuk, vilka, g'ildirak | Toshkent",
         description:
-          "Gidravlik telejka (rohlya) tanlash: 2, 2,5 yoki 3 tonna, paddonlaringizga mos vilka uzunligi va kengligi, poliuretan yoki neylon g'ildiraklar, tarozili rohlya. Toshkentda narxlar.",
+          "Gidravlik telejka (rohlya) tanlash: 2, 2,5 yoki 3 tonna, paddonga mos vilka uzunligi va kengligi, g'ildiraklar, tarozili rohlya. Toshkentda narxlar.",
         lead: "Yuk ko'tarish quvvati, paddonga mos vilka va polga mos g'ildirak — rohlya sotib olishdan oldin bilish kerak bo'lgan hamma narsa.",
         body: [
           { p: "Rohlya (qo'l gidravlik telejkasi) — ombor, do'kon yoki sexda paddonlarni tashishning eng oddiy usuli. Modellar tashqi ko'rinishdan o'xshash, lekin yuk ko'tarish quvvati, vilka o'lchami va g'ildiraklari bilan farq qiladi — telejka qulay va uzoq ishlashi shunga bog'liq." },
@@ -419,6 +420,8 @@ export const GUIDES: Guide[] = [
     },
   },
 ];
+
+export const GUIDES: Guide[] = [...BASE_GUIDES, ...MORE_GUIDES];
 
 export function getGuide(slug: string): Guide | undefined {
   return GUIDES.find((g) => g.slug === slug);
