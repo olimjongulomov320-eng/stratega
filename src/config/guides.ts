@@ -1,3 +1,4 @@
+import { MORE_GUIDES } from "./guides-more";
 // Buyer guides (/qollanma/<slug>): articles that answer what people type into Google and Yandex
 // ("как выбрать рохлю", "сварка пнд труб таблица"…) and lead to the products we actually stock.
 // Prices are never written here: the product cards under each guide show the live catalogue price.
@@ -38,7 +39,7 @@ export type Guide = {
   text: Record<GuideLocale, GuideText>;
 };
 
-export const GUIDES: Guide[] = [
+const BASE_GUIDES: Guide[] = [
   {
     slug: "pnd-quvur-payvandlash-apparati-tanlash",
     icon: "🔥",
@@ -419,6 +420,8 @@ export const GUIDES: Guide[] = [
     },
   },
 ];
+
+export const GUIDES: Guide[] = [...BASE_GUIDES, ...MORE_GUIDES];
 
 export function getGuide(slug: string): Guide | undefined {
   return GUIDES.find((g) => g.slug === slug);
