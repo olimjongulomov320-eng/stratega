@@ -312,7 +312,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
   },
   "yuqori-bosimli-yuvish-apparatlari": {
     uz: {
-      title: "Karcher (yuqori bosimli moyka) narxi Toshkentda | Stratega",
+      title: "Yuqori bosimli moykalar (karcher) narxi Toshkentda | Stratega",
       description: "Avtomoyka va tozalash uchun yuqori bosimli yuvish apparatlari (karcher): elektr va benzinli. Narxlar QQS bilan. Toshkentda mavjud, O'zbekiston bo'ylab yetkazib beramiz.",
       intro: "Yuqori bosimli yuvish apparati (karcher) — avtomoyka, texnika, hovli va fasadlarni yuvish uchun. 220 va 380 V elektr, 500 bar gacha benzinli va dizel sanoat modellari.",
     },
@@ -325,7 +325,7 @@ export const CATEGORY_SEO: Record<string, CategorySeo> = {
       title: "Pressure washers in Tashkent — prices | Stratega",
       description: "Electric and petrol pressure washers. Prices incl. VAT. In stock in Tashkent, delivery across Uzbekistan.",
     },
-    aka: ["мойка высокого давления", "керхер", "кёрхер", "минимойка", "автомойка аппарат", "мойка", "karcher", "kerxer", "moyka", "moyka apparati", "керхер нархи", "karcher narxi"],
+    aka: ["мойка высокого давления", "керхер", "кёрхер", "минимойка", "автомойка аппарат", "мойка", "karcher", "kerxer", "moyka", "moyka apparati", "керхер нархи", "karcher narxi", "yuqori bosimli moyka", "yuqori bosimli moykalar"],
   },
   "yuvish-apparati-nasoslari": {
     uz: {
